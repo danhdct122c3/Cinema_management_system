@@ -78,6 +78,7 @@ public class MovieService {
                 .genre(movie.getGenre())
                 .description(movie.getDescription())
                 .ticketPrice(movie.getTicketPrice())
+                .imageUrl(movie.getImage_url())  // ADD imageUrl here!
                 .build();
     }
 } 

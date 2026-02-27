@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Button, Box, CircularProgress, Alert, Snackbar } from '@mui/material';
+import { Container, Typography, Button, Box, CircularProgress, Alert, Snackbar, Paper, Chip, Grid } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SeatMap } from '../components/SeatMap';
 import { BookingForm } from '../components/BookingForm';
@@ -7,6 +7,9 @@ import { movieService, screeningService, bookingService } from '../services/api'
 import { Movie, Seat, BookingRequest, Screening } from '../types';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 
 export const SeatSelection: React.FC = () => {
     const { movieId, screeningId } = useParams<{ movieId: string; screeningId: string }>();
@@ -156,132 +159,252 @@ export const SeatSelection: React.FC = () => {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 4
-            }}>
+        <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 6 }}>
+            <Container maxWidth="lg" sx={{ py: 4 }}>
                 <Button
                     variant="outlined"
                     startIcon={<ArrowBackIcon />}
                     onClick={() => navigate(`/movie/${movieId}/screenings`)}
                     sx={{
+                        mb: 3,
                         borderRadius: 2,
                         textTransform: 'none',
                         px: 3,
                         py: 1,
-                        fontSize: '1rem',
+                        borderColor: '#ff6b00',
+                        color: '#ff6b00',
+                        '&:hover': {
+                            borderColor: '#d95a00',
+                            backgroundColor: 'rgba(255, 107, 0, 0.08)',
+                        },
                     }}
                 >
-                    Back to Screenings
+                    Quay lại
                 </Button>
-            </Box>
 
-            <Typography
-                variant="h4"
-                component="h1"
-                gutterBottom
-                align="center"
-                sx={{
-                    fontWeight: 'bold',
-                    mb: 1
-                }}
-            >
-                {movie.title}
-            </Typography>
+                {/* Movie Info Card */}
+                <Paper
+                    elevation={2}
+                    sx={{
+                        p: 3,
+                        mb: 4,
+                        borderRadius: 3,
+                        background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+                        border: '1px solid rgba(255, 107, 0, 0.1)',
+                    }}
+                >
+                    <Grid container spacing={3} alignItems="center">
+                        <Grid item xs={12} md={3}>
+                            {movie.imageUrl && (
+                                <Box
+                                    component="img"
+                                    src={movie.imageUrl}
+                                    alt={movie.title}
+                                    sx={{
+                                        width: '100%',
+                                        maxWidth: 200,
+                                        height: 'auto',
+                                        borderRadius: 2,
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                        mx: 'auto',
+                                        display: 'block',
+                                    }}
+                                />
+                            )}
+                        </Grid>
+                        <Grid item xs={12} md={9}>
+                            <Box>
+                                <Typography
+                                    variant="h4"
+                                    component="h1"
+                                    gutterBottom
+                                    sx={{
+                                        fontWeight: 700,
+                                        color: '#333',
+                                        mb: 2,
+                                    }}
+                                >
+                                    {movie.title}
+                                </Typography>
+                                
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                                    <Chip
+                                        icon={<LocalActivityIcon />}
+                                        label={movie.genre}
+                                        sx={{
+                                            backgroundColor: 'rgba(255, 107, 0, 0.1)',
+                                            color: '#ff6b00',
+                                            fontWeight: 600,
+                                        }}
+                                    />
+                                </Box>
 
-            <Typography
-                variant="h6"
-                gutterBottom
-                align="center"
-                color="text.secondary"
-                sx={{ mb: 4 }}
-            >
-                {new Date(screening.screeningTime).toLocaleString()}
-            </Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CalendarTodayIcon sx={{ fontSize: 20, color: '#666' }} />
+                                        <Typography variant="body1" color="text.secondary">
+                                            {new Date(screening.screeningTime).toLocaleDateString('vi-VN', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <AccessTimeIcon sx={{ fontSize: 20, color: '#666' }} />
+                                        <Typography variant="body1" color="text.secondary">
+                                            {new Date(screening.screeningTime).toLocaleTimeString('vi-VN', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <ConfirmationNumberIcon sx={{ fontSize: 20, color: '#666' }} />
+                                        <Typography variant="body1" color="text.secondary">
+                                            Giá vé: {movie.ticketPrice?.toLocaleString('vi-VN')} VNĐ
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Paper>
 
-            <Box sx={{ my: 4 }}>
+                {/* Seat Selection Title */}
                 <Typography
                     variant="h5"
-                    gutterBottom
                     align="center"
                     sx={{
-                        fontWeight: 'bold',
-                        color: 'primary.main',
-                        mb: 3
+                        fontWeight: 700,
+                        mb: 3,
+                        color: '#333',
                     }}
                 >
-                    Select Your Seat
+                    Chọn Ghế Ngồi
                 </Typography>
 
+                {/* Seat Map */}
                 <SeatMap
                     screeningId={Number(screeningId)}
                     selectedSeat={selectedSeat}
                     onSelectSeat={handleSeatSelect}
                 />
-            </Box>
 
-            <Box sx={{
-                mt: 4,
-                display: 'flex',
-                justifyContent: 'center',
-                gap: 2
-            }}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    disabled={!selectedSeat || isSubmitting}
-                    onClick={handleContinueToBooking}
-                    size="large"
-                    startIcon={<ConfirmationNumberIcon />}
-                    sx={{
-                        py: 1.5,
-                        px: 4,
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontSize: '1.1rem',
-                        fontWeight: 'bold',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
-                        },
-                        transition: 'all 0.2s',
-                    }}
-                >
-                    {isSubmitting ? 'Processing...' : 'Continue to Booking'}
-                </Button>
-            </Box>
+                {/* Selected Seat Info & Action */}
+                {selectedSeat && (
+                    <Paper
+                        elevation={3}
+                        sx={{
+                            mt: 4,
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c3a 100%)',
+                            color: 'white',
+                        }}
+                    >
+                        <Grid container spacing={2} alignItems="center">
+                            <Grid item xs={12} md={8}>
+                                <Typography variant="h6" fontWeight={600} gutterBottom>
+                                    Thông tin ghế đã chọn
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                    <Box>
+                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                            Ghế
+                                        </Typography>
+                                        <Typography variant="h5" fontWeight={700}>
+                                            {selectedSeat.seatRow}{selectedSeat.seatNumber}
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                            Giá vé
+                                        </Typography>
+                                        <Typography variant="h5" fontWeight={700}>
+                                            {movie.ticketPrice?.toLocaleString('vi-VN')} đ
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <Button
+                                    variant="contained"
+                                    fullWidth
+                                    size="large"
+                                    disabled={isSubmitting}
+                                    onClick={handleContinueToBooking}
+                                    startIcon={<ConfirmationNumberIcon />}
+                                    sx={{
+                                        py: 1.8,
+                                        backgroundColor: 'white',
+                                        color: '#ff6b00',
+                                        fontWeight: 700,
+                                        fontSize: '1.1rem',
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                            transform: 'translateY(-2px)',
+                                        },
+                                        '&:disabled': {
+                                            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                                            color: 'rgba(255, 107, 0, 0.5)',
+                                        },
+                                        transition: 'all 0.3s',
+                                    }}
+                                >
+                                    {isSubmitting ? 'Đang xử lý...' : 'Tiếp tục đặt vé'}
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                )}
 
-            {selectedSeat && (
-                <BookingForm
-                    open={isBookingFormOpen}
-                    onClose={handleBookingFormClose}
-                    onSubmit={handleBookingSubmit}
-                    screeningId={Number(screeningId)}
-                    seatId={selectedSeat.id}
-                />
-            )}
+                {!selectedSeat && (
+                    <Paper
+                        elevation={1}
+                        sx={{
+                            mt: 4,
+                            p: 3,
+                            textAlign: 'center',
+                            borderRadius: 3,
+                            backgroundColor: '#f5f5f5',
+                        }}
+                    >
+                        <Typography variant="body1" color="text.secondary">
+                            Vui lòng chọn ghế để tiếp tục đặt vé
+                        </Typography>
+                    </Paper>
+                )}
 
-            <Snackbar
-                open={!!error}
-                autoHideDuration={6000}
-                onClose={() => setError('')}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert
+                {selectedSeat && (
+                    <BookingForm
+                        open={isBookingFormOpen}
+                        onClose={handleBookingFormClose}
+                        onSubmit={handleBookingSubmit}
+                        screeningId={Number(screeningId)}
+                        seatId={selectedSeat.id}
+                    />
+                )}
+
+                <Snackbar
+                    open={!!error}
+                    autoHideDuration={6000}
                     onClose={() => setError('')}
-                    severity="error"
-                    sx={{
-                        width: '100%',
-                        borderRadius: 2
-                    }}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 >
-                    {error}
-                </Alert>
-            </Snackbar>
-        </Container>
+                    <Alert
+                        onClose={() => setError('')}
+                        severity="error"
+                        sx={{
+                            width: '100%',
+                            borderRadius: 2
+                        }}
+                    >
+                        {error}
+                    </Alert>
+                </Snackbar>
+            </Container>
+        </Box>
     );
 }; 

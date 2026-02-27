@@ -3,6 +3,8 @@ package com.example.cinema_booking.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -10,9 +12,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingRequestDTO {
-    Long screeningId;
-    Long seatId;
-    String customerName;
-    String customerEmail;
-    String customerPhone;
-} 
+    String showTimeId;
+    String userId;
+    List<String> seatIds;
+}

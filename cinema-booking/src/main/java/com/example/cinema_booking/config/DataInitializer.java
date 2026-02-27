@@ -1,7 +1,7 @@
 package com.example.cinema_booking.config;
 
 import com.example.cinema_booking.entity.Movie;
-import com.example.cinema_booking.entity.Screening;
+import com.example.cinema_booking.entity.ShowTime;
 import com.example.cinema_booking.entity.Seat;
 import com.example.cinema_booking.enums.SeatStatus;
 import com.example.cinema_booking.repository.MovieRepository;
@@ -55,21 +55,24 @@ public class DataInitializer implements CommandLineRunner {
                 .genre("Action")
                 .description("The epic conclusion to the Infinity Saga")
                 .ticketPrice(120000)
-                .screenings(new ArrayList<>())
+                .image_url("https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg")
+                .showTimes(new ArrayList<>())
                 .build(),
             Movie.builder()
                 .title("The Dark Knight")
                 .genre("Action")
                 .description("Batman faces his greatest challenge")
                 .ticketPrice(100000)
-                .screenings(new ArrayList<>())
+                .image_url("https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg")
+                .showTimes(new ArrayList<>())
                 .build(),
             Movie.builder()
                 .title("Inception")
                 .genre("Sci-Fi")
                 .description("A thief who steals corporate secrets through dream-sharing technology")
                 .ticketPrice(110000)
-                .screenings(new ArrayList<>())
+                .image_url("https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg")
+                .showTimes(new ArrayList<>())
                 .build()
         );
     }
@@ -77,17 +80,17 @@ public class DataInitializer implements CommandLineRunner {
     private void createScreeningsForMovie(Movie movie) {
         LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
         
-        List<Screening> screenings = List.of(
+        List<ShowTime> showTimes = List.of(
             createScreening(movie, now.withHour(10)),
             createScreening(movie, now.withHour(14)),
             createScreening(movie, now.plusDays(1).withHour(10))
         );
 
-        screeningRepository.saveAll(screenings);
+        screeningRepository.saveAll(showTimes);
     }
 
-    private Screening createScreening(Movie movie, LocalDateTime time) {
-        Screening screening = Screening.builder()
+    private ShowTime createScreening(Movie movie, LocalDateTime time) {
+        ShowTime showTime = ShowTime.builder()
             .movie(movie)
             .screeningTime(time)
             .totalSeats(100)
@@ -100,15 +103,15 @@ public class DataInitializer implements CommandLineRunner {
             String rowLabel = String.valueOf((char) ('A' + row));
             for (int seatNum = 1; seatNum <= 10; seatNum++) {
                 Seat seat = Seat.builder()
-                    .screening(screening)
+                    .showTime(showTime)
                     .seatRow(rowLabel)
                     .seatNumber(String.valueOf(seatNum))
                     .status(SeatStatus.AVAILABLE)
                     .build();
-                screening.getSeats().add(seat);
+                showTime.getSeats().add(seat);
             }
         }
 
-        return screening;
+        return showTime;
     }
 } 

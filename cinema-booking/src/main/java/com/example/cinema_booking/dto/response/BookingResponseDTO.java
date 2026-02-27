@@ -6,31 +6,37 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
 public class BookingResponseDTO {
-    private Long id;
-    private String customerName;
-    private String customerEmail;
-    private String customerPhone;
+    private String id;
+    private String userId;
+    private String userName;
     private LocalDateTime bookingTime;
     private BookingStatus status;
-    private double totalPrice;
-    private ScreeningResponseDTO screening;
-    private SeatResponseDTO seat;
+    private Long totalPrice;
+    private ScreeningResponseDTO showTime;
+    private List<SeatResponseDTO> seats;
 
     public static BookingResponseDTO fromEntity(Booking booking) {
+        List<SeatResponseDTO> seatDTOs = booking.getBookingSeats() != null
+                ? booking.getBookingSeats().stream()
+                    .map(bs -> SeatResponseDTO.fromEntity(bs.getSeat()))
+                    .collect(Collectors.toList())
+                : List.of();
+
         return BookingResponseDTO.builder()
                 .id(booking.getId())
-                .customerName(booking.getCustomerName())
-                .customerEmail(booking.getCustomerEmail())
-                .customerPhone(booking.getCustomerPhone())
+                .userId(booking.getUser() != null ? booking.getUser().getId() : null)
+                .userName(booking.getUser() != null ? booking.getUser().getName() : null)
                 .bookingTime(booking.getBookingTime())
                 .status(booking.getStatus())
-                .totalPrice(booking.getTotalPrice())
-                .screening(ScreeningResponseDTO.fromEntity(booking.getScreening()))
-                .seat(SeatResponseDTO.fromEntity(booking.getSeat()))
+                .totalPrice(booking.getTotal_price())
+                .showTime(booking.getShowTime() != null ? ScreeningResponseDTO.fromEntity(booking.getShowTime()) : null)
+                .seats(seatDTOs)
                 .build();
     }
 } 

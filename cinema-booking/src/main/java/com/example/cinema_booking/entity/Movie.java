@@ -3,7 +3,6 @@ package com.example.cinema_booking.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,19 +13,23 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 public class Movie {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    String title;
-    String genre;
-    String description;
-    double ticketPrice;
+    private String title;
+    private String genre;
+    private String description;
+    private String duration;
+    private String status;
+    private double ticketPrice;
+    
+    @Column(name = "image_url")
+    private String image_url;  // Match database column name exactly
 
     @JsonIgnore
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
     @Builder.Default
-    List<Screening> screenings = new ArrayList<>();
+    private List<ShowTime> showTimes = new ArrayList<>();
 }

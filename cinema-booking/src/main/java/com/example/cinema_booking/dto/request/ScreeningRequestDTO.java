@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ScreeningRequestDTO {
     Long movieId;
-    LocalDateTime screeningTime;
-    Integer totalSeats;
-    Integer rowCount;
-    Integer seatsPerRow;
-} 
+    String roomId;
+    LocalDateTime startTime;
+    LocalDateTime endTime;
+}

@@ -7,6 +7,7 @@ export interface Movie {
     genre: string;
     director: string;
     releaseDate: string;
+    ticketPrice: number;
 }
 
 export interface Screening {

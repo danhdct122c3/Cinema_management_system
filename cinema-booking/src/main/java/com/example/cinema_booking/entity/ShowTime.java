@@ -1,0 +1,46 @@
+package com.example.cinema_booking.entity;
+
+import com.example.cinema_booking.enums.ShowTImeStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity
+public class ShowTime {
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id")
+    Movie movie;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    Room room;
+
+    LocalDateTime start_time;
+    LocalDateTime end_time;
+
+    @Enumerated(EnumType.STRING)
+    ShowTImeStatus status;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "showTime", cascade = CascadeType.ALL)
+    @Builder.Default
+    List<Booking> bookings = new ArrayList<>();
+
+    @Version
+    Long version;
+
+}
