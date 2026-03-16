@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -25,11 +26,8 @@ public class User {
     String password;
     String phone;
 
-    @Enumerated(EnumType.STRING)
-    Role role;
+    Set<Role> role;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @Builder.Default
-    List<Booking> bookings = new ArrayList<>();
+
+
 }

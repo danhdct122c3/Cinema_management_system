@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,8 @@ public class Movie {
     private String duration;
     private String status;
     private double ticketPrice;
-    
+    private LocalDateTime releaseDate;
+
     @Column(name = "image_url")
     private String image_url;  // Match database column name exactly
 

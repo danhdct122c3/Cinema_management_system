@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /home
+spring:
+  datasource:
+    url: "jdbc:mysql://localhost:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    username: root
+    password: root
+  #    driver-class-name: "com.mysql.cj.jdbc.Driver"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
+jwt:
+  signerKey: "vZAWIS53RKXfbNNKEuzpJdS/+/qxK22dSEw5qEMQsHDJwdp7hEmw4BGO9i691dB/"
+  valid-duration: 10000
+  refreshable-duration: 120

@@ -17,11 +17,11 @@ public class BookingSeat {
     String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seat_id")
+    @JoinColumn(name = "seat_id", nullable = false, foreignKey = @ForeignKey(name = "FK_booking_seat_to_seat"))
     Seat seat;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id")
+    @JoinColumn(name = "booking_id", nullable = false, foreignKey = @ForeignKey(name = "FK_booking_seat_to_booking"))
     Booking booking;
 
 
