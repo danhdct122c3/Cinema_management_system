@@ -3,8 +3,11 @@ package com.example.cinema_booking.controller;
 
 import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.AuthenticationRequest;
+import com.example.cinema_booking.dto.request.IntrospectRequest;
 import com.example.cinema_booking.dto.response.AuthenticationResponse;
+import com.example.cinema_booking.dto.response.IntrospectResponse;
 import com.example.cinema_booking.service.AuthenticateService;
+import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -12,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.text.ParseException;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,16 +28,21 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     APIResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        boolean isAuth = authenticateService.authenticate(request);  // Kiểm tra xem thông tin đăng nhập có hợp lệ hay không
+        var authResponse = authenticateService.authenticate(request);
 
 
         return APIResponse.<AuthenticationResponse>builder()
-                .result(AuthenticationResponse.builder()
-                        .isAuthenticated(isAuth)
-                        .build())
+                .result(authResponse)
                 .build();
-
     }
 
+    @PostMapping("/introspect")
+    APIResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) throws JOSEException, ParseException {
+        var authResponse =authenticateService.introspect(request);
 
+
+        return APIResponse.<IntrospectResponse>builder()
+                .result(authResponse)
+                .build();
+    }
 }
