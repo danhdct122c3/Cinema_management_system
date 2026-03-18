@@ -1,6 +1,7 @@
 package com.example.cinema_booking.service;
 
-public interface AuthenticateService {
-        String authenticate(String username, String password);
+import com.example.cinema_booking.dto.request.AuthenticationRequest;
 
+public interface AuthenticateService {
+        boolean authenticate(AuthenticationRequest request);
 }
