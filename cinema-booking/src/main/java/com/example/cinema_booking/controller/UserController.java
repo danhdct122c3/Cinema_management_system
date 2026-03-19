@@ -2,7 +2,9 @@ package com.example.cinema_booking.controller;
 
 
 import com.example.cinema_booking.dto.request.APIResponse;
+import com.example.cinema_booking.dto.request.UserGetByIdRequest;
 import com.example.cinema_booking.dto.request.UserRegisterRequest;
+import com.example.cinema_booking.dto.request.UserUpdateRequest;
 import com.example.cinema_booking.dto.response.UserResponse;
 import com.example.cinema_booking.service.UserService;
 import com.example.cinema_booking.service.impl.UserServiceImpl;
@@ -30,5 +32,23 @@ public class UserController {
                .result(userService.createUser(request))
                .build();
 
+    }
+
+    @PutMapping("/{userId}")
+    APIResponse<UserResponse> updateUser(@RequestBody UserUpdateRequest request, @PathVariable("userId") String userId){
+        log.info("updateUser");
+
+        return APIResponse.<UserResponse>builder()
+                .result(userService.updateUser(request, userId))
+                .build();
+    }
+
+    @GetMapping("/{userId}")
+    APIResponse<UserResponse> getUserById(@PathVariable("userId") String userId){
+        log.info("getUserById");
+
+        return APIResponse.<UserResponse>builder()
+                .result(userService.getUserById(null,userId))
+                .build();
     }
 }
