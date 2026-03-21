@@ -14,7 +14,14 @@ public enum ErrorCode {
     UNAUTHENTICATED(1006, "Unauthentiated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     USER_NOT_EXISTED(1005, "User not  exited", HttpStatus.NOT_FOUND),
-    INVALID_DOB(1009, "Your age must be at least {min}", HttpStatus.NOT_FOUND);
+    INVALID_DOB(1009, "Your age must be at least {min}", HttpStatus.NOT_FOUND),
+    GENRE_NOT_EXIST(1010, "Genre not exist", HttpStatus.NOT_FOUND),
+    INVALID_GENRE(1011, "invalid genre", HttpStatus.BAD_REQUEST),
+    MOVIE_NOT_EXIST(1012, "Movie not exist", HttpStatus.NOT_FOUND),
+    INVALID_MOVIE_STATUS(1013, "Invalid movie status", HttpStatus.BAD_REQUEST)
+    ;
+
+
 
     private int code;
     private String message;

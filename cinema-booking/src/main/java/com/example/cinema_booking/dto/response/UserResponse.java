@@ -3,7 +3,7 @@ package com.example.cinema_booking.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
+@Data  //@Data = @Getter + @Setter + @ToString + @EqualsAndHashCode + @RequiredArgsConstructor
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,6 +12,5 @@ public class UserResponse {
     String id;
     String name;
     String email;
-    String password;
     String phone;
 }
