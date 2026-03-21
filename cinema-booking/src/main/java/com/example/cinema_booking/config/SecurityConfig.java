@@ -1,0 +1,72 @@
+package com.example.cinema_booking.config;
+
+import lombok.experimental.NonFinal;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+import javax.crypto.spec.SecretKeySpec;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    // nơi config các endpoint API nào cần được bảo vệ, API nào có thể truy cập công khai, và cách thức xác thực người dùng
+
+
+    // Sau này thay bằng cách lấy từ file config hoặc biến môi trường, ko nên hardcode như này
+    @NonFinal
+    protected static final String SIGNED_KEY = "0e796109b182226d16e5ba239be1c9ce38c78d378444b4b8e2058e914ff887b8";
+
+    private final String[] PUBLIC_ENDPOINTS = {
+            "/auth/login",
+            "/auth/introspect",
+            "/users"
+    };
+
+
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+
+        httpSecurity.authorizeHttpRequests(request ->
+                // cho phép truy cập công khai vào các endpoint bắt đầu bằng /auth/
+                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+
+                        // yêu cầu xác thực cho tất cả các endpoint khác
+                .anyRequest().authenticated()
+        );
+
+        httpSecurity.oauth2ResourceServer(oauth2 ->
+                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))
+        );
+
+        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+
+
+        return httpSecurity.build();
+    }
+
+
+    // phần này check jwt có hợp lệ không ? Nhưng vì sao không dùng endpoint introspect để check
+
+    @Bean
+    JwtDecoder jwtDecoder() {
+
+        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNED_KEY.getBytes(), "HS512");
+
+        return NimbusJwtDecoder
+                .withSecretKey(secretKeySpec)
+                .macAlgorithm(MacAlgorithm.HS512)
+                .build();
+    };
+
+
+}

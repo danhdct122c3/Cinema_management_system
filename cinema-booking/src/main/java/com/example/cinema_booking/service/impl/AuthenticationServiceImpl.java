@@ -34,6 +34,8 @@ import java.util.Date;
 public class AuthenticationServiceImpl implements AuthenticateService {
     UserRepository userRepository;
 
+
+    // Sau này thay bằng cách lấy từ file config hoặc biến môi trường, ko nên hardcode như này
     @NonFinal
     protected static final String SIGNED_KEY = "0e796109b182226d16e5ba239be1c9ce38c78d378444b4b8e2058e914ff887b8";
 

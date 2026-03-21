@@ -1,18 +1,17 @@
 package com.example.cinema_booking.controller;
 
-
 import com.example.cinema_booking.dto.request.APIResponse;
-import com.example.cinema_booking.dto.request.UserGetByIdRequest;
 import com.example.cinema_booking.dto.request.UserRegisterRequest;
 import com.example.cinema_booking.dto.request.UserUpdateRequest;
 import com.example.cinema_booking.dto.response.UserResponse;
 import com.example.cinema_booking.service.UserService;
-import com.example.cinema_booking.service.impl.UserServiceImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -51,4 +50,14 @@ public class UserController {
                 .result(userService.getUserById(null,userId))
                 .build();
     }
+
+    @GetMapping
+    APIResponse<List<UserResponse>> getAllUser(){
+        log.info("getAllUser");
+
+        return APIResponse.<List<UserResponse>>builder()
+                .result(userService.getUsers())
+                .build();
+    }
+
 }
