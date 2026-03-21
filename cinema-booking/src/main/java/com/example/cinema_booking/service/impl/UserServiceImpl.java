@@ -1,6 +1,8 @@
 package com.example.cinema_booking.service.impl;
 
+import com.example.cinema_booking.dto.request.UserGetByIdRequest;
 import com.example.cinema_booking.dto.request.UserRegisterRequest;
+import com.example.cinema_booking.dto.request.UserUpdateRequest;
 import com.example.cinema_booking.dto.response.UserResponse;
 import com.example.cinema_booking.entity.User;
 import com.example.cinema_booking.exception.AppException;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor // tự động tạo constructor cho tất cả các field final
@@ -32,7 +36,14 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public void updateUser(String userId, String username, String password, String email) {
+    public UserResponse updateUser(UserUpdateRequest request, String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        userMapper.updateUserFromRequest(request, user);
+        userRepository.save(user);
+
+        return userMapper.toUserResponse(user);
 
     }
 
@@ -42,9 +53,13 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public String getUserById(String userId) {
-        return "";
+    public UserResponse getUserById(UserGetByIdRequest request, String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return userMapper.toUserResponse(user);
     }
+
 
     @Override
     public void assignRoleToUser(String userId, String role) {
@@ -56,4 +71,10 @@ public class UserServiceImpl  implements UserService {
 
     }
 
+    @Override
+    public List<UserResponse> getUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toUserResponse)
+                .toList();
+    }
 }
