@@ -11,7 +11,7 @@ public enum ErrorCode {
     INVALID_KEY(1004, "Invalid message key", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1008, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(999, "Uncategorized exception", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNAUTHENTICATED(1006, "Unauthentiated", HttpStatus.UNAUTHORIZED),
+    UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     USER_NOT_EXISTED(1005, "User not  exited", HttpStatus.NOT_FOUND),
     INVALID_DOB(1009, "Your age must be at least {min}", HttpStatus.NOT_FOUND);
