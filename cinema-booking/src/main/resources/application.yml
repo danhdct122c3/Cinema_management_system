@@ -19,3 +19,8 @@ jwt:
   signerKey: "vZAWIS53RKXfbNNKEuzpJdS/+/qxK22dSEw5qEMQsHDJwdp7hEmw4BGO9i691dB/"
   valid-duration: 10000
   refreshable-duration: 120
+
+cloudinary:
+  cloud-name: "dod2sfnsr"
+  api-key: "821557315416333"
+  api-secret: "Ns8TJjf8KhgGaUZ_v_pcML6V_HM"
