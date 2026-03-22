@@ -8,6 +8,6 @@ import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = "spring")
 public interface RoomMapper {
-    Room toRoom(RoomRequest requset);
+    Room toRoom(RoomRequest request);
     RoomResponse toRoomResponse(Room room);
 }

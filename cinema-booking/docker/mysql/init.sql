@@ -1,100 +1,86 @@
--- Create tables with proper UUID columns
-CREATE TABLE `user` (
-    id VARCHAR(36) PRIMARY KEY,
-    username VARCHAR(100) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(255),
-    phone_number VARCHAR(20),
-    role VARCHAR(50) DEFAULT 'USER',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    version BIGINT DEFAULT 0
-);
-
+-- Create tables
 CREATE TABLE movie (
-    id VARCHAR(36) PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     genre VARCHAR(50),
     description TEXT,
-    duration INT,
-    price BIGINT,
-    version BIGINT DEFAULT 0
+    ticket_price DOUBLE NOT NULL
 );
 
-CREATE TABLE room (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    total_seats INT NOT NULL,
-    version BIGINT DEFAULT 0
-);
-
-CREATE TABLE showtime (
-    id VARCHAR(36) PRIMARY KEY,
-    movie_id VARCHAR(36) NOT NULL,
-    room_id VARCHAR(36) NOT NULL,
+CREATE TABLE showTime (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    movie_id BIGINT NOT NULL,
     screening_time DATETIME NOT NULL,
-    status VARCHAR(50) DEFAULT 'ACTIVE',
+    total_seats INT NOT NULL,
+    available_seats INT NOT NULL,
     version BIGINT DEFAULT 0,
-    FOREIGN KEY (movie_id) REFERENCES movie(id) ON DELETE CASCADE,
-    FOREIGN KEY (room_id) REFERENCES room(id) ON DELETE CASCADE
+    FOREIGN KEY (movie_id) REFERENCES movie(id)
 );
 
 CREATE TABLE seat (
-    id VARCHAR(36) PRIMARY KEY,
-    room_id VARCHAR(36) NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    screening_id BIGINT NOT NULL,
     seat_row VARCHAR(5) NOT NULL,
     seat_number VARCHAR(5) NOT NULL,
-    status VARCHAR(50) DEFAULT 'AVAILABLE',
+    status VARCHAR(20) NOT NULL,
     version BIGINT DEFAULT 0,
-    FOREIGN KEY (room_id) REFERENCES room(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_seat (room_id, seat_row, seat_number)
+    FOREIGN KEY (screening_id) REFERENCES showTime(id)
 );
 
 CREATE TABLE booking (
-    id VARCHAR(36) PRIMARY KEY,
-    user_id VARCHAR(36) NOT NULL,
-    showtime_id VARCHAR(36) NOT NULL,
-    total_price BIGINT,
-    booking_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) DEFAULT 'PENDING',
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    seat_id BIGINT NOT NULL,
+    booking_time DATETIME NOT NULL,
+    expiration_time DATETIME,
+    status VARCHAR(20) NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255),
+    customer_phone VARCHAR(20),
     version BIGINT DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE,
-    FOREIGN KEY (showtime_id) REFERENCES showtime(id) ON DELETE CASCADE
-);
-
-CREATE TABLE booking_seat (
-    id VARCHAR(36) PRIMARY KEY,
-    booking_id VARCHAR(36) NOT NULL,
-    seat_id VARCHAR(36) NOT NULL,
-    version BIGINT DEFAULT 0,
-    FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE CASCADE,
-    FOREIGN KEY (seat_id) REFERENCES seat(id) ON DELETE CASCADE
-);
-
-CREATE TABLE payment (
-    id VARCHAR(36) PRIMARY KEY,
-    booking_id VARCHAR(36) NOT NULL,
-    amount BIGINT NOT NULL,
-    payment_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) DEFAULT 'PENDING',
-    version BIGINT DEFAULT 0,
-    FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE CASCADE
+    total_price DOUBLE NOT NULL,
+    FOREIGN KEY (seat_id) REFERENCES seat(id)
 );
 
 -- Create sample movies
-INSERT INTO movie (id, title, genre, description, duration, price) VALUES
-(UUID(), 'Avengers: Endgame', 'Action', 'The epic conclusion to the Infinity Saga', 180, 150000),
-(UUID(), 'The Dark Knight', 'Action', 'Batman faces his greatest challenge', 152, 120000),
-(UUID(), 'Inception', 'Sci-Fi', 'A thief who steals corporate secrets through dream-sharing technology', 148, 130000);
+INSERT INTO movie (title, genre, description, ticket_price) VALUES
+('Avengers: Endgame', 'Action', 'The epic conclusion to the Infinity Saga', 120000),
+('The Dark Knight', 'Action', 'Batman faces his greatest challenge', 100000),
+('Inception', 'Sci-Fi', 'A thief who steals corporate secrets through dream-sharing technology', 110000),
+('Titanic', 'Romance', 'A seventeen-year-old aristocrat falls in love with a kind but poor artist', 90000),
+('The Shawshank Redemption', 'Drama', 'Two imprisoned men bond over a number of years', 95000);
 
--- Create sample rooms
-INSERT INTO room (id, name, total_seats) VALUES
-(UUID(), 'Phòng 1 - VIP', 100),
-(UUID(), 'Phòng 2 - Standard', 150);
+-- Create sample showTimes (We'll add showTimes for today and tomorrow)
+SET @today = CURDATE();
+SET @tomorrow = DATE_ADD(@today, INTERVAL 1 DAY);
 
--- Create sample showtimes (will be inserted by app if needed)
+-- Screenings for Avengers: Endgame
+INSERT INTO showTime (movie_id, screening_time, total_seats, available_seats, version)
+SELECT 1, TIMESTAMP(CURDATE(), '10:00:00'), 100, 100, 0
+UNION ALL
+SELECT 1, TIMESTAMP(CURDATE(), '14:00:00'), 100, 100, 0
+UNION ALL
+SELECT 1, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '10:00:00'), 100, 100, 0;
 
--- Create sample user (admin/test user)
-INSERT INTO `user` (id, username, email, password, full_name, phone_number, role) VALUES
-(UUID(), 'admin', 'admin@cinema.com', '$2a$10$abc123', 'Admin User', '0123456789', 'ADMIN'),
-(UUID(), 'testuser', 'test@cinema.com', '$2a$10$def456', 'Test User', '0987654321', 'USER');
+-- Screenings for The Dark Knight
+INSERT INTO showTime (movie_id, screening_time, total_seats, available_seats, version)
+SELECT 2, TIMESTAMP(CURDATE(), '11:00:00'), 100, 100, 0
+UNION ALL
+SELECT 2, TIMESTAMP(CURDATE(), '15:00:00'), 100, 100, 0
+UNION ALL
+SELECT 2, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '11:00:00'), 100, 100, 0;
+
+-- Create seats for each showTime
+INSERT INTO seat (screening_id, seat_row, seat_number, status, version)
+SELECT s.id,
+       CHAR(65 + (seq.seq DIV 10)), -- Rows from A to J
+       (seq.seq MOD 10) + 1,        -- Seats from 1 to 10
+       'AVAILABLE',
+       0
+FROM showTime s
+CROSS JOIN (
+    SELECT a.N + b.N * 10 as seq
+    FROM (SELECT 0 as N UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) a,
+         (SELECT 0 as N UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) b
+    ORDER BY seq
+    LIMIT 100 -- 10 rows × 10 seats
+) seq;

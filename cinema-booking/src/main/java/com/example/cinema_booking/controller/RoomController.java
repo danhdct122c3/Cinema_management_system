@@ -5,21 +5,22 @@ import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.RoomRequest;
 import com.example.cinema_booking.dto.response.RoomResponse;
 import com.example.cinema_booking.service.RoomService;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/rooms")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoomController {
 
     RoomService roomService;
 
     @PostMapping
-    public APIResponse<RoomResponse> createRoom(RoomRequest request){
+    public APIResponse<RoomResponse> createRoom(@RequestBody RoomRequest request){
         return APIResponse.<RoomResponse>builder()
                 .result(roomService.createRoom(request))
                 .build();
