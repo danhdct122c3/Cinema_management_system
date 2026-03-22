@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { Movie, Screening, Seat, Booking, BookingRequest } from '../types';
+import axios, { AxiosResponse } from 'axios';
+import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre } from '../types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080/home';
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -10,27 +10,66 @@ const axiosInstance = axios.create({
     },
 });
 
+// Separate instance for file uploads (no JSON content-type)
+const axiosFileInstance = axios.create({
+    baseURL: API_BASE_URL,
+});
+
+export interface MovieCreateRequest {
+    title: string;
+    description: string;
+    duration: string;
+    genreId: string;
+    genreName?: string;
+    releaseDate: string;
+    imageUrl: string;
+    trailerUrl: string;
+    status: string;
+}
+
+export interface MovieUpdateRequest extends MovieCreateRequest {
+}
+
 export const movieService = {
-    getAllMovies: () => axiosInstance.get<Movie[]>('/movies'),
-    getMovieById: (id: number) => axiosInstance.get<Movie>(`/movies/${id}`),
-    getMovieScreenings: (movieId: number) => axiosInstance.get<Screening[]>(`/screenings/movie/${movieId}`),
+    getAllMovies: (): Promise<AxiosResponse<APIResponse<Movie[]>>> => axiosInstance.get<APIResponse<Movie[]>>('/movies'),
+    getMovieById: (id: string): Promise<AxiosResponse<APIResponse<Movie>>> => axiosInstance.get<APIResponse<Movie>>(`/movies/${id}`),
+    getMovieScreenings: (movieId: string): Promise<AxiosResponse<APIResponse<Screening[]>>> => axiosInstance.get<APIResponse<Screening[]>>(`/screenings/movie/${movieId}`),
+    getMoviesByGenre: (genreId: string): Promise<AxiosResponse<APIResponse<Movie[]>>> => axiosInstance.get<APIResponse<Movie[]>>(`/movies/genre/${genreId}`),
+    getMoviesByStatus: (status: string): Promise<AxiosResponse<APIResponse<Movie[]>>> => axiosInstance.get<APIResponse<Movie[]>>('/movies/status', { params: { status } }),
+    searchMovies: (keyword: string): Promise<AxiosResponse<APIResponse<Movie[]>>> => axiosInstance.get<APIResponse<Movie[]>>('/movies/search', { params: { keyword } }),
+    createMovie: (data: MovieCreateRequest): Promise<AxiosResponse<APIResponse<Movie>>> => axiosInstance.post<APIResponse<Movie>>('/movies', data),
+    updateMovie: (id: string, data: MovieUpdateRequest): Promise<AxiosResponse<APIResponse<Movie>>> => axiosInstance.put<APIResponse<Movie>>(`/movies/${id}`, data),
+    deleteMovie: (id: string): Promise<AxiosResponse<void>> => axiosInstance.delete(`/movies/${id}`),
+};
+
+export const genreService = {
+    getAllGenres: (): Promise<AxiosResponse<APIResponse<Genre[]>>> => axiosInstance.get<APIResponse<Genre[]>>('/genres'),
+    createGenre: (name: string): Promise<AxiosResponse<APIResponse<Genre>>> => axiosInstance.post<APIResponse<Genre>>('/genres', { name }),
+};
+
+export const cloudinaryService = {
+    uploadImage: (file: File): Promise<AxiosResponse<string>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return axiosFileInstance.post<string>('/upload', formData);
+    }
 };
 
 export const screeningService = {
-    getScreeningById: (id: number) => axiosInstance.get<Screening>(`/screenings/${id}`),
-    getAvailableSeats: (screeningId: number) => axiosInstance.get<Seat[]>(`/screenings/${screeningId}/seats`),
+    getScreeningById: (id: string): Promise<AxiosResponse<APIResponse<Screening>>> => axiosInstance.get<APIResponse<Screening>>(`/screenings/${id}`),
+    getAvailableSeats: (screeningId: string): Promise<AxiosResponse<APIResponse<Seat[]>>> => axiosInstance.get<APIResponse<Seat[]>>(`/screenings/${screeningId}/seats`),
 };
 
 export const bookingService = {
-    createBooking: (data: BookingRequest) => axiosInstance.post<Booking>('/bookings', data),
-    getBookingById: (id: number) => axiosInstance.get<Booking>(`/bookings/${id}`),
-    cancelBooking: (id: number) => axiosInstance.delete(`/bookings/${id}`),
-    getBookingsByEmail: (email: string) => axiosInstance.get<Booking[]>(`/bookings/user/${email}`),
-    reserveSeat: (screeningId: number, seatId: number) =>
-        axiosInstance.post<boolean>(`/bookings/screenings/${screeningId}/seats/${seatId}/reserve`),
-    releaseSeatReservation: (screeningId: number, seatId: number) =>
-        axiosInstance.post<boolean>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
-    confirmBooking: (id: number) => axiosInstance.post<Booking>(`/bookings/${id}/confirm`)
+    createBooking: (data: BookingRequest): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>('/bookings', data),
+    getBookingById: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.get<APIResponse<Booking>>(`/bookings/${id}`),
+    cancelBooking: (id: string): Promise<AxiosResponse<void>> => axiosInstance.delete(`/bookings/${id}`),
+    getBookingsByEmail: (email: string): Promise<AxiosResponse<APIResponse<Booking[]>>> => axiosInstance.get<APIResponse<Booking[]>>(`/bookings/user/${email}`),
+    reserveSeat: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
+        axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/reserve`),
+    releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
+        axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
+    confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>(`/bookings/${id}/confirm`)
 };
 
 // Add interceptor to handle concurrent booking errors

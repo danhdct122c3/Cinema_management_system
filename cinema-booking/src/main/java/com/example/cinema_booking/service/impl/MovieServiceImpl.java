@@ -148,6 +148,8 @@ public class MovieServiceImpl implements MovieService {
         List<Movie> movies = movieRepository.findByGenreId(genreId);
         return movieMapper.toMovieResponseList(movies);
     }
+
+
 //
 //    @Async
 //    @Transactional

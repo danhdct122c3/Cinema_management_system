@@ -44,7 +44,7 @@ export const AdminScreenings: React.FC = () => {
     const fetchMovies = async () => {
         try {
             const response = await movieService.getAllMovies();
-            setMovies(response.data);
+            setMovies(response.data.result);
         } catch (error) {
             console.error('Error fetching movies:', error);
         }
@@ -54,7 +54,7 @@ export const AdminScreenings: React.FC = () => {
         if (screening) {
             setEditingScreening(screening);
             setFormData({
-                movieId: screening.movie.id.toString(),
+                movieId: screening.movie.id,
                 startTime: new Date(screening.screeningTime).toISOString().slice(0, 16),
                 endTime: '',
                 roomNumber: 'Room 1',
@@ -89,7 +89,7 @@ export const AdminScreenings: React.FC = () => {
         handleCloseDialog();
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = (id: string) => {
         // TODO: Implement API call to delete screening
         console.log('Deleting screening:', id);
     };

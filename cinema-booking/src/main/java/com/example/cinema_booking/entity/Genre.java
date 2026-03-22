@@ -1,5 +1,6 @@
 package com.example.cinema_booking.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,8 +22,8 @@ public class Genre {
     @Column(unique = true, nullable = false)
     private String name;
 
-
     @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL)
     @Builder.Default
+    @JsonIgnore
     private List<Movie> movies = new ArrayList<>();
 }

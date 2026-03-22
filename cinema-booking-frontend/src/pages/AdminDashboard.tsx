@@ -21,7 +21,7 @@ export const AdminDashboard: React.FC = () => {
         const fetchData = async () => {
             try {
                 const moviesResponse = await movieService.getAllMovies();
-                setTotalMovies(moviesResponse.data.length);
+                setTotalMovies(moviesResponse.data.result.length);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             }
