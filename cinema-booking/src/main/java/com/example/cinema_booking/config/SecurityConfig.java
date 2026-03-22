@@ -5,6 +5,7 @@ import lombok.experimental.NonFinal;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,6 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     // nơi config các endpoint API nào cần được bảo vệ, API nào có thể truy cập công khai, và cách thức xác thực người dùng
@@ -42,9 +44,6 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(request ->
                 // cho phép truy cập công khai vào các endpoint bắt đầu bằng /auth/
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users")
-                        .hasRole(Role.ADMIN.name())
-
                         // yêu cầu xác thực cho tất cả các endpoint khác
                 .anyRequest().authenticated()
         );

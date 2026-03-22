@@ -15,6 +15,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +44,20 @@ public class UserServiceImpl  implements UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    public UserResponse getMyInfo()
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("Authenticated user: {}", authentication.getName());
+
+        authentication.getAuthorities().forEach(authority -> log.info("Authority: {}", authority.getAuthority()));
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return userMapper.toUserResponse(user);
+    }
+
     @Override
     public UserResponse updateUser(UserUpdateRequest request, String userId) {
         User user = userRepository.findById(userId)
@@ -59,12 +75,29 @@ public class UserServiceImpl  implements UserService {
 
     }
 
+    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
+    // Chỉ cho phép người dùng truy cập vào phương thức này nếu email của họ trùng với email của user được trả về hoặc họ có role ADMIN
     @Override
-    public UserResponse getUserById(UserGetByIdRequest request, String userId) {
+    public UserResponse getUserById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return userMapper.toUserResponse(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')") // Chỉ cho phép người dùng có role ADMIN truy cập vào phương thức này
+    @Override
+    public List<UserResponse> getUsers() {
+        log.info("In method get user");
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("Authenticated user: {}", authentication.getName());
+
+        authentication.getAuthorities().forEach(authority -> log.info("Authority: {}", authority.getAuthority()));
+
+        return userRepository.findAll().stream()
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 
 
@@ -78,17 +111,4 @@ public class UserServiceImpl  implements UserService {
 
     }
 
-    @Override
-    public List<UserResponse> getUsers() {
-
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        log.info("Authenticated user: {}", authentication.getName());
-
-        authentication.getAuthorities().forEach(authority -> log.info("Authority: {}", authority.getAuthority()));
-
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserResponse)
-                .toList();
-    }
 }

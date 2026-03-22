@@ -47,7 +47,7 @@ public class UserController {
         log.info("getUserById");
 
         return APIResponse.<UserResponse>builder()
-                .result(userService.getUserById(null,userId))
+                .result(userService.getUserById(userId))
                 .build();
     }
 
@@ -57,6 +57,15 @@ public class UserController {
 
         return APIResponse.<List<UserResponse>>builder()
                 .result(userService.getUsers())
+                .build();
+    }
+
+    @GetMapping("/myInfo")
+    APIResponse<UserResponse> getMyInfo(){
+        log.info("myInfo");
+
+        return APIResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
                 .build();
     }
 
