@@ -12,10 +12,12 @@ public class Seat {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    String seat_row;
-    String seat_number;
-    Long price;
-
+    @Column(name = "seat_row")
+    String seatRow;
+    @Column(name = "seat_number")
+    Integer seatNumber;
+//    Long price;
+    String type;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     Room room;

@@ -19,7 +19,8 @@ public enum ErrorCode {
     INVALID_GENRE(1011, "invalid genre", HttpStatus.BAD_REQUEST),
     GENRE_ALREADY_EXIST(1014, "Genre already exist", HttpStatus.BAD_REQUEST),
     MOVIE_NOT_EXIST(1012, "Movie not exist", HttpStatus.NOT_FOUND),
-    INVALID_MOVIE_STATUS(1013, "Invalid movie status", HttpStatus.BAD_REQUEST)
+    INVALID_MOVIE_STATUS(1013, "Invalid movie status", HttpStatus.BAD_REQUEST),
+    SEAT_ALREADY_EXIST(1015, "Seat already exist", HttpStatus.BAD_REQUEST)
     ;
 
 
