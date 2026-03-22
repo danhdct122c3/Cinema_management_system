@@ -48,10 +48,6 @@ public class UserServiceImpl  implements UserService {
     {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        log.info("Authenticated user: {}", authentication.getName());
-
-        authentication.getAuthorities().forEach(authority -> log.info("Authority: {}", authority.getAuthority()));
-
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
