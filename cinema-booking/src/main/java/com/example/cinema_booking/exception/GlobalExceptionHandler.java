@@ -1,23 +1,17 @@
 package com.example.cinema_booking.exception;
 
 import com.example.cinema_booking.dto.request.APIResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.TimeoutException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.example.cinema_booking.exception.ErrorCode.UNCATEGORIZED_EXCEPTION;
 
@@ -46,7 +40,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 
-    @ExceptionHandler(value= AccessDeniedException.class)
+    /**
+     * 403 - user đã authenticate nhưng không đủ quyền (ví dụ @PreAuthorize hasRole('ADMIN')).
+     * Lưu ý: Spring Security ném org.springframework.security.access.AccessDeniedException
+     */
+    @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<APIResponse> accessDeniedExceptionHandler(AccessDeniedException e) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         return ResponseEntity.status(errorCode.getStatusCode())
@@ -55,6 +53,19 @@ public class GlobalExceptionHandler {
                         .message(errorCode.getMessage())
                         .build());
     }
+
+//    /**
+//     * 401 - token thiếu/invalid/expired.
+//     */
+//    @ExceptionHandler(value = AuthenticationException.class)
+//    ResponseEntity<APIResponse> authenticationExceptionHandler(AuthenticationException e) {
+//        ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+//        return ResponseEntity.status(errorCode.getStatusCode())
+//                .body(APIResponse.builder()
+//                        .code(errorCode.getCode())
+//                        .message(errorCode.getMessage())
+//                        .build());
+//    }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<APIResponse> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
