@@ -19,15 +19,17 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    String room_name;
+    String roomName;
+    Integer totalRows;
+    Integer totalColumns;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-    @Builder.Default
-    List<Seat> seats = new ArrayList<>();
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+//    @Builder.Default
+//    List<Seat> seats = new ArrayList<>();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-    @Builder.Default
-    List<ShowTime> showTimes = new ArrayList<>();
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+//    @Builder.Default
+//    List<ShowTime> showTimes = new ArrayList<>();
 }
