@@ -25,9 +25,6 @@ public class User {
     String email;
     String password;
     String phone;
-
-    Set<Role> role;
-
-
+    Set<String> roles;
 
 }
