@@ -1,17 +1,31 @@
+export interface Genre {
+    id: string;
+    name: string;
+}
+
+export interface APIResponse<T> {
+    result: T;
+    code?: string;
+    message?: string;
+}
+
 export interface Movie {
-    id: number;
+    id: string;
     title: string;
     description: string;
-    duration: number;
+    duration: string;
     imageUrl: string;
-    genre: string;
-    director: string;
+    trailerUrl: string;
+    genreId: string;
+    genreName: string;
+    status: 'COMING_SOON' | 'NOW_SHOWING' | 'ENDED';
     releaseDate: string;
-    ticketPrice: number;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface Screening {
-    id: number;
+    id: string;
     movie: Movie;
     screeningTime: string;
     totalSeats: number;
@@ -19,7 +33,7 @@ export interface Screening {
 }
 
 export interface Seat {
-    id: number;
+    id: string;
     seatRow: string;
     seatNumber: string;
     status: 'AVAILABLE' | 'BOOKED' | 'RESERVED';
@@ -27,7 +41,7 @@ export interface Seat {
 }
 
 export interface Booking {
-    id: number;
+    id: string;
     customerName: string;
     customerEmail: string;
     customerPhone: string;
@@ -42,8 +56,8 @@ export interface BookingRequest {
     customerName: string;
     customerEmail: string;
     customerPhone: string;
-    screeningId: number;
-    seatId: number;
+    screeningId: string;
+    seatId: string;
 }
 
 export interface ErrorResponse {

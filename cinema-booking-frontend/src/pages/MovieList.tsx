@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import { MovieCard } from '../components/MovieCard';
 import { movieService } from '../services/api';
 import { Movie } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useGenre } from '../context/GenreContext';
+import { useSearch } from '../context/SearchContext';
 import LocalMoviesIcon from '@mui/icons-material/LocalMovies';
 import HistoryIcon from '@mui/icons-material/History';
 
@@ -13,12 +20,33 @@ export const MovieList: React.FC = () => {
     const [error, setError] = useState<string>('');
     const [tabValue, setTabValue] = useState(0);
     const navigate = useNavigate();
+    const { selectedGenreId } = useGenre();
+    const { searchKeyword } = useSearch();
 
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                const response = await movieService.getAllMovies();
-                setMovies(response.data);
+                setLoading(true);
+                let response;
+                
+                if (searchKeyword) {
+                    // Search by keyword
+                    response = await movieService.searchMovies(searchKeyword);
+                } else if (selectedGenreId) {
+                    // Fetch movies by genre
+                    response = await movieService.getMoviesByGenre(selectedGenreId);
+                } else if (tabValue === 0) {
+                    // Phim Đang Chiếu
+                    response = await movieService.getMoviesByStatus('NOW_SHOWING');
+                } else if (tabValue === 1) {
+                    // Phim Sắp Chiếu
+                    response = await movieService.getMoviesByStatus('COMING_SOON');
+                } else {
+                    // Fetch all movies
+                    response = await movieService.getAllMovies();
+                }
+                
+                setMovies(response.data.result);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching movies:', error);
@@ -28,7 +56,7 @@ export const MovieList: React.FC = () => {
         };
 
         fetchMovies();
-    }, []);
+    }, [selectedGenreId, searchKeyword, tabValue]);
 
     const handleSelectMovie = (movie: Movie) => {
         navigate(`/movie/${movie.id}/screenings`);
@@ -158,52 +186,95 @@ export const MovieList: React.FC = () => {
                     </Tabs>
                 </Box>
 
-                {/* Movie Grid */}
-                <Grid
-                    container
-                    spacing={3}
-                    justifyContent="center"
+                {/* Movie Carousel */}
+                <Box
                     sx={{
-                        '@keyframes fadeInUp': {
-                            '0%': {
-                                opacity: 0,
-                                transform: 'translateY(30px)',
+                        position: 'relative',
+                        '& .swiper': {
+                            paddingBottom: '20px',
+                        },
+                        '& .swiper-button-next, & .swiper-button-prev': {
+                            backgroundColor: 'rgba(255, 107, 0, 0.9)',
+                            borderRadius: '50%',
+                            width: 50,
+                            height: 50,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            transition: 'all 0.3s',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 107, 0, 1)',
+                                transform: 'translateY(-50%) scale(1.1)',
                             },
-                            '100%': {
-                                opacity: 1,
-                                transform: 'translateY(0)',
+                            '&::after': {
+                                fontSize: '20px',
+                                color: '#ffffff',
+                                fontWeight: 'bold',
                             },
+                        },
+                        '& .swiper-button-next': {
+                            right: -10,
+                        },
+                        '& .swiper-button-prev': {
+                            left: -10,
+                        },
+                        '& .swiper-pagination-bullet': {
+                            backgroundColor: 'rgba(255, 107, 0, 0.5)',
+                            width: 10,
+                            height: 10,
+                        },
+                        '& .swiper-pagination-bullet-active': {
+                            backgroundColor: '#ff6b00',
                         },
                     }}
                 >
-                    {movies.map((movie, index) => (
-                        <Grid 
-                            item 
-                            key={movie.id} 
-                            xs={12} 
-                            sm={6} 
-                            md={4} 
-                            lg={3}
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                animation: 'fadeInUp 0.6s ease-out forwards',
-                                animationDelay: `${index * 0.1}s`,
-                                opacity: 0,
-                            }}
-                        >
-                            <MovieCard movie={movie} onSelect={handleSelectMovie} />
-                        </Grid>
-                    ))}
-                </Grid>
-
-                {movies.length === 0 && (
-                    <Box sx={{ textAlign: 'center', py: 8 }}>
-                        <Typography variant="h5" color="text.secondary">
-                            Không có phim nào đang chiếu
-                        </Typography>
-                    </Box>
-                )}
+                    <Swiper
+                        modules={[Navigation, Pagination]}
+                        navigation={{
+                            nextEl: '.swiper-button-next',
+                            prevEl: '.swiper-button-prev',
+                        }}
+                        pagination={{
+                            clickable: true,
+                            dynamicBullets: true,
+                        }}
+                        spaceBetween={20}
+                        slidesPerView={1}
+                        breakpoints={{
+                            640: {
+                                slidesPerView: 2,
+                            },
+                            1024: {
+                                slidesPerView: 3,
+                            },
+                            1440: {
+                                slidesPerView: 4,
+                            },
+                        }}
+                        loop={movies.length > 4}
+                        grabCursor={true}
+                        speed={500}
+                    >
+                        {movies.length > 0 ? (
+                            movies.map((movie) => (
+                                <SwiperSlide key={movie.id}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                        <MovieCard movie={movie} onSelect={handleSelectMovie} />
+                                    </Box>
+                                </SwiperSlide>
+                            ))
+                        ) : (
+                            <SwiperSlide>
+                                <Box sx={{ textAlign: 'center', py: 8 }}>
+                                    <Typography variant="h5" color="text.secondary">
+                                        Không có phim nào
+                                    </Typography>
+                                </Box>
+                            </SwiperSlide>
+                        )}
+                    </Swiper>
+                    <div className="swiper-button-prev"></div>
+                    <div className="swiper-button-next"></div>
+                </Box>
             </Container>
         </Box>
     );

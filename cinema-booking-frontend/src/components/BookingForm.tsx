@@ -6,8 +6,8 @@ interface BookingFormProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: BookingRequest) => void;
-    screeningId: number;
-    seatId: number;
+    screeningId: string;
+    seatId: string;
 }
 
 export const BookingForm: React.FC<BookingFormProps> = ({

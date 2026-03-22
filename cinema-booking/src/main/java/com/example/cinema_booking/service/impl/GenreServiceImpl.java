@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,5 +44,25 @@ public class GenreServiceImpl implements GenreService {
         return genreRepository.save(newGenre);
     }
 
+    public List<Genre> findAllGenres() {
+        return genreRepository.findAll();
+    }
 
+    @Override
+    public Genre createGenre(String genreName) {
+        if (genreName == null || genreName.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_GENRE);
+        }
+
+        // Check nếu genre đã tồn tại (tránh trùng lặp)
+        Optional<Genre> existing = genreRepository.findByNameIgnoreCase(genreName.trim());
+        if (existing.isPresent()) {
+            throw new AppException(ErrorCode.GENRE_ALREADY_EXIST);
+        }
+
+        // Tạo genre mới
+        Genre newGenre = new Genre();
+        newGenre.setName(genreName.trim());
+        return genreRepository.save(newGenre);
+    }
 }

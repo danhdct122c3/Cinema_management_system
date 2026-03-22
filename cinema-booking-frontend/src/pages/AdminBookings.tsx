@@ -35,7 +35,7 @@ export const AdminBookings: React.FC = () => {
             // TODO: Implement getAll endpoint in backend
             // For now, using mock data or fetching by email
             const response = await bookingService.getBookingsByEmail('admin@example.com');
-            setBookings(response.data);
+            setBookings(response.data.result);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             // Set mock data for demonstration
@@ -69,13 +69,13 @@ export const AdminBookings: React.FC = () => {
         }
     };
 
-    const handleCancelBooking = (id: number) => {
+    const handleCancelBooking = (id: string) => {
         // TODO: Implement cancel booking API call
         console.log('Cancelling booking:', id);
         // fetchBookings(); // Refresh list after cancel
     };
 
-    const handleConfirmBooking = (id: number) => {
+    const handleConfirmBooking = (id: string) => {
         // TODO: Implement confirm booking API call
         console.log('Confirming booking:', id);
         // fetchBookings(); // Refresh list after confirm
@@ -86,7 +86,7 @@ export const AdminBookings: React.FC = () => {
         const matchesSearch =
             searchQuery === '' ||
             booking.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.id.toString().includes(searchQuery);
+            booking.id.includes(searchQuery);
         return matchesStatus && matchesSearch;
     });
 
@@ -135,7 +135,6 @@ export const AdminBookings: React.FC = () => {
                             <TableCell sx={{ fontWeight: 700 }}>Email Khách Hàng</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Suất Chiếu</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Số Ghế</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>Tổng Tiền</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Thời Gian Đặt</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
                             <TableCell align="center" sx={{ fontWeight: 700 }}>
@@ -171,11 +170,6 @@ export const AdminBookings: React.FC = () => {
                                         />
                                     </TableCell>
                                     <TableCell>1 ghế</TableCell>
-                                    <TableCell>
-                                        <Typography fontWeight={600} color="#ff6b00">
-                                            {booking.screening.movie.ticketPrice.toLocaleString()} VNĐ
-                                        </Typography>
-                                    </TableCell>
                                     <TableCell>
                                         {new Date(booking.bookingTime).toLocaleString('vi-VN', {
                                             day: '2-digit',

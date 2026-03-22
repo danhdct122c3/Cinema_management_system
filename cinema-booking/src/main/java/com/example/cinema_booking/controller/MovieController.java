@@ -24,6 +24,7 @@ public class MovieController {
 
     MovieService movieService;
 
+
     @PostMapping
     public APIResponse<MovieResponse> createMovie(@RequestBody MovieCreateRequest request){
         log.info("createMovie");

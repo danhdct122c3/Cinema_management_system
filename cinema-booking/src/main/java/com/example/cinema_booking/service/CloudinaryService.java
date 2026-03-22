@@ -21,9 +21,24 @@ public class CloudinaryService {
         try {
             Map uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
-                    ObjectUtils.emptyMap()
+                    ObjectUtils.asMap(
+                            "width", 280,
+                            "height", 420,
+                            "crop", "fill",
+                            "gravity", "face"
+                    )
             );
-            return uploadResult.get("url").toString();
+            String publicId = uploadResult.get("public_id").toString();
+            // Return URL với transformation để đảm bảo size fixed
+            String transformedUrl = cloudinary.url()
+                    .transformation(new com.cloudinary.Transformation()
+                            .width(280)
+                            .height(420)
+                            .crop("fill")
+                            .gravity("face")
+                    )
+                    .generate(publicId);
+            return transformedUrl;
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload file to Cloudinary", e);
         }
