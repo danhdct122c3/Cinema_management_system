@@ -64,4 +64,40 @@ export interface ErrorResponse {
     message: string;
     status: number;
     timestamp: string;
+}
+
+// ===== ShowTime Related =====
+export interface ShowTimeResponse {
+    id: string;
+    movieId: string;
+    roomId: string;
+    roomName: string;  // Room name for display
+    startTime: string;  // ISO DateTime: "2024-12-31T14:00:00"
+    endTime: string;    // ISO DateTime: "2024-12-31T16:30:00"
+    status: 'ACTIVE' | 'CANCELLED';
+}
+
+export interface SeatShowTimeResponse {
+    id: string;
+    seatCode: string;   // "A1", "A2", "B5"
+    status: 'AVAILABLE' | 'BOOKED' | 'HOLD';
+    seatType: 'NORMAL' | 'VIP';  // Seat type
+    price: number;
+}
+
+export interface Room {
+    id: string;
+    roomName: string;
+    totalRows: number;
+    totalColumns: number;
+}
+
+export interface ShowTimeDetail extends ShowTimeResponse {
+    movie?: Movie;
+    room?: Room;
+}
+
+export interface SeatShowTimeSummary {
+    row: string;
+    seats: SeatShowTimeResponse[];
 } 

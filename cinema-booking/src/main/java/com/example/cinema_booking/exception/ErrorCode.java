@@ -20,7 +20,13 @@ public enum ErrorCode {
     GENRE_ALREADY_EXIST(1014, "Genre already exist", HttpStatus.BAD_REQUEST),
     MOVIE_NOT_EXIST(1012, "Movie not exist", HttpStatus.NOT_FOUND),
     INVALID_MOVIE_STATUS(1013, "Invalid movie status", HttpStatus.BAD_REQUEST),
-    SEAT_ALREADY_EXIST(1015, "Seat already exist", HttpStatus.BAD_REQUEST)
+    SEAT_ALREADY_EXIST(1015, "Seat already exist", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_EXIST(1016, "Room not exist", HttpStatus.NOT_FOUND),
+    SHOWTIME_BEFORE_MOVIE_RELEASE(1017,"Show time have to after movie release " ,HttpStatus.BAD_REQUEST ),
+    SHOWTIME_END_BEFORE_START(1018,"Show time end have to after show time start " ,HttpStatus.BAD_REQUEST ),
+    SHOWTIME_OVERLAP(1019,"Show time overlap with existing show time " ,HttpStatus.BAD_REQUEST ),
+    SEAT_SHOWTIME_EXISTED(1020,"Seat already exist in this show time " ,HttpStatus.BAD_REQUEST ),
+    SHOWTIME_NOT_EXIST(1021,"Show time not exist " ,HttpStatus.NOT_FOUND ),
     ;
 
 

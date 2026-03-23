@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre } from '../types';
+import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre, ShowTimeResponse, SeatShowTimeResponse } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/home';
 
@@ -45,6 +45,35 @@ export const movieService = {
 export const genreService = {
     getAllGenres: (): Promise<AxiosResponse<APIResponse<Genre[]>>> => axiosInstance.get<APIResponse<Genre[]>>('/genres'),
     createGenre: (name: string): Promise<AxiosResponse<APIResponse<Genre>>> => axiosInstance.post<APIResponse<Genre>>('/genres', { name }),
+};
+
+export const showtimeService = {
+    // ✅ GET /showtimes
+    getAllShowtimes: (): Promise<AxiosResponse<APIResponse<ShowTimeResponse[]>>> => 
+        axiosInstance.get<APIResponse<ShowTimeResponse[]>>('/showtimes'),
+    
+    // ✅ GET /showtimes/{id}
+    getShowtimeById: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> => 
+        axiosInstance.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),
+    
+    // ✅ POST /showtimes
+    createShowtime: (data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> => 
+        axiosInstance.post<APIResponse<ShowTimeResponse>>('/showtimes', data),
+    
+    // ✅ GET /seat-showtimes/{showTimeId}
+    getSeatsByShowtime: (showtimeId: string): Promise<AxiosResponse<APIResponse<SeatShowTimeResponse[]>>> => 
+        axiosInstance.get<APIResponse<SeatShowTimeResponse[]>>(`/seat-showtimes/${showtimeId}`),
+    
+    // ✅ PATCH /seat-showtimes/{showTimeId}
+    updateSeatPrice: (
+        showtimeId: string, 
+        seatType: 'NORMAL' | 'VIP', 
+        price: number
+    ): Promise<AxiosResponse<APIResponse<void>>> => 
+        axiosInstance.patch<APIResponse<void>>(`/seat-showtimes/${showtimeId}`, { 
+            seatType, 
+            price 
+        }),
 };
 
 export const cloudinaryService = {

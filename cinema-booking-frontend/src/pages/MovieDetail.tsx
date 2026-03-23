@@ -234,7 +234,7 @@ export const MovieDetail: React.FC = () => {
                                         px: { xs: 3, sm: 4 },
                                         flex: { xs: '1 1 100%', sm: 'auto' },
                                     }}
-                                    onClick={() => alert('Tính năng mua vé sẽ được phát triển')}
+                                    onClick={() => navigate(`/movie/${id}/showtimes`)}
                                 >
                                     Mua Vé
                                 </Button>

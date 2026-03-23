@@ -1,6 +1,5 @@
 package com.example.cinema_booking.entity;
-
-import com.example.cinema_booking.enums.ShowTImeStatus;
+import com.example.cinema_booking.enums.ShowTimeStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,26 +20,29 @@ public class ShowTime {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "movie_id")
     Movie movie;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
     Room room;
 
-    LocalDateTime start_time;
-    LocalDateTime end_time;
+    @Column(name = "start_time")
+    LocalDateTime startTime;
+
+    @Column(name = "end_time")
+    LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    ShowTImeStatus status;
+    ShowTimeStatus status;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "showTime", cascade = CascadeType.ALL)
-    @Builder.Default
-    List<Booking> bookings = new ArrayList<>();
-
-    @Version
-    Long version;
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "showTime", cascade = CascadeType.ALL)
+//    @Builder.Default
+//    List<Booking> bookings = new ArrayList<>();
+//
+//    @Version
+//    Long version;
 
 }

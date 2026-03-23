@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +35,13 @@ public class RoomServiceImpl implements RoomService {
 
         seatService.createSeatsForRoom(save);
         return roomMapper.toRoomResponse(save);
+    }
+
+    @Override
+    public List<RoomResponse> getAllRooms() {
+        return roomRepository.findAll()
+                .stream()
+                .map(roomMapper::toRoomResponse)
+                .toList();
     }
 }
