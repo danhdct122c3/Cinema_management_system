@@ -38,7 +38,8 @@ public class SecurityConfig {
             "/auth/login",
             "/auth/introspect",
             "/users",
-            "/auth/logout"
+            "/auth/logout",
+            "/auth/refresh"
     };
 
 

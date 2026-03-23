@@ -1,10 +1,7 @@
 package com.example.cinema_booking.controller;
 
 
-import com.example.cinema_booking.dto.request.APIResponse;
-import com.example.cinema_booking.dto.request.AuthenticationRequest;
-import com.example.cinema_booking.dto.request.IntrospectRequest;
-import com.example.cinema_booking.dto.request.LogoutRequest;
+import com.example.cinema_booking.dto.request.*;
 import com.example.cinema_booking.dto.response.AuthenticationResponse;
 import com.example.cinema_booking.dto.response.IntrospectResponse;
 import com.example.cinema_booking.service.AuthenticateService;
@@ -47,11 +44,22 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/refresh")
+    APIResponse<AuthenticationResponse> refresh(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        var authResponse = authenticateService.refreshToken(request);
+
+        return APIResponse.<AuthenticationResponse>builder()
+                .result(authResponse)
+                .build();
+    }
+
     @PostMapping("/logout")
     APIResponse<Void> logout(@RequestBody LogoutRequest request) throws JOSEException, ParseException {
         authenticateService.logout(request);
         return APIResponse.<Void>builder()
                 .build();
     }
+
+
 
 }

@@ -4,6 +4,7 @@ package com.example.cinema_booking.service.impl;
 import com.example.cinema_booking.dto.request.AuthenticationRequest;
 import com.example.cinema_booking.dto.request.IntrospectRequest;
 import com.example.cinema_booking.dto.request.LogoutRequest;
+import com.example.cinema_booking.dto.request.RefreshRequest;
 import com.example.cinema_booking.dto.response.AuthenticationResponse;
 import com.example.cinema_booking.dto.response.IntrospectResponse;
 import com.example.cinema_booking.entity.InvalidatedToken;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -47,13 +49,23 @@ public class AuthenticationServiceImpl implements AuthenticateService {
     @NonFinal
     protected static final String SIGNED_KEY = "0e796109b182226d16e5ba239be1c9ce38c78d378444b4b8e2058e914ff887b8";
 
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected long VALID_DURATION;
+
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    private long REFRESHABLE_DURATION;
+
+
+
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException
     {
         var token = request.getToken();
         boolean isValid = true;
 
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         }
         catch (AppException e)
         {
@@ -92,12 +104,14 @@ public class AuthenticationServiceImpl implements AuthenticateService {
                 .build();
     }
 
-    private SignedJWT verifyToken(String token) throws ParseException, JOSEException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNED_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationTime = (isRefresh)
+                                            ? new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                                            :signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
 
@@ -116,11 +130,36 @@ public class AuthenticationServiceImpl implements AuthenticateService {
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException
     {
-        var signedToken = verifyToken(request.getToken());
 
-        String jti = signedToken.getJWTClaimsSet().getJWTID();
+        try
+        {
+            var signedToken = verifyToken(request.getToken(), true);
 
-        Date expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
+            String jti = signedToken.getJWTClaimsSet().getJWTID();
+
+            Date expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
+
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jti)
+                    .expiryTime(expirationTime)
+                    .build();
+
+            invalidatedTokenRepository.save(invalidatedToken);
+        }
+        catch (AppException e)
+        {
+            log.info("Token already invalid or expired: {}", e.getMessage());
+        }
+
+
+
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signJWT = verifyToken(request.getToken(), true);
+
+        var jti = signJWT.getJWTClaimsSet().getJWTID();
+        var expirationTime = signJWT.getJWTClaimsSet().getExpirationTime();
 
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                 .id(jti)
@@ -129,8 +168,17 @@ public class AuthenticationServiceImpl implements AuthenticateService {
 
         invalidatedTokenRepository.save(invalidatedToken);
 
-    }
+        var username = signJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
+        var new_token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(new_token)
+                .isAuthenticated(true)
+                .build();
+    }
 
     private String generateToken(User user) {
 
@@ -141,7 +189,7 @@ public class AuthenticationServiceImpl implements AuthenticateService {
                 .issuer("cinema-booking")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
