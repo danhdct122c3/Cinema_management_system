@@ -1,6 +1,6 @@
 package com.example.cinema_booking.dto.response;
 
-import com.example.cinema_booking.enums.Role;
+import com.example.cinema_booking.entity.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,5 +18,5 @@ public class UserResponse {
     //Khi test mã hóa password thì add password attribute vào dđây, nhưng khi trả về response thì ko nên trả về password
     // String password;
     String phone;
-    Set<String> roles;
+    Set<RoleResponse> roles;
 }

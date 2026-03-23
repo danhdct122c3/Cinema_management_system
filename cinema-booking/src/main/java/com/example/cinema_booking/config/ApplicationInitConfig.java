@@ -2,7 +2,8 @@ package com.example.cinema_booking.config;
 
 
 import com.example.cinema_booking.entity.User;
-import com.example.cinema_booking.enums.Role;
+import com.example.cinema_booking.entity.Role;
+import com.example.cinema_booking.repository.RoleRepository;
 import com.example.cinema_booking.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
@@ -16,16 +17,16 @@ import java.util.HashSet;
 public class ApplicationInitConfig {
 
     @Bean
-    ApplicationRunner applicationRunner(UserRepository userRepository)
+    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository)
     {
         return args -> {
                if (userRepository.findByEmail("admin").isEmpty())
                {
-                   var roles = new HashSet<String>();
-                   roles.add(Role.ADMIN.name());
+//                   var roles = new HashSet<com.example.cinema_booking.entity.Role>();
+//                   roles.add(Role.ADMIN.name());
                    User user = User.builder()
                            .email("admin")
-                           .roles(roles)
+//                           .roles(roles)
                            // Trong thực tế, bạn nên mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu. Đây chỉ là ví dụ đơn giản.
                            .password("admin")
                            .build();

@@ -9,6 +9,7 @@ import com.example.cinema_booking.enums.Role;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.mapper.UserMapper;
+import com.example.cinema_booking.repository.RoleRepository;
 import com.example.cinema_booking.repository.UserRepository;
 import com.example.cinema_booking.service.UserService;
 import lombok.AccessLevel;
@@ -29,6 +30,7 @@ import java.util.List;
 @Slf4j
 public class UserServiceImpl  implements UserService {
     UserRepository userRepository;
+    RoleRepository roleRepository;
     UserMapper userMapper;
 
     public UserResponse createUser(UserRegisterRequest request) {
@@ -39,7 +41,7 @@ public class UserServiceImpl  implements UserService {
         HashSet<String> roles = new HashSet<>();
         roles.add(Role.USER.name());
 
-        user.setRoles(roles);
+//        user.setRoles(roles);
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
@@ -60,6 +62,17 @@ public class UserServiceImpl  implements UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         userMapper.updateUserFromRequest(request, user);
+
+        // vì mapper không thể tự convert string sang object Role nên phải convert thủ công ở đây
+        // vì request là dạng set string nên phải convert sang set Role, nếu không sẽ bị lỗi khi save user vì user có field roles là set Role
+
+
+        // Đưa dạng string vào dđây để tìm kiếm trong db , rồi return dạng object Role
+        var roles = roleRepository.findAllById(request.getRoles());
+
+        // Sau dđó hashset từ list về set(loại bỏ role trùng) cho lại cho user
+        user.setRoles(new HashSet<>(roles));
+
         userRepository.save(user);
 
         return userMapper.toUserResponse(user);
