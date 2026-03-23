@@ -3,11 +3,14 @@ package com.example.cinema_booking.service.impl;
 
 import com.example.cinema_booking.dto.request.AuthenticationRequest;
 import com.example.cinema_booking.dto.request.IntrospectRequest;
+import com.example.cinema_booking.dto.request.LogoutRequest;
 import com.example.cinema_booking.dto.response.AuthenticationResponse;
 import com.example.cinema_booking.dto.response.IntrospectResponse;
+import com.example.cinema_booking.entity.InvalidatedToken;
 import com.example.cinema_booking.entity.User;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
+import com.example.cinema_booking.repository.InvalidatedTokenRepository;
 import com.example.cinema_booking.repository.UserRepository;
 import com.example.cinema_booking.service.AuthenticateService;
 import com.nimbusds.jose.*;
@@ -28,6 +31,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ import java.util.StringJoiner;
 
 public class AuthenticationServiceImpl implements AuthenticateService {
     UserRepository userRepository;
+    InvalidatedTokenRepository invalidatedTokenRepository;
 
 
     // Sau này thay bằng cách lấy từ file config hoặc biến môi trường, ko nên hardcode như này
@@ -45,20 +50,24 @@ public class AuthenticationServiceImpl implements AuthenticateService {
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException
     {
         var token = request.getToken();
+        boolean isValid = true;
 
-        JWSVerifier verifier = new MACVerifier(SIGNED_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verified = signedJWT.verify(verifier);
+        try {
+            verifyToken(token);
+        }
+        catch (AppException e)
+        {
+            isValid = false;
+        }
 
         return IntrospectResponse.builder()
-                .valid(verified && expirationTime.after(new Date()))
+                .valid(isValid)
                 .build();
 
     }
+
+
+    // Hàm login để lấy token
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -83,6 +92,46 @@ public class AuthenticationServiceImpl implements AuthenticateService {
                 .build();
     }
 
+    private SignedJWT verifyToken(String token) throws ParseException, JOSEException {
+        JWSVerifier verifier = new MACVerifier(SIGNED_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        if (!(verified && expirationTime.after(new Date())))
+        {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+        {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        return signedJWT;
+    }
+
+    public void logout(LogoutRequest request) throws ParseException, JOSEException
+    {
+        var signedToken = verifyToken(request.getToken());
+
+        String jti = signedToken.getJWTClaimsSet().getJWTID();
+
+        Date expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jti)
+                .expiryTime(expirationTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+
+    }
+
+
     private String generateToken(User user) {
 
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
@@ -94,6 +143,7 @@ public class AuthenticationServiceImpl implements AuthenticateService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
 

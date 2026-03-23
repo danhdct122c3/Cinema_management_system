@@ -2,6 +2,7 @@ package com.example.cinema_booking.config;
 
 import com.example.cinema_booking.enums.Role;
 import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,13 +28,17 @@ public class SecurityConfig {
 
 
     // Sau này thay bằng cách lấy từ file config hoặc biến môi trường, ko nên hardcode như này
-    @NonFinal
-    protected static final String SIGNED_KEY = "0e796109b182226d16e5ba239be1c9ce38c78d378444b4b8e2058e914ff887b8";
+//    @NonFinal
+//    protected static final String SIGNED_KEY = "0e796109b182226d16e5ba239be1c9ce38c78d378444b4b8e2058e914ff887b8";
+
+    @Autowired
+    private CustomJwtDecoder customJwtDecoder;
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/auth/login",
             "/auth/introspect",
-            "/users"
+            "/users",
+            "/auth/logout"
     };
 
 
@@ -50,7 +55,7 @@ public class SecurityConfig {
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
-                        jwtConfigurer.decoder(jwtDecoder())
+                        jwtConfigurer.decoder(customJwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
@@ -76,16 +81,16 @@ public class SecurityConfig {
 
     // phần này check jwt có hợp lệ không ? Nhưng vì sao không dùng endpoint introspect để check
 
-    @Bean
-    JwtDecoder jwtDecoder() {
-
-        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNED_KEY.getBytes(), "HS512");
-
-        return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
-    };
+//    @Bean
+//    JwtDecoder jwtDecoder() {
+//
+//        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNED_KEY.getBytes(), "HS512");
+//
+//        return NimbusJwtDecoder
+//                .withSecretKey(secretKeySpec)
+//                .macAlgorithm(MacAlgorithm.HS512)
+//                .build();
+//    };
 
 
 }
