@@ -27,6 +27,10 @@ public enum ErrorCode {
     SHOWTIME_OVERLAP(1019,"Show time overlap with existing show time " ,HttpStatus.BAD_REQUEST ),
     SEAT_SHOWTIME_EXISTED(1020,"Seat already exist in this show time " ,HttpStatus.BAD_REQUEST ),
     SHOWTIME_NOT_EXIST(1021,"Show time not exist " ,HttpStatus.NOT_FOUND ),
+    INVALID_SEAT_ID(1022,"Invalid seat id " ,HttpStatus.BAD_REQUEST ),
+    SEAT_ALREADY_HELD(1023,"Seat already held " ,HttpStatus.BAD_REQUEST ),
+    INVALID_SEAT_IDS(1024,"Invalid seat IDs" ,HttpStatus.BAD_REQUEST ),
+    HOLD_EXPIRED(1025,"Hold time expired" ,HttpStatus.BAD_REQUEST ),
     ;
 
 

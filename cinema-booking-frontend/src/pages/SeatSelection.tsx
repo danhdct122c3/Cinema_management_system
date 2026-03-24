@@ -26,6 +26,7 @@ export const SeatSelection: React.FC = () => {
     const [selectedSeats, setSelectedSeats] = useState<SeatShowTimeResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>('');
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
         const fetchShowtime = async () => {
@@ -48,6 +49,16 @@ export const SeatSelection: React.FC = () => {
         };
 
         fetchShowtime();
+
+        // Auto-refresh seats when user returns to this page (window focus)
+        const handleFocus = () => {
+            console.log('Page focused, refreshing seats...');
+            fetchShowtime();
+            setRefreshTrigger(prev => prev + 1);  // Trigger SeatMap to refetch
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
     }, [showtimeId]);
 
     const handleSelectSeat = (seat: SeatShowTimeResponse) => {
@@ -71,12 +82,17 @@ export const SeatSelection: React.FC = () => {
             return;
         }
 
+        // Calculate total price of selected seats
+        const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+
         // Navigate to booking confirmation with selected seats
         navigate(`/booking-confirmation`, {
             state: {
                 showtimeId,
                 movieId,
                 selectedSeats,
+                selectedSeatIds: selectedSeats.map(s => s.id),
+                totalPrice,
                 showtime,
             }
         });
@@ -139,6 +155,7 @@ export const SeatSelection: React.FC = () => {
                             selectedSeats={selectedSeats}
                             onSelectSeat={handleSelectSeat}
                             onDeselectSeat={handleDeselectSeat}
+                            refreshTrigger={refreshTrigger}
                         />
                     )}
                 </Paper>

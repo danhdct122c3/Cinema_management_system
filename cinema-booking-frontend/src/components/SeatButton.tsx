@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Tooltip } from '@mui/material';
 import { SeatShowTimeResponse } from '../types';
 
 interface SeatButtonProps {
@@ -26,7 +26,23 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
         return '#e0e0e0';
     };
 
-    return (
+    // Format hold expiration time for tooltip
+    const getHoldTooltip = () => {
+        if (seat.status === 'HOLD') {
+            const heldInfo = seat.heldByUserEmail ? `Held by: ${seat.heldByUserEmail}` : 'Seat is held';
+            if (seat.holdExpireTime) {
+                const expireDate = new Date(seat.holdExpireTime);
+                const timeRemaining = Math.max(0, (expireDate.getTime() - Date.now()) / 1000);
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = Math.floor(timeRemaining % 60);
+                return `${heldInfo}\nExpires in: ${minutes}m ${seconds}s`;
+            }
+            return heldInfo;
+        }
+        return seat.status === 'BOOKED' ? 'This seat is already booked' : '';
+    };
+
+    const seatButton = (
         <Box
             onClick={!isDisabled ? onClick : undefined}
             sx={{
@@ -64,4 +80,14 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
             </Typography>
         </Box>
     );
+
+    if (seat.status === 'HOLD' || seat.status === 'BOOKED') {
+        return (
+            <Tooltip title={getHoldTooltip()} arrow>
+                {seatButton}
+            </Tooltip>
+        );
+    }
+
+    return seatButton;
 };

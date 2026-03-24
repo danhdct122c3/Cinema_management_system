@@ -5,6 +5,7 @@ import com.example.cinema_booking.enums.SeatStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -21,7 +22,7 @@ public class SeatShowTime {
     @Id
     private String id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id")
     private ShowTime showtime;
 
@@ -33,4 +34,10 @@ public class SeatShowTime {
 
     @Enumerated(EnumType.STRING)
     private SeatStatus status; // AVAILABLE, HOLD, BOOKED
+
+    private LocalDateTime holdStartTime;     // Khi bắt đầu hold
+    private LocalDateTime holdExpireTime;    // Khi hết hạn hold
+
+    @ManyToOne(optional = true)
+    private User heldByUser;
 }

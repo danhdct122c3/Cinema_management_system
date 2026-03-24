@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -59,8 +60,9 @@ public class SeatShowTimeServiceImpl  implements SeatShowTimeService {
         seatShowTimeRepository.saveAll(list);
     }
 
+    @Cacheable(value = "seat-availability", key = "#showTimeId")
     public List<SeatShowTimeResponse> getSeatStatusByShowTimeId(String showTimeId){
-        List<SeatShowTime> seatShowTimes = seatShowTimeRepository.findByShowtimeId(showTimeId);
+        List<SeatShowTime> seatShowTimes = seatShowTimeRepository.findByShowTimeIdOptimized(showTimeId);
 
         return seatShowTimes.stream()
                 .map(sst ->{
@@ -72,6 +74,8 @@ public class SeatShowTimeServiceImpl  implements SeatShowTimeService {
                             .seatCode(seatCode)
                             .seatType(seat.getType().name())
                             .price(sst.getPrice())
+                            .holdExpireTime(sst.getHoldExpireTime())
+                            .heldByUserEmail(sst.getHeldByUser() != null ? sst.getHeldByUser().getEmail() : null)
                             .build();
                 })
                 .toList();

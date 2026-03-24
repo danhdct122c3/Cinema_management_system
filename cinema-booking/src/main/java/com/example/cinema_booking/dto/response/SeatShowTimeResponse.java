@@ -4,6 +4,7 @@ package com.example.cinema_booking.dto.response;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import java.time.LocalDateTime;
 
 
 @Data  //@Data = @Getter + @Setter + @ToString + @EqualsAndHashCode + @RequiredArgsConstructor
@@ -19,4 +20,8 @@ public class SeatShowTimeResponse {
     String status;
     String seatType;
     Double price;
+
+    // Hold info for frontend
+    LocalDateTime holdExpireTime;  // Để frontend tính countdown nếu cần
+    String heldByUserEmail;         // Optional - hiển thị user nào hold (privacy-safe)
 }

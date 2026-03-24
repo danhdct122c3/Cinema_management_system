@@ -10,6 +10,7 @@ interface SeatMapProps {
     selectedSeats: SeatShowTimeResponse[];
     onSelectSeat: (seat: SeatShowTimeResponse) => void;
     onDeselectSeat: (seatCode: string) => void;
+    refreshTrigger?: number;  // Trigger to force refresh seats
 }
 
 export const SeatMap: React.FC<SeatMapProps> = ({
@@ -17,6 +18,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({
     selectedSeats,
     onSelectSeat,
     onDeselectSeat,
+    refreshTrigger = 0,
 }) => {
     const [seats, setSeats] = useState<SeatShowTimeResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,11 +41,13 @@ export const SeatMap: React.FC<SeatMapProps> = ({
 
         fetchSeats();
 
-        // Poll for updates every 3 seconds
-        const pollInterval = setInterval(fetchSeats, 3000);
+        // Poll for updates every 1.5 seconds for real-time seat status
+        const pollInterval = setInterval(() => {
+            fetchSeats();
+        }, 1500);
 
         return () => clearInterval(pollInterval);
-    }, [showtimeId]);
+    }, [showtimeId, refreshTrigger]);
 
     // Group seats by row
     const seatsByRow = useMemo(() => {

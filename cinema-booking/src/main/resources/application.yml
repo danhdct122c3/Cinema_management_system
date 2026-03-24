@@ -24,3 +24,6 @@ cloudinary:
   cloud-name: "dod2sfnsr"
   api-key: "821557315416333"
   api-secret: "Ns8TJjf8KhgGaUZ_v_pcML6V_HM"
+
+user:
+  id: "618f44a5-b8ea-492c-b006-c6ee6d67992c"
