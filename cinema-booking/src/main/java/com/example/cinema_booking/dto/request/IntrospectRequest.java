@@ -1,5 +1,6 @@
 package com.example.cinema_booking.dto.request;
 
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,9 +9,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor //tạo constructor ko tham số
 @AllArgsConstructor //tạo constructor có tham số
 @FieldDefaults(level = AccessLevel.PRIVATE) //gán AccessLevel.PRIVATE cho tất cả các field
-public class UserRegisterRequest {
-    String name;
-    String email;
-    String password;
-    String phone;
+public class IntrospectRequest {
+
+    String token;
+
 }

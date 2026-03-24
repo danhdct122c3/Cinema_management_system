@@ -1,14 +1,12 @@
 package com.example.cinema_booking.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
+// Nhớ vẽ thêm entity cho phần role quan hệ vơới user, permission
 @Entity
 @Getter
 @Setter
@@ -16,16 +14,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
+public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
     String name;
-    String email;
-    String password;
-    String phone;
+    String description;
 
     @ManyToMany
-    Set<Role> roles;
+    Set<Permission> permissions;
 
 }
