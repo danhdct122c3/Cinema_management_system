@@ -33,8 +33,8 @@ export const ScreeningList: React.FC = () => {
     const fetchScreenings = async () => {
         try {
             if (!movieId) return;
-            const screeningsResponse = await movieService.getMovieScreenings(Number(movieId));
-            setScreenings(screeningsResponse.data);
+            const screeningsResponse = await movieService.getMovieScreenings(movieId);
+            setScreenings(screeningsResponse.data.result);
         } catch (error) {
             console.error('Error fetching screenings:', error);
             setError('Failed to load screenings. Please try again later.');
@@ -47,12 +47,12 @@ export const ScreeningList: React.FC = () => {
                 if (!movieId) return;
 
                 const [movieResponse, screeningsResponse] = await Promise.all([
-                    movieService.getMovieById(Number(movieId)),
-                    movieService.getMovieScreenings(Number(movieId))
+                    movieService.getMovieById(movieId),
+                    movieService.getMovieScreenings(movieId)
                 ]);
 
-                setMovie(movieResponse.data);
-                setScreenings(screeningsResponse.data);
+                setMovie(movieResponse.data.result);
+                setScreenings(screeningsResponse.data.result);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -198,11 +198,8 @@ export const ScreeningList: React.FC = () => {
                                 {movie.description}
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                                <Typography variant="body1">
-                                    <strong>Director:</strong> {movie.director}
-                                </Typography>
-                                <Typography variant="body1">
-                                    <strong>Genre:</strong> {movie.genre}
+                                <Typography variant="body1" component="div">
+                                    <strong>Genre:</strong> {movie.genreName}
                                 </Typography>
                             </Box>
                         </Grid>

@@ -6,7 +6,7 @@ import EventSeatIcon from '@mui/icons-material/EventSeat';
 import WeekendIcon from '@mui/icons-material/Weekend';
 
 export interface SeatMapProps {
-    screeningId: number;
+    screeningId: string;
     onSelectSeat: (seat: Seat | null) => void;
     selectedSeat: Seat | null;
 }
@@ -87,11 +87,11 @@ export const SeatMap: React.FC<SeatMapProps> = ({ screeningId, onSelectSeat, sel
         const fetchSeats = async () => {
             try {
                 const response = await screeningService.getAvailableSeats(screeningId);
-                setSeats(response.data);
+                setSeats(response.data.result);
 
                 // If our selected seat is no longer available, deselect it
                 if (selectedSeat) {
-                    const updatedSeat = response.data.find(s => s.id === selectedSeat.id);
+                    const updatedSeat = response.data.result.find(s => s.id === selectedSeat.id);
                     if (updatedSeat?.status !== 'AVAILABLE' && updatedSeat?.id !== selectedSeat.id) {
                         onSelectSeat(null);
                     }

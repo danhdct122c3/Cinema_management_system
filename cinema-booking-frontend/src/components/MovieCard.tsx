@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import { Movie } from '../types';
 import StarIcon from '@mui/icons-material/Star';
@@ -10,19 +11,24 @@ interface MovieCardProps {
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
+    const navigate = useNavigate();
     // Generate random rating for demo (7.0 - 9.5)
     const rating = (Math.random() * 2.5 + 7).toFixed(1);
     
     // Age rating based on genre (demo)
-    const getAgeRating = (genre: string) => {
-        if (genre.toLowerCase().includes('action') || genre.toLowerCase().includes('horror')) return 'T18';
-        if (genre.toLowerCase().includes('thriller')) return 'T16';
+    const getAgeRating = (genreName: string | undefined) => {
+        if (!genreName) return 'T13';
+        const genre = genreName.toLowerCase();
+        if (genre.includes('action') || genre.includes('horror')) return 'T18';
+        if (genre.includes('thriller')) return 'T16';
         return 'T13';
     };
 
     return (
         <Card
             sx={{
+                width: 280,
+                minWidth: 280,
                 maxWidth: 280,
                 backgroundColor: 'background.paper',
                 transition: 'all 0.3s ease-in-out',
@@ -42,16 +48,28 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
             }}
         >
-            <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+            <Box 
+                sx={{ 
+                    position: 'relative', 
+                    overflow: 'hidden', 
+                    width: '100%', 
+                    aspectRatio: '280 / 420',
+                    cursor: 'pointer',
+                }}
+                onClick={() => navigate(`/movie/${movie.id}`)}
+            >
                 <CardMedia
                     component="img"
-                    height="400"
-                    image={movie.imageUrl || 'https://via.placeholder.com/280x400?text=No+Image'}
+                    image={movie.imageUrl || 'https://via.placeholder.com/280x420?text=No+Image'}
                     alt={movie.title}
                     className="movie-poster"
                     sx={{
-                        transition: 'transform 0.3s ease-in-out',
+                        width: '100%',
+                        height: '100%',
                         objectFit: 'cover',
+                        objectPosition: 'center',
+                        display: 'block',
+                        transition: 'transform 0.3s ease-in-out',
                     }}
                 />
                 {/* Rating Badge */}
@@ -78,7 +96,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 </Box>
                 {/* Age Rating Badge */}
                 <Chip
-                    label={getAgeRating(movie.genre)}
+                    label={getAgeRating(movie.genreName)}
                     size="small"
                     sx={{
                         position: 'absolute',
@@ -116,7 +134,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
                     <Chip
-                        label={movie.genre}
+                        label={movie.genreName || 'Unknown'}
                         size="small"
                         sx={{
                             width: 'fit-content',
@@ -133,7 +151,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 <Button
                     variant="contained"
                     fullWidth
-                    onClick={() => onSelect(movie)}
+                    onClick={() => navigate(`/movie/${movie.id}`)}
                     className="book-button"
                     sx={{
                         py: 1.2,

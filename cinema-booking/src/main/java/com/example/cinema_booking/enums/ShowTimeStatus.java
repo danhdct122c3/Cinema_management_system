@@ -1,6 +1,6 @@
 package com.example.cinema_booking.enums;
 
-public enum ShowTImeStatus {
+public enum ShowTimeStatus {
     ACTIVE,
-    INACTIVE
+    CANCELLED
 }

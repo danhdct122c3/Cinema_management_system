@@ -29,12 +29,12 @@ export const SeatSelection: React.FC = () => {
                 if (!movieId || !screeningId) return;
 
                 const [movieResponse, screeningResponse] = await Promise.all([
-                    movieService.getMovieById(Number(movieId)),
-                    screeningService.getScreeningById(Number(screeningId))
+                    movieService.getMovieById(movieId),
+                    screeningService.getScreeningById(screeningId)
                 ]);
 
-                setMovie(movieResponse.data);
-                setScreening(screeningResponse.data);
+                setMovie(movieResponse.data.result);
+                setScreening(screeningResponse.data.result);
                 setLoading(false);
             } catch (error) {
                 setError('Failed to load movie and screening information.');
@@ -55,9 +55,9 @@ export const SeatSelection: React.FC = () => {
 
         try {
             setIsSubmitting(true);
-            const response = await bookingService.reserveSeat(Number(screeningId), selectedSeat.id);
+            const response = await bookingService.reserveSeat(screeningId, selectedSeat.id);
 
-            if (response.data) {
+            if (response.data.result) {
                 setIsBookingFormOpen(true);
             } else {
                 setError('This seat is no longer available. Please select another seat.');
@@ -75,7 +75,7 @@ export const SeatSelection: React.FC = () => {
     const handleBookingFormClose = async () => {
         if (selectedSeat && screeningId) {
             try {
-                await bookingService.releaseSeatReservation(Number(screeningId), selectedSeat.id);
+                await bookingService.releaseSeatReservation(screeningId, selectedSeat.id);
             } catch (error) {
                 console.error('Failed to release seat reservation:', error);
             }
@@ -92,18 +92,18 @@ export const SeatSelection: React.FC = () => {
 
             const bookingData = {
                 ...data,
-                screeningId: Number(screeningId),
+                screeningId: screeningId,
                 seatId: selectedSeat.id
             };
 
             try {
                 const response = await bookingService.createBooking(bookingData);
-                if (response.data) {
+                if (response.data.result) {
                     setIsBookingFormOpen(false);
                     setError('');
                     navigate('/booking-confirmation', {
                         state: {
-                            booking: response.data,
+                            booking: response.data.result,
                             returnPath: `/movie/${movieId}/screenings`
                         }
                     });
@@ -134,7 +134,7 @@ export const SeatSelection: React.FC = () => {
     useEffect(() => {
         return () => {
             if (selectedSeat && screeningId && isBookingFormOpen) {
-                bookingService.releaseSeatReservation(Number(screeningId), selectedSeat.id)
+                bookingService.releaseSeatReservation(screeningId, selectedSeat.id)
                     .catch(error => console.error('Failed to release seat on unmount:', error));
             }
         };
@@ -230,7 +230,7 @@ export const SeatSelection: React.FC = () => {
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
                                     <Chip
                                         icon={<LocalActivityIcon />}
-                                        label={movie.genre}
+                                        label={movie.genreName}
                                         sx={{
                                             backgroundColor: 'rgba(255, 107, 0, 0.1)',
                                             color: '#ff6b00',
@@ -261,9 +261,9 @@ export const SeatSelection: React.FC = () => {
                                         </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <ConfirmationNumberIcon sx={{ fontSize: 20, color: '#666' }} />
+                                        <AccessTimeIcon sx={{ fontSize: 20, color: '#666' }} />
                                         <Typography variant="body1" color="text.secondary">
-                                            Giá vé: {movie.ticketPrice?.toLocaleString('vi-VN')} VNĐ
+                                            Thời lượng: {movie.duration}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -286,11 +286,13 @@ export const SeatSelection: React.FC = () => {
                 </Typography>
 
                 {/* Seat Map */}
-                <SeatMap
-                    screeningId={Number(screeningId)}
-                    selectedSeat={selectedSeat}
-                    onSelectSeat={handleSeatSelect}
-                />
+                {screeningId && (
+                    <SeatMap
+                        screeningId={screeningId}
+                        selectedSeat={selectedSeat}
+                        onSelectSeat={handleSeatSelect}
+                    />
+                )}
 
                 {/* Selected Seat Info & Action */}
                 {selectedSeat && (
@@ -320,10 +322,10 @@ export const SeatSelection: React.FC = () => {
                                     </Box>
                                     <Box>
                                         <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                                            Giá vé
+                                            Thời lượng
                                         </Typography>
                                         <Typography variant="h5" fontWeight={700}>
-                                            {movie.ticketPrice?.toLocaleString('vi-VN')} đ
+                                            {movie.duration}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -377,12 +379,12 @@ export const SeatSelection: React.FC = () => {
                     </Paper>
                 )}
 
-                {selectedSeat && (
+                {selectedSeat && screeningId && (
                     <BookingForm
                         open={isBookingFormOpen}
                         onClose={handleBookingFormClose}
                         onSubmit={handleBookingSubmit}
-                        screeningId={Number(screeningId)}
+                        screeningId={screeningId}
                         seatId={selectedSeat.id}
                     />
                 )}

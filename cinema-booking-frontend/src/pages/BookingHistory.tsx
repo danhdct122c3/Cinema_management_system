@@ -31,7 +31,7 @@ export const BookingHistory: React.FC = () => {
     const [success, setSuccess] = useState<string>('');
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-    const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
+    const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
     const handleSearch = async () => {
         if (!email) {
@@ -42,8 +42,8 @@ export const BookingHistory: React.FC = () => {
             setLoading(true);
             setError('');
             const response = await bookingService.getBookingsByEmail(email);
-            setBookings(response.data);
-            if (response.data.length === 0) {
+            setBookings(response.data.result);
+            if (response.data.result.length === 0) {
                 setError('No bookings found for this email');
             }
         } catch (error: any) {
@@ -65,7 +65,7 @@ export const BookingHistory: React.FC = () => {
 
             // Refresh the bookings list
             const response = await bookingService.getBookingsByEmail(email);
-            setBookings(response.data);
+            setBookings(response.data.result);
         } catch (error: any) {
             console.error('Error confirming booking:', error);
             setError(error.response?.data?.message || 'Failed to confirm booking. Please try again.');
@@ -87,7 +87,7 @@ export const BookingHistory: React.FC = () => {
 
             // Refresh the bookings list
             const response = await bookingService.getBookingsByEmail(email);
-            setBookings(response.data);
+            setBookings(response.data.result);
         } catch (error: any) {
             console.error('Error cancelling booking:', error);
             setError(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
@@ -98,12 +98,12 @@ export const BookingHistory: React.FC = () => {
         }
     };
 
-    const openConfirmDialog = (bookingId: number) => {
+    const openConfirmDialog = (bookingId: string) => {
         setSelectedBookingId(bookingId);
         setConfirmDialogOpen(true);
     };
 
-    const openCancelDialog = (bookingId: number) => {
+    const openCancelDialog = (bookingId: string) => {
         setSelectedBookingId(bookingId);
         setCancelDialogOpen(true);
     };
