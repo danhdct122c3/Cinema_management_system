@@ -21,7 +21,11 @@ public enum ErrorCode {
     MOVIE_NOT_EXIST(1012, "Movie not exist", HttpStatus.NOT_FOUND),
     INVALID_MOVIE_STATUS(1013, "Invalid movie status", HttpStatus.BAD_REQUEST),
     SEAT_ALREADY_EXIST(1015, "Seat already exist", HttpStatus.BAD_REQUEST),
-    INVALID_ROLE(1016, "Invalid role", HttpStatus.BAD_REQUEST)
+    INVALID_ROLE(1016, "Invalid role", HttpStatus.BAD_REQUEST),
+    ROLE_EXISTED(1017, "Role already exist", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXISTED(1018, "Role not exist", HttpStatus.NOT_FOUND),
+    PERMISSION_NOT_EXISTED(1019, "Permission not exist", HttpStatus.NOT_FOUND),
+    INVALID_REQUEST(1020, "Invalid request", HttpStatus.BAD_REQUEST)
     ;
 
 
