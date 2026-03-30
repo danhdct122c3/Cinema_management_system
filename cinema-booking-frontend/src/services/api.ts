@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre } from '../types';
+import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre, ShowTimeResponse, SeatShowTimeResponse, HoldSeatRequest, HoldSeatResponse } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/home';
 
@@ -47,6 +47,35 @@ export const genreService = {
     createGenre: (name: string): Promise<AxiosResponse<APIResponse<Genre>>> => axiosInstance.post<APIResponse<Genre>>('/genres', { name }),
 };
 
+export const showtimeService = {
+    // ✅ GET /showtimes
+    getAllShowtimes: (): Promise<AxiosResponse<APIResponse<ShowTimeResponse[]>>> => 
+        axiosInstance.get<APIResponse<ShowTimeResponse[]>>('/showtimes'),
+    
+    // ✅ GET /showtimes/{id}
+    getShowtimeById: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> => 
+        axiosInstance.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),
+    
+    // ✅ POST /showtimes
+    createShowtime: (data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> => 
+        axiosInstance.post<APIResponse<ShowTimeResponse>>('/showtimes', data),
+    
+    // ✅ GET /seat-showtimes/{showTimeId}
+    getSeatsByShowtime: (showtimeId: string): Promise<AxiosResponse<APIResponse<SeatShowTimeResponse[]>>> => 
+        axiosInstance.get<APIResponse<SeatShowTimeResponse[]>>(`/seat-showtimes/${showtimeId}`),
+    
+    // ✅ PATCH /seat-showtimes/{showTimeId}
+    updateSeatPrice: (
+        showtimeId: string, 
+        seatType: 'NORMAL' | 'VIP', 
+        price: number
+    ): Promise<AxiosResponse<APIResponse<void>>> => 
+        axiosInstance.patch<APIResponse<void>>(`/seat-showtimes/${showtimeId}`, { 
+            seatType, 
+            price 
+        }),
+};
+
 export const cloudinaryService = {
     uploadImage: (file: File): Promise<AxiosResponse<string>> => {
         const formData = new FormData();
@@ -70,6 +99,26 @@ export const bookingService = {
     releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
     confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>(`/bookings/${id}/confirm`)
+};
+
+export const holdService = {
+    // POST /seat-holds/reserve - Hold seats
+    holdSeats: (request: HoldSeatRequest): Promise<AxiosResponse<APIResponse<HoldSeatResponse>>> =>
+        axiosInstance.post<APIResponse<HoldSeatResponse>>('/seat-holds/reserve', request),
+    
+    // POST /seat-holds/release - Release held seats
+    releaseHold: (seatShowTimeIds: string[]): Promise<AxiosResponse<APIResponse<void>>> =>
+        axiosInstance.post<APIResponse<void>>('/seat-holds/release', seatShowTimeIds),
+    
+    // Check if hold is still valid
+    isHoldValid: (seatShowTimeId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
+        axiosInstance.get<APIResponse<boolean>>(`/seat-holds/${seatShowTimeId}/valid`)
+};
+
+export const userService = {
+    // Get test user ID (for testing without login)
+    getTestUserId: (): Promise<AxiosResponse<APIResponse<string>>> =>
+        axiosInstance.get<APIResponse<string>>('/users/test-user/id')
 };
 
 // Add interceptor to handle concurrent booking errors

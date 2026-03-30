@@ -1,411 +1,230 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Button, Box, CircularProgress, Alert, Snackbar, Paper, Chip, Grid } from '@mui/material';
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+    Container,
+    Typography,
+    Button,
+    Box,
+    CircularProgress,
+    Alert,
+    Paper,
+    Grid,
+} from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ShowtimeHeader } from '../components/ShowtimeHeader';
 import { SeatMap } from '../components/SeatMap';
-import { BookingForm } from '../components/BookingForm';
-import { movieService, screeningService, bookingService } from '../services/api';
-import { Movie, Seat, BookingRequest, Screening } from '../types';
+import { showtimeService } from '../services/api';
+import { ShowTimeDetail, SeatShowTimeResponse } from '../types';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 
 export const SeatSelection: React.FC = () => {
-    const { movieId, screeningId } = useParams<{ movieId: string; screeningId: string }>();
+    const { movieId, showtimeId } = useParams<{ movieId: string; showtimeId: string }>();
     const navigate = useNavigate();
 
-    const [movie, setMovie] = useState<Movie | null>(null);
-    const [screening, setScreening] = useState<Screening | null>(null);
-    const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
-    const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
-    const [error, setError] = useState<string>('');
+    const [showtime, setShowtime] = useState<ShowTimeDetail | null>(null);
+    const [allSeats, setAllSeats] = useState<SeatShowTimeResponse[]>([]);
+    const [selectedSeats, setSelectedSeats] = useState<SeatShowTimeResponse[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchShowtime = async () => {
             try {
-                if (!movieId || !screeningId) return;
+                if (!showtimeId) return;
 
-                const [movieResponse, screeningResponse] = await Promise.all([
-                    movieService.getMovieById(movieId),
-                    screeningService.getScreeningById(screeningId)
+                const [showtimeRes, seatsRes] = await Promise.all([
+                    showtimeService.getShowtimeById(showtimeId),
+                    showtimeService.getSeatsByShowtime(showtimeId),
                 ]);
 
-                setMovie(movieResponse.data.result);
-                setScreening(screeningResponse.data.result);
+                setShowtime(showtimeRes.data.result || showtimeRes.data);
+                setAllSeats(seatsRes.data.result || []);
                 setLoading(false);
-            } catch (error) {
-                setError('Failed to load movie and screening information.');
+            } catch (err) {
+                console.error('Error fetching showtime:', err);
+                setError('Failed to load showtime information');
                 setLoading(false);
             }
         };
 
-        fetchData();
-    }, [movieId, screeningId]);
+        fetchShowtime();
 
-    const handleSeatSelect = (seat: Seat | null) => {
-        setSelectedSeat(seat);
-        setError('');
-    };
+        // Auto-refresh seats when user returns to this page (window focus)
+        const handleFocus = () => {
+            console.log('Page focused, refreshing seats...');
+            fetchShowtime();
+            setRefreshTrigger(prev => prev + 1);  // Trigger SeatMap to refetch
+        };
 
-    const handleContinueToBooking = async () => {
-        if (!selectedSeat || !screeningId) return;
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [showtimeId]);
 
-        try {
-            setIsSubmitting(true);
-            const response = await bookingService.reserveSeat(screeningId, selectedSeat.id);
-
-            if (response.data.result) {
-                setIsBookingFormOpen(true);
+    const handleSelectSeat = (seat: SeatShowTimeResponse) => {
+        setSelectedSeats(prev => {
+            const isSelected = prev.some(s => s.id === seat.id);
+            if (isSelected) {
+                return prev.filter(s => s.id !== seat.id);
             } else {
-                setError('This seat is no longer available. Please select another seat.');
-                setSelectedSeat(null);
+                return [...prev, seat];
             }
-        } catch (error) {
-            console.error('Failed to reserve seat:', error);
-            setError('Failed to reserve seat. Please try again.');
-            setSelectedSeat(null);
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
 
-    const handleBookingFormClose = async () => {
-        if (selectedSeat && screeningId) {
-            try {
-                await bookingService.releaseSeatReservation(screeningId, selectedSeat.id);
-            } catch (error) {
-                console.error('Failed to release seat reservation:', error);
-            }
-        }
-        setIsBookingFormOpen(false);
+    const handleDeselectSeat = (seatCode: string) => {
+        setSelectedSeats(prev => prev.filter(s => s.seatCode !== seatCode));
     };
 
-    const handleBookingSubmit = async (data: BookingRequest) => {
-        if (isSubmitting) return;
-
-        try {
-            setIsSubmitting(true);
-            if (!screeningId || !selectedSeat) return;
-
-            const bookingData = {
-                ...data,
-                screeningId: screeningId,
-                seatId: selectedSeat.id
-            };
-
-            try {
-                const response = await bookingService.createBooking(bookingData);
-                if (response.data.result) {
-                    setIsBookingFormOpen(false);
-                    setError('');
-                    navigate('/booking-confirmation', {
-                        state: {
-                            booking: response.data.result,
-                            returnPath: `/movie/${movieId}/screenings`
-                        }
-                    });
-                }
-            } catch (error: any) {
-                console.error('Booking error:', error);
-                if (error.response) {
-                    if (error.response.data.message?.includes('already has a pending booking')) {
-                        setError('This seat is no longer available. Please select another seat.');
-                        setSelectedSeat(null);
-                        setIsBookingFormOpen(false);
-                    } else {
-                        setError(error.response.data.message || 'Failed to create booking. Please try again.');
-                    }
-                } else {
-                    setError('Failed to create booking. Please try again.');
-                }
-            }
-        } catch (error) {
-            console.error('Error in booking process:', error);
-            setError('An unexpected error occurred. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+    const handleConfirmBooking = () => {
+        if (selectedSeats.length === 0) {
+            setError('Please select at least one seat');
+            return;
         }
+
+        // Calculate total price of selected seats
+        const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+
+        // Navigate to booking confirmation with selected seats
+        navigate(`/booking-confirmation`, {
+            state: {
+                showtimeId,
+                movieId,
+                selectedSeats,
+                selectedSeatIds: selectedSeats.map(s => s.id),
+                totalPrice,
+                showtime,
+            }
+        });
     };
 
-    // Add cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (selectedSeat && screeningId && isBookingFormOpen) {
-                bookingService.releaseSeatReservation(screeningId, selectedSeat.id)
-                    .catch(error => console.error('Failed to release seat on unmount:', error));
-            }
-        };
-    }, [selectedSeat, screeningId, isBookingFormOpen]);
+    // Calculate available seats count
+    const availableSeatsCount = useMemo(() => {
+        return allSeats.filter(seat => seat.status === 'AVAILABLE').length;
+    }, [allSeats]);
 
     if (loading) {
         return (
-            <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
-            </Container>
+            </Box>
         );
     }
 
-    if (!movie || !screening) {
+    if (error || !showtime) {
         return (
             <Container>
-                <Alert severity="error">
-                    Movie or screening not found. Please go back and try again.
+                <Button
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate(-1)}
+                    sx={{ mt: 2 }}
+                >
+                    Back
+                </Button>
+                <Alert severity="error" sx={{ mt: 4 }}>
+                    {error || 'Showtime not found'}
                 </Alert>
             </Container>
         );
     }
 
     return (
-        <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 6 }}>
+        <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', pb: 4 }}>
             <Container maxWidth="lg" sx={{ py: 4 }}>
+                {/* Back Button */}
                 <Button
-                    variant="outlined"
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate(`/movie/${movieId}/screenings`)}
-                    sx={{
-                        mb: 3,
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        px: 3,
-                        py: 1,
-                        borderColor: '#ff6b00',
-                        color: '#ff6b00',
-                        '&:hover': {
-                            borderColor: '#d95a00',
-                            backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                        },
-                    }}
+                    onClick={() => navigate(-1)}
+                    sx={{ mb: 3 }}
                 >
-                    Quay lại
+                    Back
                 </Button>
 
-                {/* Movie Info Card */}
-                <Paper
-                    elevation={2}
-                    sx={{
-                        p: 3,
-                        mb: 4,
-                        borderRadius: 3,
-                        background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
-                        border: '1px solid rgba(255, 107, 0, 0.1)',
-                    }}
-                >
-                    <Grid container spacing={3} alignItems="center">
-                        <Grid item xs={12} md={3}>
-                            {movie.imageUrl && (
-                                <Box
-                                    component="img"
-                                    src={movie.imageUrl}
-                                    alt={movie.title}
-                                    sx={{
-                                        width: '100%',
-                                        maxWidth: 200,
-                                        height: 'auto',
-                                        borderRadius: 2,
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                        mx: 'auto',
-                                        display: 'block',
-                                    }}
-                                />
-                            )}
-                        </Grid>
-                        <Grid item xs={12} md={9}>
-                            <Box>
-                                <Typography
-                                    variant="h4"
-                                    component="h1"
-                                    gutterBottom
-                                    sx={{
-                                        fontWeight: 700,
-                                        color: '#333',
-                                        mb: 2,
-                                    }}
-                                >
-                                    {movie.title}
-                                </Typography>
-                                
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-                                    <Chip
-                                        icon={<LocalActivityIcon />}
-                                        label={movie.genreName}
-                                        sx={{
-                                            backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                                            color: '#ff6b00',
-                                            fontWeight: 600,
-                                        }}
-                                    />
-                                </Box>
+                {/* Showtime Header */}
+                <ShowtimeHeader showtime={showtime} availableSeatsCount={availableSeatsCount} />
 
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <CalendarTodayIcon sx={{ fontSize: 20, color: '#666' }} />
-                                        <Typography variant="body1" color="text.secondary">
-                                            {new Date(screening.screeningTime).toLocaleDateString('vi-VN', {
-                                                weekday: 'long',
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <AccessTimeIcon sx={{ fontSize: 20, color: '#666' }} />
-                                        <Typography variant="body1" color="text.secondary">
-                                            {new Date(screening.screeningTime).toLocaleTimeString('vi-VN', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <AccessTimeIcon sx={{ fontSize: 20, color: '#666' }} />
-                                        <Typography variant="body1" color="text.secondary">
-                                            Thời lượng: {movie.duration}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
-                        </Grid>
-                    </Grid>
+                {/* Seat Selection Section */}
+                <Paper elevation={2} sx={{ p: 4, mt: 4, borderRadius: 2 }}>
+                    <Typography variant="h5" fontWeight="bold" mb={3}>
+                        Select Your Seats
+                    </Typography>
+
+                    {showtimeId && (
+                        <SeatMap
+                            showtimeId={showtimeId}
+                            selectedSeats={selectedSeats}
+                            onSelectSeat={handleSelectSeat}
+                            onDeselectSeat={handleDeselectSeat}
+                            refreshTrigger={refreshTrigger}
+                        />
+                    )}
                 </Paper>
 
-                {/* Seat Selection Title */}
-                <Typography
-                    variant="h5"
-                    align="center"
-                    sx={{
-                        fontWeight: 700,
-                        mb: 3,
-                        color: '#333',
-                    }}
-                >
-                    Chọn Ghế Ngồi
-                </Typography>
-
-                {/* Seat Map */}
-                {screeningId && (
-                    <SeatMap
-                        screeningId={screeningId}
-                        selectedSeat={selectedSeat}
-                        onSelectSeat={handleSeatSelect}
-                    />
-                )}
-
-                {/* Selected Seat Info & Action */}
-                {selectedSeat && (
+                {/* Seat Summary & Checkout */}
+                {selectedSeats.length > 0 && (
                     <Paper
                         elevation={3}
                         sx={{
                             mt: 4,
                             p: 3,
-                            borderRadius: 3,
-                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c3a 100%)',
+                            borderRadius: 2,
+                            backgroundColor: '#ff6b00',
                             color: 'white',
                         }}
                     >
-                        <Grid container spacing={2} alignItems="center">
+                        <Grid container spacing={2} alignItems="center" justifyContent="space-between">
                             <Grid item xs={12} md={8}>
-                                <Typography variant="h6" fontWeight={600} gutterBottom>
-                                    Thông tin ghế đã chọn
+                                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                    Selected Seats ({selectedSeats.length})
                                 </Typography>
-                                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                                    <Box>
-                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                                            Ghế
-                                        </Typography>
-                                        <Typography variant="h5" fontWeight={700}>
-                                            {selectedSeat.seatRow}{selectedSeat.seatNumber}
-                                        </Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                                            Thời lượng
-                                        </Typography>
-                                        <Typography variant="h5" fontWeight={700}>
-                                            {movie.duration}
-                                        </Typography>
-                                    </Box>
-                                </Box>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    {selectedSeats.map(s => s.seatCode).join(', ')}
+                                </Typography>
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
                                 <Button
                                     variant="contained"
-                                    fullWidth
                                     size="large"
-                                    disabled={isSubmitting}
-                                    onClick={handleContinueToBooking}
                                     startIcon={<ConfirmationNumberIcon />}
+                                    onClick={handleConfirmBooking}
                                     sx={{
-                                        py: 1.8,
                                         backgroundColor: 'white',
                                         color: '#ff6b00',
-                                        fontWeight: 700,
-                                        fontSize: '1.1rem',
+                                        fontWeight: 'bold',
                                         '&:hover': {
                                             backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                            transform: 'translateY(-2px)',
                                         },
-                                        '&:disabled': {
-                                            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                                            color: 'rgba(255, 107, 0, 0.5)',
-                                        },
-                                        transition: 'all 0.3s',
                                     }}
                                 >
-                                    {isSubmitting ? 'Đang xử lý...' : 'Tiếp tục đặt vé'}
+                                    Continue to Booking
                                 </Button>
                             </Grid>
                         </Grid>
                     </Paper>
                 )}
 
-                {!selectedSeat && (
+                {selectedSeats.length === 0 && (
                     <Paper
                         elevation={1}
                         sx={{
                             mt: 4,
                             p: 3,
                             textAlign: 'center',
-                            borderRadius: 3,
-                            backgroundColor: '#f5f5f5',
+                            borderRadius: 2,
+                            backgroundColor: '#fff3cd',
                         }}
                     >
                         <Typography variant="body1" color="text.secondary">
-                            Vui lòng chọn ghế để tiếp tục đặt vé
+                            Please select at least one seat to continue
                         </Typography>
                     </Paper>
                 )}
 
-                {selectedSeat && screeningId && (
-                    <BookingForm
-                        open={isBookingFormOpen}
-                        onClose={handleBookingFormClose}
-                        onSubmit={handleBookingSubmit}
-                        screeningId={screeningId}
-                        seatId={selectedSeat.id}
-                    />
-                )}
-
-                <Snackbar
-                    open={!!error}
-                    autoHideDuration={6000}
-                    onClose={() => setError('')}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                >
-                    <Alert
-                        onClose={() => setError('')}
-                        severity="error"
-                        sx={{
-                            width: '100%',
-                            borderRadius: 2
-                        }}
-                    >
+                {error && (
+                    <Alert severity="error" sx={{ mt: 2 }}>
                         {error}
                     </Alert>
-                </Snackbar>
+                )}
             </Container>
         </Box>
     );
