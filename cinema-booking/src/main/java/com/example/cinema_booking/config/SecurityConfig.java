@@ -39,7 +39,8 @@ public class SecurityConfig {
             "/auth/introspect",
             "/users",
             "/auth/logout",
-            "/auth/refresh"
+            "/auth/refresh",
+            "/genres"
     };
 
 
@@ -49,7 +50,7 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(request ->
                 // cho phép truy cập công khai vào các endpoint bắt đầu bằng /auth/
-                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll().requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS).permitAll()
                         // yêu cầu xác thực cho tất cả các endpoint khác
                 .anyRequest().authenticated()
         );
