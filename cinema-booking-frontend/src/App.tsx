@@ -18,6 +18,7 @@ import { AdminLayout } from './components/AdminLayout';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminMovies } from './pages/AdminMovies';
 import { AdminScreenings } from './pages/AdminScreenings';
+import { AdminRooms } from './pages/AdminRooms';
 import { AdminBookings } from './pages/AdminBookings';
 
 const theme = createTheme({
@@ -98,6 +99,7 @@ function App() {
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="movies" element={<AdminMovies />} />
+                  <Route path="rooms" element={<AdminRooms />} />
                   <Route path="screenings" element={<AdminScreenings />} />
                   <Route path="bookings" element={<AdminBookings />} />
                 </Route>
@@ -109,8 +111,8 @@ function App() {
                     <Routes>
                       <Route path="/" element={<MovieList />} />
                       <Route path="/movie/:id" element={<MovieDetail />} />
-                      <Route path="/movie/:movieId/screenings" element={<ScreeningList />} />
-                      <Route path="/movie/:movieId/screening/:screeningId/seats" element={<SeatSelection />} />
+                      <Route path="/movie/:movieId/showtimes" element={<ScreeningList />} />
+                      <Route path="/movie/:movieId/showtime/:showtimeId/seats" element={<SeatSelection />} />
                       <Route path="/booking-confirmation" element={<BookingConfirmation />} />
                       <Route path="/booking-history" element={<BookingHistory />} />
                     </Routes>

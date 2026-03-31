@@ -1,5 +1,7 @@
 package com.example.cinema_booking.controller;
 
+
+import com.example.cinema_booking.config.TestUserConfig;
 import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.UserRegisterRequest;
 import com.example.cinema_booking.dto.request.UserUpdateRequest;
@@ -18,9 +20,9 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-
 public class UserController {
     UserService userService;
+    TestUserConfig testUserConfig;
 
     @PostMapping
     APIResponse<UserResponse> registerUser(@RequestBody UserRegisterRequest request){
@@ -69,4 +71,12 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/test-user/id")
+    public APIResponse<String> getTestUserId(){
+        log.info("getTestUserId");
+        return APIResponse.<String>builder()
+                .result(testUserConfig.getId())
+                .message("Test user ID")
+                .build();
+    }
 }

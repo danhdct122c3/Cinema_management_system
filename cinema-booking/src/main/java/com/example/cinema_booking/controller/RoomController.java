@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/rooms")
@@ -18,6 +19,14 @@ import org.springframework.web.bind.annotation.*;
 public class RoomController {
 
     RoomService roomService;
+
+    @GetMapping
+    public APIResponse<List<RoomResponse>> getAllRooms(){
+        return APIResponse.<List<RoomResponse>>builder()
+                .result(roomService.getAllRooms())
+    
+                .build();
+    }
 
     @PostMapping
     public APIResponse<RoomResponse> createRoom(@RequestBody RoomRequest request){
