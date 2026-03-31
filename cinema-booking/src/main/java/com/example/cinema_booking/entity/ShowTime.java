@@ -1,6 +1,6 @@
 package com.example.cinema_booking.entity;
 
-import com.example.cinema_booking.enums.ShowTImeStatus;
+import com.example.cinema_booking.enums.ShowTimeStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,7 +33,7 @@ public class ShowTime {
     LocalDateTime end_time;
 
     @Enumerated(EnumType.STRING)
-    ShowTImeStatus status;
+    ShowTimeStatus status;
 
     @JsonIgnore
     @OneToMany(mappedBy = "showTime", cascade = CascadeType.ALL)

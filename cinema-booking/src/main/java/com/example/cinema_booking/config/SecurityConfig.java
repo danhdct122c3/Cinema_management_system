@@ -54,6 +54,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
         );
 
+        // Enable CORS at the Spring Security layer so it picks up the configuration from WebConfig
+        httpSecurity.cors(cors -> {});
+
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
                         jwtConfigurer.decoder(customJwtDecoder)
