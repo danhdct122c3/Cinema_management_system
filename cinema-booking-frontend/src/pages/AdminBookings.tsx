@@ -18,7 +18,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { bookingService } from '../services/api';
+import { adminBookingService } from '../services/adminApi';
 import { Booking } from '../types';
 
 export const AdminBookings: React.FC = () => {
@@ -34,7 +34,7 @@ export const AdminBookings: React.FC = () => {
         try {
             // TODO: Implement getAll endpoint in backend
             // For now, using mock data or fetching by email
-            const response = await bookingService.getBookingsByEmail('admin@example.com');
+            const response = await adminBookingService.getBookingsByEmail('admin@example.com');
             setBookings(response.data.result);
         } catch (error) {
             console.error('Error fetching bookings:', error);

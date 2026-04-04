@@ -23,7 +23,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { movieService, genreService, cloudinaryService } from '../services/api';
+import { adminMovieService, adminGenreService } from '../services/adminApi';
+import { cloudinaryService } from '../services/api';
 import { Movie, Genre } from '../types';
 
 const MOVIE_STATUS = ['COMING_SOON', 'NOW_SHOWING', 'ENDED'];
@@ -57,7 +58,7 @@ status: 'COMING_SOON',
 
     const fetchGenres = async () => {
         try {
-            const response = await genreService.getAllGenres();
+            const response = await adminGenreService.getAllGenres();
             console.log('Genre response:', response.data);
             const genreList = response.data?.result || [];
             setGenres(Array.isArray(genreList) ? genreList : []);
@@ -69,7 +70,7 @@ status: 'COMING_SOON',
 
     const fetchMovies = async () => {
         try {
-            const response = await movieService.getAllMovies();
+            const response = await adminMovieService.getAllMovies();
             setMovies(response.data.result);
         } catch (error) {
             console.error('Error fetching movies:', error);
@@ -208,7 +209,7 @@ status: 'COMING_SOON',
 
         try {
             setCreatingGenre(true);
-            const response = await genreService.createGenre(newGenreName.trim());
+            const response = await adminGenreService.createGenre(newGenreName.trim());
             const newGenre = response.data.result;
             
             // Add new genre to list
@@ -235,7 +236,7 @@ status: 'COMING_SOON',
         try {
             if (editingMovie) {
                 // Update movie
-                await movieService.updateMovie(editingMovie.id, {
+                await adminMovieService.updateMovie(editingMovie.id, {
                     title: formData.title,
                     description: formData.description,
                     duration: formData.duration,
@@ -248,7 +249,7 @@ status: 'COMING_SOON',
                 });
             } else {
                 // Create new movie
-                await movieService.createMovie({
+                await adminMovieService.createMovie({
                     title: formData.title,
                     description: formData.description,
                     duration: formData.duration,
@@ -272,7 +273,7 @@ status: 'COMING_SOON',
         if (!window.confirm('Bạn có chắc chắn muốn xóa phim này?')) return;
         
         try {
-            await movieService.deleteMovie(id);
+            await adminMovieService.deleteMovie(id);
             fetchMovies(); // Refresh list after delete
         } catch (error) {
             console.error('Error deleting movie:', error);

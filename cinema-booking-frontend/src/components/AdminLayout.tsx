@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText, ListItemButton, Avatar, Menu, MenuItem } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -9,6 +9,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { useAdminAuth } from '../context/AdminAuthContext';
 
 const drawerWidth = 260;
 
@@ -30,6 +31,14 @@ export const AdminLayout: React.FC = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const { isAdminLoggedIn, logoutAdmin, isAdminInitialized } = useAdminAuth() as any;
+
+    useEffect(() => {
+        if (!isAdminInitialized) return;
+        if (!isAdminLoggedIn) {
+            navigate('/admin/login', { replace: true });
+        }
+    }, [isAdminInitialized, isAdminLoggedIn]);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -43,11 +52,10 @@ export const AdminLayout: React.FC = () => {
         setAnchorEl(null);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
+    const handleLogout = async () => {
+        await logoutAdmin();
         handleMenuClose();
-        navigate('/');
+        navigate('/admin/login');
     };
 
     const drawer = (

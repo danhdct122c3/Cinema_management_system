@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authService, tokenStorage } from '../services/api';
+import { AuthenticationResult } from '../types';
 
 interface User {
     email: string;
@@ -8,8 +10,9 @@ interface User {
 interface AuthContextType {
     user: User | null;
     isLoggedIn: boolean;
-    login: (email: string, fullName?: string) => void;
-    logout: () => void;
+    accessToken: string | null;
+    loginWithPassword: (email: string, password: string) => Promise<AuthenticationResult>;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,40 +20,58 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [accessToken, setAccessToken] = useState<string | null>(null);
 
     useEffect(() => {
-        // Check if user is logged in on mount
         const storedEmail = localStorage.getItem('userEmail');
         const storedName = localStorage.getItem('userName');
-        const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        const token = tokenStorage.get();
 
-        if (loggedIn && storedEmail) {
-            setUser({ email: storedEmail, fullName: storedName || undefined });
+        if (token) {
+            setAccessToken(token);
             setIsLoggedIn(true);
+            if (storedEmail) {
+                setUser({ email: storedEmail, fullName: storedName || undefined });
+            }
         }
     }, []);
 
-    const login = (email: string, fullName?: string) => {
-        const newUser = { email, fullName };
-        setUser(newUser);
-        setIsLoggedIn(true);
+    const loginWithPassword = async (email: string, password: string) => {
+        const res = await authService.login({ email, password });
+        const result = res.data.result;
+
+        tokenStorage.set(result.token);
+        setAccessToken(result.token);
+        setIsLoggedIn(!!result.isAuthenticated);
+
+        // Lưu email để các màn khác dùng (vd booking history)
+        setUser({ email });
         localStorage.setItem('userEmail', email);
-        if (fullName) {
-            localStorage.setItem('userName', fullName);
-        }
         localStorage.setItem('isLoggedIn', 'true');
+
+        return result;
     };
 
-    const logout = () => {
-        setUser(null);
-        setIsLoggedIn(false);
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('isLoggedIn');
+    const logout = async () => {
+        const token = tokenStorage.get();
+        try {
+            // Logout field phụ thuộc BE; gửi token nếu có
+            await authService.logout(token ? { token } : undefined);
+        } catch {
+            // ignore logout errors (still clear local state)
+        } finally {
+            tokenStorage.clear();
+            setAccessToken(null);
+            setUser(null);
+            setIsLoggedIn(false);
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('isLoggedIn');
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, accessToken, loginWithPassword, logout }}>
             {children}
         </AuthContext.Provider>
     );

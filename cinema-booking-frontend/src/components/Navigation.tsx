@@ -13,24 +13,18 @@ import { useGenre } from '../context/GenreContext';
 import { useSearch } from '../context/SearchContext';
 import { genreService } from '../services/api';
 import { Genre } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 export const Navigation: React.FC = () => {
     const navigate = useNavigate();
     const { selectedGenreId, setSelectedGenre } = useGenre();
     const { searchKeyword, setSearchKeyword } = useSearch();
+    const { isLoggedIn: authLoggedIn, user, logout } = useAuth();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userEmail, setUserEmail] = useState('');
     const [genres, setGenres] = useState<Genre[]>([]);
     const [searchInput, setSearchInput] = useState('');
 
     useEffect(() => {
-        // Check login status
-        const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const email = localStorage.getItem('userEmail') || '';
-        setIsLoggedIn(loggedIn);
-        setUserEmail(email);
-
         // Fetch genres
         fetchGenres();
     }, []);
@@ -87,17 +81,15 @@ export const Navigation: React.FC = () => {
         setAnchorEl(null);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
-        setIsLoggedIn(false);
-        setUserEmail('');
+    const handleLogout = async () => {
+        await logout();
         handleMenuClose();
         navigate('/');
     };
 
     const getUserInitial = () => {
-        return userEmail.charAt(0).toUpperCase();
+        const email = user?.email || '';
+        return email.charAt(0).toUpperCase();
     };
 
     return (
@@ -231,7 +223,7 @@ export const Navigation: React.FC = () => {
                             </IconButton>
                         </Box>
 
-                        {isLoggedIn ? (
+                        {authLoggedIn ? (
                             <>
                                 <IconButton
                                     onClick={handleMenuOpen}
@@ -242,8 +234,8 @@ export const Navigation: React.FC = () => {
                                         },
                                     }}
                                 >
-                                    <Avatar 
-                                        sx={{ 
+                                    <Avatar
+                                        sx={{
                                             width: 36, 
                                             height: 36, 
                                             bgcolor: '#ff6b00',
@@ -269,7 +261,7 @@ export const Navigation: React.FC = () => {
                                 >
                                     <MenuItem disabled>
                                         <Typography variant="body2" color="text.secondary">
-                                            {userEmail}
+                                            {user?.email}
                                         </Typography>
                                     </MenuItem>
                                     <MenuItem onClick={() => { handleMenuClose(); navigate('/booking-history'); }}>

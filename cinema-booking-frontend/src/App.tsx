@@ -19,6 +19,8 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminMovies } from './pages/AdminMovies';
 import { AdminScreenings } from './pages/AdminScreenings';
 import { AdminBookings } from './pages/AdminBookings';
+import { AdminLogin } from './pages/AdminLogin';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 
 const theme = createTheme({
   palette: {
@@ -84,43 +86,48 @@ const theme = createTheme({
 function App() {
   return (
     <AuthProvider>
-      <GenreProvider>
-        <SearchProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Router>
-              <Routes>
-                {/* Auth routes - no navigation */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                
-                {/* Admin routes - with admin layout */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="movies" element={<AdminMovies />} />
-                  <Route path="screenings" element={<AdminScreenings />} />
-                  <Route path="bookings" element={<AdminBookings />} />
-                </Route>
-                
-                {/* Main routes - with navigation */}
-                <Route path="*" element={
-                  <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
-                    <Navigation />
-                    <Routes>
-                      <Route path="/" element={<MovieList />} />
-                      <Route path="/movie/:id" element={<MovieDetail />} />
-                      <Route path="/movie/:movieId/screenings" element={<ScreeningList />} />
-                      <Route path="/movie/:movieId/screening/:screeningId/seats" element={<SeatSelection />} />
-                      <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-                      <Route path="/booking-history" element={<BookingHistory />} />
-                    </Routes>
-                  </Box>
-                } />
-              </Routes>
-            </Router>
-          </ThemeProvider>
-        </SearchProvider>
-      </GenreProvider>
+      <AdminAuthProvider>
+        <GenreProvider>
+          <SearchProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <Router>
+                <Routes>
+                  {/* Auth routes - no navigation */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+
+                  {/* Admin auth route */}
+                  <Route path="/admin/login" element={<AdminLogin />} />
+
+                  {/* Admin routes - with admin layout */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="movies" element={<AdminMovies />} />
+                    <Route path="screenings" element={<AdminScreenings />} />
+                    <Route path="bookings" element={<AdminBookings />} />
+                  </Route>
+
+                  {/* Main routes - with navigation */}
+                  <Route path="*" element={
+                    <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+                      <Navigation />
+                      <Routes>
+                        <Route path="/" element={<MovieList />} />
+                        <Route path="/movie/:id" element={<MovieDetail />} />
+                        <Route path="/movie/:movieId/screenings" element={<ScreeningList />} />
+                        <Route path="/movie/:movieId/screening/:screeningId/seats" element={<SeatSelection />} />
+                        <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+                        <Route path="/booking-history" element={<BookingHistory />} />
+                      </Routes>
+                    </Box>
+                  } />
+                </Routes>
+              </Router>
+            </ThemeProvider>
+          </SearchProvider>
+        </GenreProvider>
+      </AdminAuthProvider>
     </AuthProvider>
   );
 }

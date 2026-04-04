@@ -22,7 +22,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { movieService, screeningService } from '../services/api';
+import { adminMovieService, adminScreeningService } from '../services/adminApi';
 import { Movie, Screening } from '../types';
 
 export const AdminScreenings: React.FC = () => {
@@ -43,7 +43,7 @@ export const AdminScreenings: React.FC = () => {
 
     const fetchMovies = async () => {
         try {
-            const response = await movieService.getAllMovies();
+            const response = await adminMovieService.getAllMovies();
             setMovies(response.data.result);
         } catch (error) {
             console.error('Error fetching movies:', error);
