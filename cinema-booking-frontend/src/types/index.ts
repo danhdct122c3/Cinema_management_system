@@ -66,6 +66,7 @@ export interface ErrorResponse {
     timestamp: string;
 }
 
+// ===== Authentication Related =====
 export interface AuthenticationRequest {
     email: string;
     password: string;
@@ -82,4 +83,60 @@ export interface LogoutRequest {
 export interface AuthenticationResult {
     token: string;
     isAuthenticated: boolean;
+}
+
+// ===== ShowTime Related =====
+export interface ShowTimeResponse {
+    id: string;
+    movieId: string;
+    roomId: string;
+    roomName: string;
+    startTime: string;
+    endTime: string;
+    status: 'ACTIVE' | 'CANCELLED';
+}
+
+export interface Room {
+    id: string;
+    roomName: string;
+    totalRows: number;
+    totalColumns: number;
+}
+
+export interface ShowTimeDetail extends ShowTimeResponse {
+    movie?: Movie;
+    room?: Room;
+}
+
+// ===== Seat ShowTime Related =====
+export interface SeatShowTimeResponse {
+    id: string;
+    seatCode: string;
+    status: 'AVAILABLE' | 'BOOKED' | 'HOLD';
+    seatType: 'NORMAL' | 'VIP';
+    price: number;
+    holdExpireTime?: string;
+    heldByUserEmail?: string;
+}
+
+export interface SeatShowTimeSummary {
+    row: string;
+    seats: SeatShowTimeResponse[];
+}
+
+// ===== Hold Seat Related =====
+export interface HoldSeatRequest {
+    seatShowTimeIds: string[];
+    showTimeId: string;
+    userId: string;
+    holdDuration: number;
+}
+
+export interface HoldSeatResponse {
+    heldSeatCodes: string[];
+    holdDurationSeconds: number;
+    totalPrice: number;
+    showTimeId?: string;
+    userEmail?: string;
+    holdStartTime?: number;
 }

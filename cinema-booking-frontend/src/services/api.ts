@@ -1,14 +1,20 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre, AuthenticationRequest, AuthenticationResult, RefreshRequest, LogoutRequest } from '../types';
+import {
+    Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre,
+    AuthenticationRequest, AuthenticationResult, RefreshRequest, LogoutRequest,
+    ShowTimeResponse, SeatShowTimeResponse, HoldSeatRequest, HoldSeatResponse
+} from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/home';
 
+// ========== Token Storage ==========
 export const createTokenStorage = (tokenKey: string) => ({
     get: (): string | null => localStorage.getItem(tokenKey),
     set: (token: string) => localStorage.setItem(tokenKey, token),
     clear: () => localStorage.removeItem(tokenKey),
 });
 
+// ========== API Client Factory ==========
 export const createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<typeof createTokenStorage> }) => {
     const instance = axios.create({
         baseURL: API_BASE_URL,
@@ -57,6 +63,7 @@ export const createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<typ
             const status = error.response?.status;
             const originalRequest = error.config as (AxiosRequestConfig & { _retry?: boolean });
 
+            // Handle seat conflict
             if (status === 409) {
                 throw new Error('This seat has just been taken by another customer. Please select a different seat.');
             }
@@ -118,7 +125,7 @@ export const createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<typ
     return { instance, auth };
 };
 
-// ========== Default (User) client giữ nguyên để không ảnh hưởng code cũ ==========
+// ========== Default User Client ==========
 const TOKEN_KEY = 'accessToken';
 export const tokenStorage = createTokenStorage(TOKEN_KEY);
 
@@ -126,9 +133,10 @@ const userApi = createApiClient({ tokenStorage });
 export const axiosInstance = userApi.instance;
 export const authService = userApi.auth;
 
-// Separate instance for file uploads (no JSON content-type) - vẫn dùng chung baseURL
+// Separate instance for file uploads (no JSON content-type)
 const axiosFileInstance = axios.create({ baseURL: API_BASE_URL });
 
+// ========== Request/Response Types ==========
 export interface MovieCreateRequest {
     title: string;
     description: string;
@@ -144,6 +152,7 @@ export interface MovieCreateRequest {
 export interface MovieUpdateRequest extends MovieCreateRequest {
 }
 
+// ========== Service Definitions ==========
 export const movieService = {
     getAllMovies: (): Promise<AxiosResponse<APIResponse<Movie[]>>> => axiosInstance.get<APIResponse<Movie[]>>('/movies'),
     getMovieById: (id: string): Promise<AxiosResponse<APIResponse<Movie>>> => axiosInstance.get<APIResponse<Movie>>(`/movies/${id}`),
@@ -159,6 +168,30 @@ export const movieService = {
 export const genreService = {
     getAllGenres: (): Promise<AxiosResponse<APIResponse<Genre[]>>> => axiosInstance.get<APIResponse<Genre[]>>('/genres'),
     createGenre: (name: string): Promise<AxiosResponse<APIResponse<Genre>>> => axiosInstance.post<APIResponse<Genre>>('/genres', { name }),
+};
+
+export const showtimeService = {
+    getAllShowtimes: (): Promise<AxiosResponse<APIResponse<ShowTimeResponse[]>>> =>
+        axiosInstance.get<APIResponse<ShowTimeResponse[]>>('/showtimes'),
+
+    getShowtimeById: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
+        axiosInstance.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),
+
+    createShowtime: (data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
+        axiosInstance.post<APIResponse<ShowTimeResponse>>('/showtimes', data),
+
+    getSeatsByShowtime: (showtimeId: string): Promise<AxiosResponse<APIResponse<SeatShowTimeResponse[]>>> =>
+        axiosInstance.get<APIResponse<SeatShowTimeResponse[]>>(`/seat-showtimes/${showtimeId}`),
+
+    updateSeatPrice: (
+        showtimeId: string,
+        seatType: 'NORMAL' | 'VIP',
+        price: number
+    ): Promise<AxiosResponse<APIResponse<void>>> =>
+        axiosInstance.patch<APIResponse<void>>(`/seat-showtimes/${showtimeId}`, {
+            seatType,
+            price
+        }),
 };
 
 export const cloudinaryService = {
@@ -184,4 +217,20 @@ export const bookingService = {
     releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
     confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>(`/bookings/${id}/confirm`)
+};
+
+export const holdService = {
+    holdSeats: (request: HoldSeatRequest): Promise<AxiosResponse<APIResponse<HoldSeatResponse>>> =>
+        axiosInstance.post<APIResponse<HoldSeatResponse>>('/seat-holds/reserve', request),
+
+    releaseHold: (seatShowTimeIds: string[]): Promise<AxiosResponse<APIResponse<void>>> =>
+        axiosInstance.post<APIResponse<void>>('/seat-holds/release', seatShowTimeIds),
+
+    isHoldValid: (seatShowTimeId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
+        axiosInstance.get<APIResponse<boolean>>(`/seat-holds/${seatShowTimeId}/valid`)
+};
+
+export const userService = {
+    getTestUserId: (): Promise<AxiosResponse<APIResponse<string>>> =>
+        axiosInstance.get<APIResponse<string>>('/users/test-user/id')
 };

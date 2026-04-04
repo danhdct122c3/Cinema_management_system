@@ -1,0 +1,79 @@
+package com.example.cinema_booking.controller;
+
+
+import com.example.cinema_booking.config.TestUserConfig;
+import com.example.cinema_booking.dto.request.APIResponse;
+import com.example.cinema_booking.dto.request.HoldSeatRequest;
+import com.example.cinema_booking.dto.response.HoldSeatResponse;
+import com.example.cinema_booking.exception.AppException;
+import com.example.cinema_booking.exception.ErrorCode;
+import com.example.cinema_booking.service.SeatHoldService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/seat-holds")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class SeatHoldController {
+
+    SeatHoldService seatHoldService;
+    TestUserConfig testUserConfig;
+
+    /**
+     * Hold ghế tại bước thanh toán
+     * POST /home/seat-holds/reserve
+     */
+    @PostMapping("/reserve")
+    public APIResponse<HoldSeatResponse> holdSeats(@RequestBody HoldSeatRequest request) {
+        try {
+            // Gán user ID từ config vào request (test mode - chưa có login)
+            request.setUserId(testUserConfig.getId());
+            HoldSeatResponse response = seatHoldService.createHoldSeat(request);
+            return APIResponse.<HoldSeatResponse>builder()
+                    .result(response)
+                    .build();
+        } catch (Exception e) {
+            return APIResponse.<HoldSeatResponse>builder()
+                    .code(999)
+                    .message("Không thể giữ ghế: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    /**
+     * Release hold thủ công (user hủy thanh toán)
+     * DELETE /home/seat-holds/release
+     */
+    @PostMapping("/release")
+    public APIResponse<String> releaseHold(@RequestBody List<String> seatShowTimeIds) {
+        try {
+            seatHoldService.releaseHoldSeat(seatShowTimeIds);
+            return APIResponse.<String>builder()
+                    .result("OK")
+                    .message("Ghế đã được giải phóng")
+                    .build();
+        } catch (Exception e) {
+            return APIResponse.<String>builder()
+                    .code(999)
+                    .message(e.getMessage())
+                    .build();
+        }
+    }
+
+    /**
+     * Check xem hold còn valid không
+     * GET /home/seat-holds/{seatShowTimeId}/valid
+     */
+    @GetMapping("/{seatShowTimeId}/valid")
+    public APIResponse<Boolean> isHoldValid(@PathVariable String seatShowTimeId) {
+        boolean valid = seatHoldService.isHoldSeatValid(seatShowTimeId);
+        return APIResponse.<Boolean>builder()
+                .result(valid)
+                .build();
+    }
+}

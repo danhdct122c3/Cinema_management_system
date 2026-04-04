@@ -17,119 +17,121 @@ import { SearchProvider } from './context/SearchContext';
 import { AdminLayout } from './components/AdminLayout';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminMovies } from './pages/AdminMovies';
+import { AdminRooms } from './pages/AdminRooms';
 import { AdminScreenings } from './pages/AdminScreenings';
 import { AdminBookings } from './pages/AdminBookings';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 
 const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#ff6b00', // Galaxy Cinema orange
-      light: '#ff8c3a',
-      dark: '#d95a00',
-      contrastText: '#fff',
-    },
-    secondary: {
-      main: '#ffc107', // Gold accent
-      light: '#ffd54f',
-      dark: '#ffa000',
-    },
-    background: {
-      default: '#f5f5f5', // Light gray
-      paper: '#ffffff', // White for cards
-    },
-    text: {
-      primary: 'rgba(0, 0, 0, 0.87)',
-      secondary: 'rgba(0, 0, 0, 0.6)',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 700,
-    },
-    h2: {
-      fontWeight: 700,
-    },
-    h3: {
-      fontWeight: 600,
-    },
-    button: {
-      fontWeight: 600,
-      textTransform: 'none',
-    },
-  },
-  shape: {
-    borderRadius: 8,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          padding: '10px 24px',
+    palette: {
+        mode: 'light',
+        primary: {
+            main: '#ff6b00', // Galaxy Cinema orange
+            light: '#ff8c3a',
+            dark: '#d95a00',
+            contrastText: '#fff',
         },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
+        secondary: {
+            main: '#ffc107', // Gold accent
+            light: '#ffd54f',
+            dark: '#ffa000',
         },
-      },
+        background: {
+            default: '#f5f5f5', // Light gray
+            paper: '#ffffff', // White for cards
+        },
+        text: {
+            primary: 'rgba(0, 0, 0, 0.87)',
+            secondary: 'rgba(0, 0, 0, 0.6)',
+        },
     },
-  },
+    typography: {
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        h1: {
+            fontWeight: 700,
+        },
+        h2: {
+            fontWeight: 700,
+        },
+        h3: {
+            fontWeight: 600,
+        },
+        button: {
+            fontWeight: 600,
+            textTransform: 'none',
+        },
+    },
+    shape: {
+        borderRadius: 8,
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 8,
+                    padding: '10px 24px',
+                },
+            },
+        },
+        MuiCard: {
+            styleOverrides: {
+                root: {
+                    backgroundImage: 'none',
+                },
+            },
+        },
+    },
 });
 
 function App() {
-  return (
-    <AuthProvider>
-      <AdminAuthProvider>
-        <GenreProvider>
-          <SearchProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <Router>
-                <Routes>
-                  {/* Auth routes - no navigation */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
+    return (
+        <AuthProvider>
+            <AdminAuthProvider>
+                <GenreProvider>
+                    <SearchProvider>
+                        <ThemeProvider theme={theme}>
+                            <CssBaseline />
+                            <Router>
+                                <Routes>
+                                    {/* Auth routes - no navigation */}
+                                    <Route path="/login" element={<Login />} />
+                                    <Route path="/register" element={<Register />} />
 
-                  {/* Admin auth route */}
-                  <Route path="/admin/login" element={<AdminLogin />} />
+                                    {/* Admin auth route */}
+                                    <Route path="/admin/login" element={<AdminLogin />} />
 
-                  {/* Admin routes - with admin layout */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="movies" element={<AdminMovies />} />
-                    <Route path="screenings" element={<AdminScreenings />} />
-                    <Route path="bookings" element={<AdminBookings />} />
-                  </Route>
+                                    {/* Admin routes - with admin layout */}
+                                    <Route path="/admin" element={<AdminLayout />}>
+                                        <Route index element={<AdminDashboard />} />
+                                        <Route path="movies" element={<AdminMovies />} />
+                                        <Route path="rooms" element={<AdminRooms />} />
+                                        <Route path="screenings" element={<AdminScreenings />} />
+                                        <Route path="bookings" element={<AdminBookings />} />
+                                    </Route>
 
-                  {/* Main routes - with navigation */}
-                  <Route path="*" element={
-                    <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
-                      <Navigation />
-                      <Routes>
-                        <Route path="/" element={<MovieList />} />
-                        <Route path="/movie/:id" element={<MovieDetail />} />
-                        <Route path="/movie/:movieId/screenings" element={<ScreeningList />} />
-                        <Route path="/movie/:movieId/screening/:screeningId/seats" element={<SeatSelection />} />
-                        <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-                        <Route path="/booking-history" element={<BookingHistory />} />
-                      </Routes>
-                    </Box>
-                  } />
-                </Routes>
-              </Router>
-            </ThemeProvider>
-          </SearchProvider>
-        </GenreProvider>
-      </AdminAuthProvider>
-    </AuthProvider>
-  );
+                                    {/* Main routes - with navigation */}
+                                    <Route path="*" element={
+                                        <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+                                            <Navigation />
+                                            <Routes>
+                                                <Route path="/" element={<MovieList />} />
+                                                <Route path="/movie/:id" element={<MovieDetail />} />
+                                                <Route path="/movie/:movieId/screenings" element={<ScreeningList />} />
+                                                <Route path="/movie/:movieId/screening/:screeningId/seats" element={<SeatSelection />} />
+                                                <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+                                                <Route path="/booking-history" element={<BookingHistory />} />
+                                            </Routes>
+                                        </Box>
+                                    } />
+                                </Routes>
+                            </Router>
+                        </ThemeProvider>
+                    </SearchProvider>
+                </GenreProvider>
+            </AdminAuthProvider>
+        </AuthProvider>
+    );
 }
 
 export default App;

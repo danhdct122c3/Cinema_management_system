@@ -10,6 +10,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import ChairIcon from '@mui/icons-material/Chair';
 
 const drawerWidth = 260;
 
@@ -22,6 +23,7 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
     { text: 'Quản lý Phim', icon: <MovieIcon />, path: '/admin/movies' },
+    { text: 'Phòng Chiếu', icon: <ChairIcon />, path: '/admin/rooms' },
     { text: 'Suất Chiếu', icon: <EventIcon />, path: '/admin/screenings' },
     { text: 'Đặt Vé', icon: <ConfirmationNumberIcon />, path: '/admin/bookings' },
 ];

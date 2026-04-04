@@ -21,21 +21,28 @@ public enum ErrorCode {
     MOVIE_NOT_EXIST(1012, "Movie not exist", HttpStatus.NOT_FOUND),
     INVALID_MOVIE_STATUS(1013, "Invalid movie status", HttpStatus.BAD_REQUEST),
     SEAT_ALREADY_EXIST(1015, "Seat already exist", HttpStatus.BAD_REQUEST),
-    INVALID_REQUEST(1016, "Invalid request", HttpStatus.BAD_REQUEST),
-    PERMISSION_EXISTED(1017, "Permission existed", HttpStatus.BAD_REQUEST),
-    PERMISSION_NOT_EXISTED(1018, "Permission not existed", HttpStatus.NOT_FOUND),
-    ROLE_EXISTED(1019, "Role existed", HttpStatus.BAD_REQUEST),
-    ROLE_NOT_EXISTED(1020, "Role not existed", HttpStatus.NOT_FOUND)
+    INVALID_ROLE(1016, "Invalid role", HttpStatus.BAD_REQUEST),
+    ROLE_EXISTED(1017, "Role already exist", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXISTED(1018, "Role not exist", HttpStatus.NOT_FOUND),
+    PERMISSION_NOT_EXISTED(1019, "Permission not exist", HttpStatus.NOT_FOUND),
+    INVALID_REQUEST(1020, "Invalid request", HttpStatus.BAD_REQUEST)
+    ROOM_NOT_EXIST(1016, "Room not exist", HttpStatus.NOT_FOUND),
+    SHOWTIME_BEFORE_MOVIE_RELEASE(1017,"Show time have to after movie release " ,HttpStatus.BAD_REQUEST ),
+    SHOWTIME_END_BEFORE_START(1018,"Show time end have to after show time start " ,HttpStatus.BAD_REQUEST ),
+    SHOWTIME_OVERLAP(1019,"Show time overlap with existing show time " ,HttpStatus.BAD_REQUEST ),
+    SEAT_SHOWTIME_EXISTED(1020,"Seat already exist in this show time " ,HttpStatus.BAD_REQUEST ),
+    SHOWTIME_NOT_EXIST(1021,"Show time not exist " ,HttpStatus.NOT_FOUND ),
+    INVALID_SEAT_ID(1022,"Invalid seat id " ,HttpStatus.BAD_REQUEST ),
+    SEAT_ALREADY_HELD(1023,"Seat already held " ,HttpStatus.BAD_REQUEST ),
+    INVALID_SEAT_IDS(1024,"Invalid seat IDs" ,HttpStatus.BAD_REQUEST ),
+    HOLD_EXPIRED(1025,"Hold time expired" ,HttpStatus.BAD_REQUEST ),
     ;
 
 
 
-
-
-    private final int code;
-    private final String message;
-    private final HttpStatusCode statusCode;
-
+    private int code;
+    private String message;
+    private HttpStatusCode statusCode;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.message = message;
