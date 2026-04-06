@@ -25,7 +25,7 @@ public enum ErrorCode {
     ROLE_EXISTED(1017, "Role already exist", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1018, "Role not exist", HttpStatus.NOT_FOUND),
     PERMISSION_NOT_EXISTED(1019, "Permission not exist", HttpStatus.NOT_FOUND),
-    INVALID_REQUEST(1020, "Invalid request", HttpStatus.BAD_REQUEST)
+    INVALID_REQUEST(1020, "Invalid request", HttpStatus.BAD_REQUEST),
     ROOM_NOT_EXIST(1016, "Room not exist", HttpStatus.NOT_FOUND),
     SHOWTIME_BEFORE_MOVIE_RELEASE(1017,"Show time have to after movie release " ,HttpStatus.BAD_REQUEST ),
     SHOWTIME_END_BEFORE_START(1018,"Show time end have to after show time start " ,HttpStatus.BAD_REQUEST ),
