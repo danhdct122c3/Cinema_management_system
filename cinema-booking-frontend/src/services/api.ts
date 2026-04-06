@@ -203,6 +203,7 @@ export const cloudinaryService = {
 };
 
 export const screeningService = {
+    getAllScreenings: (): Promise<AxiosResponse<APIResponse<Screening[]>>> => axiosInstance.get<APIResponse<Screening[]>>('/screenings'),
     getScreeningById: (id: string): Promise<AxiosResponse<APIResponse<Screening>>> => axiosInstance.get<APIResponse<Screening>>(`/screenings/${id}`),
     getAvailableSeats: (screeningId: string): Promise<AxiosResponse<APIResponse<Seat[]>>> => axiosInstance.get<APIResponse<Seat[]>>(`/screenings/${screeningId}/seats`),
 };

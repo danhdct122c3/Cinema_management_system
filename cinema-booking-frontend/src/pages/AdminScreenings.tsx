@@ -26,9 +26,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { movieService, screeningService } from '../services/api';
-import { Movie, Screening } from '../types';
-import axios from 'axios';
+import { adminMovieService, adminShowtimeService, adminAxios } from '../services/adminApi';
+import { Movie, ShowTimeResponse } from '../types';
 
 interface Room {
     id: string;
@@ -62,16 +61,15 @@ function TabPanel(props: TabPanelProps) {
 export const AdminScreenings: React.FC = () => {
     const [tabValue, setTabValue] = useState(0);
 
-    // Screening Management
-    const [screenings, setScreenings] = useState<Screening[]>([]);
+    // Showtime Management
+    const [showtimes, setShowtimes] = useState<ShowTimeResponse[]>([]);
     const [movies, setMovies] = useState<Movie[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [openDialog, setOpenDialog] = useState(false);
-    const [editingScreening, setEditingScreening] = useState<Screening | null>(null);
-    const [loadingScreenings, setLoadingScreenings] = useState(true);
-    const [errorScreening, setErrorScreening] = useState('');
-    const [successScreening, setSuccessScreening] = useState('');
-    const [formData, setFormData] = useState({
+    const [openShowtimeDialog, setOpenShowtimeDialog] = useState(false);
+    const [loadingShowtimes, setLoadingShowtimes] = useState(true);
+    const [errorShowtime, setErrorShowtime] = useState('');
+    const [successShowtime, setSuccessShowtime] = useState('');
+    const [showtimeFormData, setShowtimeFormData] = useState({
         movieId: '',
         roomId: '',
         startTime: '',
@@ -79,8 +77,8 @@ export const AdminScreenings: React.FC = () => {
     });
 
     // Seat Price Management
+    const [selectedShowtime, setSelectedShowtime] = useState<ShowTimeResponse | null>(null);
     const [openPriceDialog, setOpenPriceDialog] = useState(false);
-    const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null);
     const [priceFormData, setPriceFormData] = useState({
         normalPrice: 150000,
         vipPrice: 200000,
@@ -91,28 +89,28 @@ export const AdminScreenings: React.FC = () => {
 
     // Load initial data
     useEffect(() => {
-        fetchScreenings();
+        fetchShowtimes();
         fetchMovies();
         fetchRooms();
     }, []);
 
-    const fetchScreenings = async () => {
+    const fetchShowtimes = async () => {
         try {
-            setLoadingScreenings(true);
-            const response = await screeningService.getAllScreenings();
-            setScreenings(response.data.result || []);
-            setErrorScreening('');
+            setLoadingShowtimes(true);
+            const response = await adminShowtimeService.getAllShowtimes();
+            setShowtimes(response.data.result || []);
+            setErrorShowtime('');
         } catch (error) {
-            console.error('Error fetching screenings:', error);
-            setErrorScreening('Không thể tải danh sách suất chiếu');
+            console.error('Error fetching showtimes:', error);
+            setErrorShowtime('Không thể tải danh sách suất chiếu');
         } finally {
-            setLoadingScreenings(false);
+            setLoadingShowtimes(false);
         }
     };
 
     const fetchMovies = async () => {
         try {
-            const response = await movieService.getAllMovies();
+            const response = await adminMovieService.getAllMovies();
             setMovies(response.data.result || []);
         } catch (error) {
             console.error('Error fetching movies:', error);
@@ -121,116 +119,96 @@ export const AdminScreenings: React.FC = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/rooms`);
+            const response = await adminAxios.get('/rooms');
             setRooms(response.data.result || []);
         } catch (error) {
             console.error('Error fetching rooms:', error);
         }
     };
 
-    // Screening Dialog
-    const handleOpenDialog = (screening?: Screening) => {
-        if (screening) {
-            setEditingScreening(screening);
-            setFormData({
-                movieId: screening.movieId || screening.movie?.id,
-                roomId: screening.roomId || 'Room 1',
-                startTime: new Date(screening.screeningTime).toISOString().slice(0, 16),
-                endTime: '',
-            });
-        } else {
-            setEditingScreening(null);
-            setFormData({
-                movieId: '',
-                roomId: '',
-                startTime: '',
-                endTime: '',
-            });
-        }
-        setErrorScreening('');
-        setSuccessScreening('');
-        setOpenDialog(true);
+    // Showtime Dialog
+    const handleOpenShowtimeDialog = () => {
+        setShowtimeFormData({
+            movieId: '',
+            roomId: '',
+            startTime: '',
+            endTime: '',
+        });
+        setErrorShowtime('');
+        setSuccessShowtime('');
+        setOpenShowtimeDialog(true);
     };
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-        setEditingScreening(null);
+    const handleCloseShowtimeDialog = () => {
+        setOpenShowtimeDialog(false);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleShowtimeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setShowtimeFormData(prev => ({
             ...prev,
             [name]: value,
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleCreateShowtime = async () => {
         try {
-            setLoadingScreenings(true);
-            setErrorScreening('');
+            setLoadingShowtimes(true);
+            setErrorShowtime('');
 
-            if (!formData.movieId || !formData.roomId) {
-                setErrorScreening('Vui lòng chọn phim và phòng chiếu');
-                setLoadingScreenings(false);
+            if (!showtimeFormData.movieId || !showtimeFormData.roomId) {
+                setErrorShowtime('Vui lòng chọn phim và phòng chiếu');
                 return;
             }
 
-            if (!formData.startTime || !formData.endTime) {
-                setErrorScreening('Vui lòng nhập thời gian bắt đầu và kết thúc');
-                setLoadingScreenings(false);
+            if (!showtimeFormData.startTime || !showtimeFormData.endTime) {
+                setErrorShowtime('Vui lòng nhập thời gian bắt đầu và kết thúc');
                 return;
             }
 
-            if (editingScreening) {
-                // TODO: Implement update API call
-                console.log('Updating screening:', formData);
-                setSuccessScreening('Cập nhật suất chiếu thành công!');
-            } else {
-                // TODO: Implement create API call
-                console.log('Creating screening:', formData);
-                setSuccessScreening('Tạo suất chiếu thành công!');
-            }
+            const response = await adminShowtimeService.createShowtime({
+                movieId: showtimeFormData.movieId,
+                roomId: showtimeFormData.roomId,
+                startTime: new Date(showtimeFormData.startTime).toISOString(),
+                endTime: new Date(showtimeFormData.endTime).toISOString(),
+            } as any);
 
-            handleCloseDialog();
-            fetchScreenings();
-            setTimeout(() => setSuccessScreening(''), 3000);
+            if (response.data.result) {
+                setSuccessShowtime('Tạo suất chiếu thành công!');
+                handleCloseShowtimeDialog();
+                fetchShowtimes();
+                setTimeout(() => setSuccessShowtime(''), 3000);
+            }
         } catch (error: any) {
-            console.error('Error submitting screening:', error);
-            setErrorScreening(
-                error.response?.data?.message || 'Lỗi khi xử lý suất chiếu'
+            console.error('Error creating showtime:', error);
+            setErrorShowtime(
+                error.response?.data?.message || 'Lỗi khi tạo suất chiếu'
             );
         } finally {
-            setLoadingScreenings(false);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        try {
-            // TODO: Implement delete API call
-            console.log('Deleting screening:', id);
-            setSuccessScreening('Xóa suất chiếu thành công!');
-            fetchScreenings();
-            setTimeout(() => setSuccessScreening(''), 3000);
-        } catch (error: any) {
-            console.error('Error deleting screening:', error);
-            setErrorScreening('Lỗi khi xóa suất chiếu');
+            setLoadingShowtimes(false);
         }
     };
 
     // Price Dialog
-    const handleOpenPriceDialog = async (screening: Screening) => {
+    const handleOpenPriceDialog = async (showtime: ShowTimeResponse) => {
         try {
-            setSelectedScreening(screening);
+            setSelectedShowtime(showtime);
             setErrorPrice('');
             setSuccessPrice('');
-
-            // TODO: Fetch current seat prices from API
+            
+            // Fetch current seat prices from database
+            const response = await adminShowtimeService.getSeatsByShowtime(showtime.id);
+            const seats = response.data.result || [];
+            
+            // Get current prices by seat type
+            const normalSeat = seats.find(s => s.seatType === 'NORMAL');
+            const vipSeat = seats.find(s => s.seatType === 'VIP');
+            
             setPriceFormData({
-                normalPrice: 150000,
-                vipPrice: 200000,
+                normalPrice: normalSeat?.price || 150000,
+                vipPrice: vipSeat?.price || 200000,
             });
-
+            
             setOpenPriceDialog(true);
         } catch (error) {
             console.error('Error fetching seat prices:', error);
@@ -244,7 +222,7 @@ export const AdminScreenings: React.FC = () => {
 
     const handleClosePriceDialog = () => {
         setOpenPriceDialog(false);
-        setSelectedScreening(null);
+        setSelectedShowtime(null);
     };
 
     const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,12 +244,23 @@ export const AdminScreenings: React.FC = () => {
                 return;
             }
 
-            if (!selectedScreening) return;
+            if (!selectedShowtime) return;
 
-            // TODO: Implement update price API call
-            console.log('Updating prices:', priceFormData);
+            // Update NORMAL price
+            await adminShowtimeService.updateSeatPrice(
+                selectedShowtime.id,
+                'NORMAL',
+                priceFormData.normalPrice
+            );
 
-            setSuccessPrice('Cập nhật giá ghế thành công!');
+            // Update VIP price
+            await adminShowtimeService.updateSeatPrice(
+                selectedShowtime.id,
+                'VIP',
+                priceFormData.vipPrice
+            );
+
+            setSuccessPrice(`Cập nhật giá ghế thành công!`);
             setTimeout(() => {
                 handleClosePriceDialog();
                 setSuccessPrice('');
@@ -302,125 +291,83 @@ export const AdminScreenings: React.FC = () => {
                 </Typography>
             </Box>
 
-            {successScreening && (
-                <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-                    {successScreening}
-                </Alert>
-            )}
-            {errorScreening && (
-                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                    {errorScreening}
-                </Alert>
-            )}
-
             <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid rgba(0,0,0,0.08)' }}>
                 <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)}>
                     <Tab label="📽️ Suất Chiếu" />
                     <Tab label="💺 Giá Ghế" />
                 </Tabs>
 
-                {/* Tab 1: Screenings */}
+                {/* Tab 1: Showtimes */}
                 <TabPanel value={tabValue} index={0}>
                     <Box sx={{ px: 3, pb: 3 }}>
+                        {successShowtime && (
+                            <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+                                {successShowtime}
+                            </Alert>
+                        )}
+                        {errorShowtime && (
+                            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                                {errorShowtime}
+                            </Alert>
+                        )}
+
                         <Box sx={{ mb: 3 }}>
                             <Button
                                 variant="contained"
                                 startIcon={<AddIcon />}
-                                onClick={() => handleOpenDialog()}
+                                onClick={handleOpenShowtimeDialog}
                                 sx={{
                                     background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
                                     textTransform: 'none',
                                     borderRadius: 2,
                                     px: 3,
                                     py: 1.5,
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #ff5500 0%, #ff7700 100%)',
-                                    },
                                 }}
                             >
-                                Thêm Suất Chiếu
+                                Tạo Suất Chiếu
                             </Button>
                         </Box>
 
-                        {loadingScreenings ? (
+                        {loadingShowtimes ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                                 <CircularProgress />
                             </Box>
                         ) : (
-                            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0, 0, 0, 0.08)' }}>
+                            <TableContainer>
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
-                                            <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
                                             <TableCell sx={{ fontWeight: 700 }}>Phim</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Phòng Chiếu</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Thời Gian Chiếu</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Ghế Trống</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Phòng</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Thời Gian</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
                                             <TableCell align="center" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {screenings.map((screening) => (
-                                            <TableRow
-                                                key={screening.id}
-                                                sx={{
-                                                    '&:hover': {
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                                                    },
-                                                }}
-                                            >
-                                                <TableCell>{screening.id}</TableCell>
+                                        {showtimes.map((showtime) => (
+                                            <TableRow key={showtime.id}>
+                                                <TableCell>{getMovieTitle(showtime.movieId)}</TableCell>
+                                                <TableCell>{getRoomName(showtime.roomId)}</TableCell>
                                                 <TableCell>
-                                                    <Typography fontWeight={600}>{screening.movie?.title || getMovieTitle(screening.movieId)}</Typography>
+                                                    {new Date(showtime.startTime).toLocaleString('vi-VN')}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Chip
-                                                        label={getRoomName(screening.roomId)}
+                                                        label={showtime.status === 'ACTIVE' ? 'Hoạt Động' : 'Đã Hủy'}
                                                         size="small"
-                                                        sx={{
-                                                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                                                            color: '#2196f3',
-                                                            fontWeight: 600,
-                                                        }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(screening.screeningTime).toLocaleString('vi-VN', {
-                                                        day: '2-digit',
-                                                        month: '2-digit',
-                                                        year: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Chip
-                                                        label={`${screening.availableSeats || 0} ghế`}
-                                                        size="small"
-                                                        sx={{
-                                                            backgroundColor:
-                                                                (screening.availableSeats || 0) > 20
-                                                                    ? 'rgba(76, 175, 80, 0.1)'
-                                                                    : 'rgba(255, 193, 7, 0.1)',
-                                                            color: (screening.availableSeats || 0) > 20 ? '#4caf50' : '#ffc107',
-                                                            fontWeight: 600,
-                                                        }}
+                                                        color={showtime.status === 'ACTIVE' ? 'success' : 'error'}
+                                                        variant="outlined"
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center">
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => handleOpenDialog(screening)}
-                                                        sx={{ color: '#2196f3' }}
+                                                        onClick={() => handleOpenPriceDialog(showtime)}
+                                                        title="Cập nhật giá"
+                                                        sx={{ color: '#ff6b00' }}
                                                     >
                                                         <EditIcon />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleDelete(screening.id)}
-                                                        sx={{ color: '#f44336' }}
-                                                    >
-                                                        <DeleteIcon />
                                                     </IconButton>
                                                 </TableCell>
                                             </TableRow>
@@ -447,24 +394,23 @@ export const AdminScreenings: React.FC = () => {
                 </TabPanel>
             </Paper>
 
-            {/* Create/Edit Screening Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                    {editingScreening ? 'Chỉnh Sửa Suất Chiếu' : 'Thêm Suất Chiếu Mới'}
+            {/* Create Showtime Dialog */}
+            <Dialog open={openShowtimeDialog} onClose={handleCloseShowtimeDialog} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.3rem' }}>
+                    Tạo Suất Chiếu
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                         <TextField
                             select
-                            label="Chọn Phim"
+                            label="Phim"
                             name="movieId"
-                            value={formData.movieId}
-                            onChange={handleInputChange as any}
+                            value={showtimeFormData.movieId}
+                            onChange={handleShowtimeInputChange as any}
                             fullWidth
-                            disabled={loadingScreenings}
-                            required
+                            disabled={loadingShowtimes}
                         >
-                            {movies.map((movie) => (
+                            {movies.map(movie => (
                                 <MenuItem key={movie.id} value={movie.id}>
                                     {movie.title}
                                 </MenuItem>
@@ -475,13 +421,12 @@ export const AdminScreenings: React.FC = () => {
                             select
                             label="Phòng Chiếu"
                             name="roomId"
-                            value={formData.roomId}
-                            onChange={handleInputChange as any}
+                            value={showtimeFormData.roomId}
+                            onChange={handleShowtimeInputChange as any}
                             fullWidth
-                            disabled={loadingScreenings}
-                            required
+                            disabled={loadingShowtimes}
                         >
-                            {rooms.map((room) => (
+                            {rooms.map(room => (
                                 <MenuItem key={room.id} value={room.id}>
                                     {room.roomName}
                                 </MenuItem>
@@ -492,48 +437,44 @@ export const AdminScreenings: React.FC = () => {
                             type="datetime-local"
                             label="Thời Gian Bắt Đầu"
                             name="startTime"
-                            value={formData.startTime}
-                            onChange={handleInputChange}
+                            value={showtimeFormData.startTime}
+                            onChange={handleShowtimeInputChange}
                             InputLabelProps={{ shrink: true }}
                             fullWidth
-                            disabled={loadingScreenings}
-                            required
+                            disabled={loadingShowtimes}
                         />
 
                         <TextField
                             type="datetime-local"
                             label="Thời Gian Kết Thúc"
                             name="endTime"
-                            value={formData.endTime}
-                            onChange={handleInputChange}
+                            value={showtimeFormData.endTime}
+                            onChange={handleShowtimeInputChange}
                             InputLabelProps={{ shrink: true }}
                             fullWidth
-                            disabled={loadingScreenings}
-                            required
+                            disabled={loadingShowtimes}
                         />
 
-                        {errorScreening && (
-                            <Alert severity="error">{errorScreening}</Alert>
+                        {errorShowtime && (
+                            <Alert severity="error">{errorShowtime}</Alert>
                         )}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={handleCloseDialog} disabled={loadingScreenings} sx={{ textTransform: 'none' }}>
-                        Hủy
+                <DialogActions sx={{ p: 2, gap: 1 }}>
+                    <Button onClick={handleCloseShowtimeDialog} disabled={loadingShowtimes}>
+                        Huỷ
                     </Button>
                     <Button
+                        onClick={handleCreateShowtime}
                         variant="contained"
-                        onClick={handleSubmit}
-                        disabled={loadingScreenings}
+                        disabled={loadingShowtimes}
                         sx={{
                             background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
                             textTransform: 'none',
-                            px: 3,
-                            fontWeight: 600,
                         }}
                     >
-                        {loadingScreenings ? <CircularProgress size={20} sx={{ mr: 1 }} /> : null}
-                        {editingScreening ? 'Cập Nhật' : 'Thêm Mới'}
+                        {loadingShowtimes ? <CircularProgress size={20} sx={{ mr: 1 }} /> : null}
+                        Tạo
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -544,14 +485,14 @@ export const AdminScreenings: React.FC = () => {
                     Cập Nhật Giá Ghế
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
-                    {selectedScreening && (
+                    {selectedShowtime && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Paper sx={{ p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
                                 <Typography variant="body2" gutterBottom>
-                                    <strong>Phim:</strong> {selectedScreening.movie?.title || getMovieTitle(selectedScreening.movieId)}
+                                    <strong>Phim:</strong> {getMovieTitle(selectedShowtime.movieId)}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Thời Gian:</strong> {new Date(selectedScreening.screeningTime).toLocaleString('vi-VN')}
+                                    <strong>Thời Gian:</strong> {new Date(selectedShowtime.startTime).toLocaleString('vi-VN')}
                                 </Typography>
                             </Paper>
 
@@ -579,6 +520,10 @@ export const AdminScreenings: React.FC = () => {
 
                             {errorPrice && (
                                 <Alert severity="error">{errorPrice}</Alert>
+                            )}
+
+                            {successPrice && (
+                                <Alert severity="success">{successPrice}</Alert>
                             )}
                         </Box>
                     )}

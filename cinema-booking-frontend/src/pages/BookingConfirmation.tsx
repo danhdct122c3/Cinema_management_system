@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse } from '../types';
-import { holdService, showtimeService, userService } from '../services/api';
+import { holdService, userService } from '../services/api';
 import HoldCountdown from '../components/HoldCountdown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -39,7 +39,6 @@ export const BookingConfirmation: React.FC = () => {
     const [holdStartTime, setHoldStartTime] = useState<number>(0);
     const [holdExpired, setHoldExpired] = useState(false);
     const [paymentInProgress, setPaymentInProgress] = useState(false);
-    const [userId, setUserId] = useState<string>('');
     const [seatAlreadyHeld, setSeatAlreadyHeld] = useState(false);
 
     // Initialize and hold seats
@@ -65,8 +64,6 @@ export const BookingConfirmation: React.FC = () => {
                     setLoading(false);
                     return;
                 }
-
-                setUserId(userIdFromStorage);
 
                 // Validate inputs
                 if (!showtimeId) {
@@ -113,7 +110,7 @@ export const BookingConfirmation: React.FC = () => {
         };
 
         initializeHold();
-    }, [selectedSeatIds, showtimeId]);
+    }, [selectedSeatIds, showtimeId, holdResponse]);
 
     // Handle hold expiration
     const handleHoldExpired = async () => {

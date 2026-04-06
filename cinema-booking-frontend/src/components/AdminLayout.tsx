@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText, ListItemButton, Avatar, Menu, MenuItem } from '@mui/material';
+import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItemIcon, ListItemText, ListItemButton, Avatar, Menu, MenuItem } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -14,13 +14,13 @@ import ChairIcon from '@mui/icons-material/Chair';
 
 const drawerWidth = 260;
 
-interface MenuItem {
+interface MenuItemType {
     text: string;
     icon: JSX.Element;
     path: string;
 }
 
-const menuItems: MenuItem[] = [
+const menuItems: MenuItemType[] = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
     { text: 'Quản lý Phim', icon: <MovieIcon />, path: '/admin/movies' },
     { text: 'Phòng Chiếu', icon: <ChairIcon />, path: '/admin/rooms' },
@@ -40,7 +40,7 @@ export const AdminLayout: React.FC = () => {
         if (!isAdminLoggedIn) {
             navigate('/admin/login', { replace: true });
         }
-    }, [isAdminInitialized, isAdminLoggedIn]);
+    }, [isAdminInitialized, isAdminLoggedIn, navigate]);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);

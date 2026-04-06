@@ -40,7 +40,7 @@ export const Navigation: React.FC = () => {
 
     // Contexts
     const { selectedGenreId, setSelectedGenre } = useGenre();
-    const { searchKeyword, setSearchKeyword } = useSearch();
+    const { setSearchKeyword } = useSearch();
     const { isLoggedIn: authLoggedIn, user, logout } = useAuth();
 
     // States

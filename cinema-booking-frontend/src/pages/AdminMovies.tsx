@@ -23,8 +23,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { adminMovieService, adminGenreService } from '../services/adminApi';
-import { cloudinaryService } from '../services/api';
+import { adminMovieService, adminGenreService, adminCloudinaryService } from '../services/adminApi';
 import { Movie, Genre } from '../types';
 
 const MOVIE_STATUS = ['COMING_SOON', 'NOW_SHOWING', 'ENDED'];
@@ -138,7 +137,7 @@ status: 'COMING_SOON',
 
         try {
             setUploadingImage(true);
-            const response = await cloudinaryService.uploadImage(file);
+            const response = await adminCloudinaryService.uploadImage(file);
             const imageUrl = response.data;
             setFormData({
                 ...formData,

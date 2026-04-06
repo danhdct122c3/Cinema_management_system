@@ -1,4 +1,4 @@
-import { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import {
     APIResponse,
     Movie,
@@ -7,8 +7,13 @@ import {
     Booking,
     BookingRequest,
     Genre,
+    Room,
+    ShowTimeResponse,
+    SeatShowTimeResponse,
 } from '../types';
 import { createApiClient, createTokenStorage } from './api';
+
+const API_BASE_URL = 'http://localhost:8080/home';
 
 // Token admin tách biệt user
 const ADMIN_TOKEN_KEY = 'adminAccessToken';
@@ -62,5 +67,60 @@ export const adminBookingService = {
     releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         adminAxios.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
     confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => adminAxios.post<APIResponse<Booking>>(`/bookings/${id}/confirm`),
+};
+
+export const adminRoomService = {
+    getAllRooms: (): Promise<AxiosResponse<APIResponse<Room[]>>> => adminAxios.get<APIResponse<Room[]>>('/rooms'),
+    getRoomById: (id: string): Promise<AxiosResponse<APIResponse<Room>>> => adminAxios.get<APIResponse<Room>>(`/rooms/${id}`),
+    createRoom: (data: any): Promise<AxiosResponse<APIResponse<Room>>> => adminAxios.post<APIResponse<Room>>('/rooms', data),
+    updateRoom: (id: string, data: any): Promise<AxiosResponse<APIResponse<Room>>> => adminAxios.put<APIResponse<Room>>(`/rooms/${id}`, data),
+    deleteRoom: (id: string): Promise<AxiosResponse<void>> => adminAxios.delete(`/rooms/${id}`),
+};
+
+export const adminShowtimeService = {
+    getAllShowtimes: (): Promise<AxiosResponse<APIResponse<ShowTimeResponse[]>>> =>
+        adminAxios.get<APIResponse<ShowTimeResponse[]>>('/showtimes'),
+
+    getShowtimeById: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
+        adminAxios.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),
+
+    createShowtime: (data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
+        adminAxios.post<APIResponse<ShowTimeResponse>>('/showtimes', data),
+
+    getSeatsByShowtime: (showtimeId: string): Promise<AxiosResponse<APIResponse<SeatShowTimeResponse[]>>> =>
+        adminAxios.get<APIResponse<SeatShowTimeResponse[]>>(`/seat-showtimes/${showtimeId}`),
+
+    updateSeatPrice: (
+        showtimeId: string,
+        seatType: 'NORMAL' | 'VIP',
+        price: number
+    ): Promise<AxiosResponse<APIResponse<void>>> =>
+        adminAxios.patch<APIResponse<void>>(`/seat-showtimes/${showtimeId}`, {
+            seatType,
+            price
+        }),
+};
+
+// ========== Admin File Upload Instance (with token interceptor) ==========
+const adminFileInstance = axios.create({ baseURL: API_BASE_URL });
+
+// Add token interceptor to file instance
+adminFileInstance.interceptors.request.use((config) => {
+    const cfg: any = config;
+    const token = adminTokenStorage.get();
+    if (token) {
+        cfg.headers = cfg.headers ?? {};
+        cfg.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// ========== Admin Cloudinary Service ==========
+export const adminCloudinaryService = {
+    uploadImage: (file: File): Promise<AxiosResponse<string>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return adminFileInstance.post<string>('/upload', formData);
+    }
 };
 
