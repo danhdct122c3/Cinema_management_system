@@ -41,23 +41,20 @@ export interface Seat {
 }
 
 export interface Booking {
-    id: string;
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    screening: Screening;
-    seat: Seat;
+    bookingId: string;
+    userId: string;
+    showTimeId: string;
     bookingTime: string;
     status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
-    version: number;
+    totalPrice: number;
+    seatShowTimeIds: string[];
+    seatCodes: string[];
 }
 
 export interface BookingRequest {
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    screeningId: string;
-    seatId: string;
+    userId: string;
+    showTimeId: string;
+    seatShowTimeIds: string[];
 }
 
 export interface ErrorResponse {

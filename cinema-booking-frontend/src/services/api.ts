@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre, ShowTimeResponse, SeatShowTimeResponse, HoldSeatRequest, HoldSeatResponse } from '../types';
 
-const API_BASE_URL = 'http://localhost:8080/home';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/home';
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -93,12 +93,12 @@ export const bookingService = {
     createBooking: (data: BookingRequest): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>('/bookings', data),
     getBookingById: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.get<APIResponse<Booking>>(`/bookings/${id}`),
     cancelBooking: (id: string): Promise<AxiosResponse<void>> => axiosInstance.delete(`/bookings/${id}`),
-    getBookingsByEmail: (email: string): Promise<AxiosResponse<APIResponse<Booking[]>>> => axiosInstance.get<APIResponse<Booking[]>>(`/bookings/user/${email}`),
+    getBookingsByUser: (userId: string): Promise<AxiosResponse<APIResponse<Booking[]>>> => axiosInstance.get<APIResponse<Booking[]>>(`/bookings/user/${userId}`),
     reserveSeat: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/reserve`),
     releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
-    confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>(`/bookings/${id}/confirm`)
+    confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<void>>> => axiosInstance.patch<APIResponse<void>>(`/bookings/${id}/confirm`)
 };
 
 export const holdService = {

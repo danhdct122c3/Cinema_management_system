@@ -31,8 +31,9 @@ public class SeatHoldController {
     @PostMapping("/reserve")
     public APIResponse<HoldSeatResponse> holdSeats(@RequestBody HoldSeatRequest request) {
         try {
-            // Gán user ID từ config vào request (test mode - chưa có login)
-            request.setUserId(testUserConfig.getId());
+            if (request.getUserId() == null || request.getUserId().isBlank()) {
+                request.setUserId(testUserConfig.getId());
+            }
             HoldSeatResponse response = seatHoldService.createHoldSeat(request);
             return APIResponse.<HoldSeatResponse>builder()
                     .result(response)

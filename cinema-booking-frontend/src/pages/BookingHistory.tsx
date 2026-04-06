@@ -20,11 +20,11 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Booking } from '../types';
-import { bookingService } from '../services/api';
+import { bookingService, userService } from '../services/api';
 
 export const BookingHistory: React.FC = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
+    const [userId, setUserId] = useState('');
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
@@ -33,18 +33,27 @@ export const BookingHistory: React.FC = () => {
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
-    const handleSearch = async () => {
-        if (!email) {
-            setError('Please enter your email');
+    useEffect(() => {
+        const savedUserId = localStorage.getItem('userId');
+        if (savedUserId) {
+            setUserId(savedUserId);
+            fetchBookings(savedUserId);
+        }
+    }, []);
+
+    const fetchBookings = async (targetUserId: string) => {
+        if (!targetUserId) {
+            setError('Please enter your user ID');
             return;
         }
         try {
             setLoading(true);
             setError('');
-            const response = await bookingService.getBookingsByEmail(email);
-            setBookings(response.data.result);
-            if (response.data.result.length === 0) {
-                setError('No bookings found for this email');
+            const response = await bookingService.getBookingsByUser(targetUserId);
+            const result = response.data?.result || [];
+            setBookings(result);
+            if (result.length === 0) {
+                setError('No bookings found for this user');
             }
         } catch (error: any) {
             console.error('Error fetching bookings:', error);
@@ -52,6 +61,10 @@ export const BookingHistory: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSearch = async () => {
+        await fetchBookings(userId);
     };
 
     const handleConfirmBooking = async () => {
@@ -64,8 +77,7 @@ export const BookingHistory: React.FC = () => {
             setSuccess('Booking confirmed successfully!');
 
             // Refresh the bookings list
-            const response = await bookingService.getBookingsByEmail(email);
-            setBookings(response.data.result);
+            await fetchBookings(userId);
         } catch (error: any) {
             console.error('Error confirming booking:', error);
             setError(error.response?.data?.message || 'Failed to confirm booking. Please try again.');
@@ -86,8 +98,7 @@ export const BookingHistory: React.FC = () => {
             setSuccess('Booking cancelled successfully! The seat is now available for booking.');
 
             // Refresh the bookings list
-            const response = await bookingService.getBookingsByEmail(email);
-            setBookings(response.data.result);
+            await fetchBookings(userId);
         } catch (error: any) {
             console.error('Error cancelling booking:', error);
             setError(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
@@ -128,23 +139,35 @@ export const BookingHistory: React.FC = () => {
             </Typography>
 
             <Paper sx={{ p: 4, mb: 4 }}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                     <TextField
                         fullWidth
-                        label="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        type="email"
-                        error={!!error && !email}
-                        helperText={!email && error ? 'Email is required' : ''}
+                        label="Enter your user ID"
+                        value={userId}
+                        onChange={(e) => setUserId(e.target.value)}
+                        error={!!error && !userId}
+                        helperText={!userId && error ? 'User ID is required' : ''}
                     />
                     <Button
                         variant="contained"
                         onClick={handleSearch}
-                        disabled={loading || !email}
+                        disabled={loading || !userId}
                         sx={{ height: 56 }}
                     >
                         {loading ? <CircularProgress size={24} /> : 'Search'}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await userService.getTestUserId();
+                            const id = response.data.result;
+                            setUserId(id);
+                            localStorage.setItem('userId', id);
+                        }}
+                        disabled={loading}
+                        sx={{ height: 56 }}
+                    >
+                        Use Test User
                     </Button>
                 </Box>
             </Paper>
@@ -157,12 +180,12 @@ export const BookingHistory: React.FC = () => {
 
             <Grid container spacing={3}>
                 {bookings.map((booking) => (
-                    <Grid item xs={12} key={booking.id}>
+                    <Grid item xs={12} key={booking.bookingId}>
                         <Card>
                             <CardContent>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                     <Typography variant="h6">
-                                        {booking.screening.movie.title}
+                                        Booking #{booking.bookingId}
                                     </Typography>
                                     <Chip
                                         label={booking.status}
@@ -172,24 +195,24 @@ export const BookingHistory: React.FC = () => {
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
                                         <Typography>
-                                            <strong>Show Time:</strong> {new Date(booking.screening.screeningTime).toLocaleString()}
+                                            <strong>Show Time ID:</strong> {booking.showTimeId}
                                         </Typography>
                                         <Typography>
-                                            <strong>Seat:</strong> Row {booking.seat.seatRow}, Seat {booking.seat.seatNumber}
+                                            <strong>Seats:</strong> {booking.seatCodes?.join(', ') || 'N/A'}
                                         </Typography>
                                         <Typography>
-                                            <strong>Booking ID:</strong> {booking.id}
+                                            <strong>Booking Time:</strong> {new Date(booking.bookingTime).toLocaleString()}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
                                         <Typography>
-                                            <strong>Customer:</strong> {booking.customerName}
+                                            <strong>User ID:</strong> {booking.userId}
                                         </Typography>
                                         <Typography>
-                                            <strong>Email:</strong> {booking.customerEmail}
+                                            <strong>Total:</strong> ${booking.totalPrice?.toFixed(2) || '0.00'}
                                         </Typography>
                                         <Typography>
-                                            <strong>Phone:</strong> {booking.customerPhone}
+                                            <strong>Seat IDs:</strong> {booking.seatShowTimeIds?.join(', ') || 'N/A'}
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -198,7 +221,7 @@ export const BookingHistory: React.FC = () => {
                                         <Button
                                             variant="contained"
                                             color="primary"
-                                            onClick={() => openConfirmDialog(booking.id)}
+                                            onClick={() => openConfirmDialog(booking.bookingId)}
                                             disabled={loading}
                                         >
                                             Confirm
@@ -206,7 +229,7 @@ export const BookingHistory: React.FC = () => {
                                         <Button
                                             variant="contained"
                                             color="error"
-                                            onClick={() => openCancelDialog(booking.id)}
+                                            onClick={() => openCancelDialog(booking.bookingId)}
                                             disabled={loading}
                                         >
                                             Cancel
