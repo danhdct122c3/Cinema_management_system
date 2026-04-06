@@ -63,25 +63,34 @@ export interface ErrorResponse {
     timestamp: string;
 }
 
+// ===== Authentication Related =====
+export interface AuthenticationRequest {
+    email: string;
+    password: string;
+}
+
+export interface RefreshRequest {
+    token: string;
+}
+
+export interface LogoutRequest {
+    token?: string;
+}
+
+export interface AuthenticationResult {
+    token: string;
+    isAuthenticated: boolean;
+}
+
 // ===== ShowTime Related =====
 export interface ShowTimeResponse {
     id: string;
     movieId: string;
     roomId: string;
-    roomName: string;  // Room name for display
-    startTime: string;  // ISO DateTime: "2024-12-31T14:00:00"
-    endTime: string;    // ISO DateTime: "2024-12-31T16:30:00"
+    roomName: string;
+    startTime: string;
+    endTime: string;
     status: 'ACTIVE' | 'CANCELLED';
-}
-
-export interface SeatShowTimeResponse {
-    id: string;
-    seatCode: string;   // "A1", "A2", "B5"
-    status: 'AVAILABLE' | 'BOOKED' | 'HOLD';
-    seatType: 'NORMAL' | 'VIP';  // Seat type
-    price: number;
-    holdExpireTime?: string;      // ISO DateTime - khi hold hết (nếu HOLD)
-    heldByUserEmail?: string;     // Email của user đang hold (nếu HOLD)
 }
 
 export interface Room {
@@ -96,24 +105,35 @@ export interface ShowTimeDetail extends ShowTimeResponse {
     room?: Room;
 }
 
-// ===== Hold Seat Related =====
-export interface HoldSeatRequest {
-    seatShowTimeIds: string[];  // List of SeatShowTime IDs
-    showTimeId: string;  // ShowTime ID for finding all seats in that showtime
-    userId: string;  // UUID of user
-    holdDuration: number;  // Duration in minutes (e.g., 5)
-}
-
-export interface HoldSeatResponse {
-    heldSeatCodes: string[];  // e.g., ["A1", "A2", "B5"]
-    holdDurationSeconds: number;  // Duration in seconds (e.g., 300)
-    totalPrice: number;  // Total price of held seats
-    showTimeId?: string;
-    userEmail?: string;
-    holdStartTime?: number;  // Timestamp when hold was created (ms)
+// ===== Seat ShowTime Related =====
+export interface SeatShowTimeResponse {
+    id: string;
+    seatCode: string;
+    status: 'AVAILABLE' | 'BOOKED' | 'HOLD';
+    seatType: 'NORMAL' | 'VIP';
+    price: number;
+    holdExpireTime?: string;
+    heldByUserEmail?: string;
 }
 
 export interface SeatShowTimeSummary {
     row: string;
     seats: SeatShowTimeResponse[];
-} 
+}
+
+// ===== Hold Seat Related =====
+export interface HoldSeatRequest {
+    seatShowTimeIds: string[];
+    showTimeId: string;
+    userId: string;
+    holdDuration: number;
+}
+
+export interface HoldSeatResponse {
+    heldSeatCodes: string[];
+    holdDurationSeconds: number;
+    totalPrice: number;
+    showTimeId?: string;
+    userEmail?: string;
+    holdStartTime?: number;
+}

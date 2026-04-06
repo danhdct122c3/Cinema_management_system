@@ -13,8 +13,9 @@ import {
     CardContent,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
-import { holdService, showtimeService, userService, bookingService } from '../services/api';
+import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
+import { holdService, userService } from '../services/api';
+import { adminBookingService } from '../services/adminApi';
 import HoldCountdown from '../components/HoldCountdown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -115,7 +116,7 @@ export const BookingConfirmation: React.FC = () => {
         };
 
         initializeHold();
-    }, [selectedSeatIds, showtimeId]);
+    }, [selectedSeatIds, showtimeId, holdResponse]);
 
     // Handle hold expiration
     const handleHoldExpired = async () => {
@@ -164,7 +165,7 @@ export const BookingConfirmation: React.FC = () => {
                 return;
             }
 
-            const bookingResponse = await bookingService.createBooking({
+            const bookingResponse = await adminBookingService.createBooking({
                 userId,
                 showTimeId: showtimeId,
                 seatShowTimeIds: selectedSeatIds,

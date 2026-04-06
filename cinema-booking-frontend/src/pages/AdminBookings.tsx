@@ -18,7 +18,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { bookingService, userService } from '../services/api';
+import { adminBookingService } from '../services/adminApi';
 import { Booking } from '../types';
 
 export const AdminBookings: React.FC = () => {
@@ -34,15 +34,10 @@ export const AdminBookings: React.FC = () => {
     const fetchBookings = async () => {
         try {
             setLoading(true);
-            // Backend hiện chỉ hỗ trợ lấy theo userId
-            let userId = localStorage.getItem('userId') || '';
-            if (!userId) {
-                const testUserResponse = await userService.getTestUserId();
-                userId = testUserResponse.data.result;
-                localStorage.setItem('userId', userId);
-            }
-            const response = await bookingService.getBookingsByUser(userId);
-            setBookings(response.data.result || []);
+            // TODO: Implement getAll endpoint in backend
+            // For now, using temporary user scope endpoint
+            const response = await adminBookingService.getBookingsByUser('admin@example.com');
+            setBookings(response.data.result);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             setBookings([]);
@@ -77,16 +72,28 @@ export const AdminBookings: React.FC = () => {
         }
     };
 
-    const handleCancelBooking = (id: string) => {
-        // TODO: Implement cancel booking API call
-        console.log('Cancelling booking:', id);
-        // fetchBookings(); // Refresh list after cancel
+    const handleCancelBooking = async (id: string) => {
+        try {
+            setLoading(true);
+            await adminBookingService.cancelBooking(id);
+            await fetchBookings();
+        } catch (error) {
+            console.error('Error cancelling booking:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleConfirmBooking = (id: string) => {
-        // TODO: Implement confirm booking API call
-        console.log('Confirming booking:', id);
-        // fetchBookings(); // Refresh list after confirm
+    const handleConfirmBooking = async (id: string) => {
+        try {
+            setLoading(true);
+            await adminBookingService.confirmBooking(id);
+            await fetchBookings();
+        } catch (error) {
+            console.error('Error confirming booking:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const filteredBookings = bookings.filter((booking) => {
@@ -107,7 +114,7 @@ export const AdminBookings: React.FC = () => {
             <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
                 <TextField
                     label="Tìm kiếm"
-                    placeholder="Tìm theo ID hoặc Email"
+                    placeholder="Tìm theo mã đặt vé hoặc User ID"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     sx={{ width: 300 }}
