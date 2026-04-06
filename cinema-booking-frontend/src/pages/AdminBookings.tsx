@@ -18,13 +18,14 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { bookingService } from '../services/api';
+import { adminBookingService } from '../services/adminApi';
 import { Booking } from '../types';
 
 export const AdminBookings: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchBookings();
@@ -32,14 +33,16 @@ export const AdminBookings: React.FC = () => {
 
     const fetchBookings = async () => {
         try {
+            setLoading(true);
             // TODO: Implement getAll endpoint in backend
-            // For now, using mock data or fetching by email
-            const response = await bookingService.getBookingsByEmail('admin@example.com');
+            // For now, using temporary user scope endpoint
+            const response = await adminBookingService.getBookingsByUser('admin@example.com');
             setBookings(response.data.result);
         } catch (error) {
             console.error('Error fetching bookings:', error);
-            // Set mock data for demonstration
             setBookings([]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -69,24 +72,36 @@ export const AdminBookings: React.FC = () => {
         }
     };
 
-    const handleCancelBooking = (id: string) => {
-        // TODO: Implement cancel booking API call
-        console.log('Cancelling booking:', id);
-        // fetchBookings(); // Refresh list after cancel
+    const handleCancelBooking = async (id: string) => {
+        try {
+            setLoading(true);
+            await adminBookingService.cancelBooking(id);
+            await fetchBookings();
+        } catch (error) {
+            console.error('Error cancelling booking:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleConfirmBooking = (id: string) => {
-        // TODO: Implement confirm booking API call
-        console.log('Confirming booking:', id);
-        // fetchBookings(); // Refresh list after confirm
+    const handleConfirmBooking = async (id: string) => {
+        try {
+            setLoading(true);
+            await adminBookingService.confirmBooking(id);
+            await fetchBookings();
+        } catch (error) {
+            console.error('Error confirming booking:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const filteredBookings = bookings.filter((booking) => {
         const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
         const matchesSearch =
             searchQuery === '' ||
-            booking.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.id.includes(searchQuery);
+            booking.userId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.bookingId.includes(searchQuery);
         return matchesStatus && matchesSearch;
     });
 
@@ -99,7 +114,7 @@ export const AdminBookings: React.FC = () => {
             <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
                 <TextField
                     label="Tìm kiếm"
-                    placeholder="Tìm theo ID hoặc Email"
+                    placeholder="Tìm theo mã đặt vé hoặc User ID"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     sx={{ width: 300 }}
@@ -132,7 +147,7 @@ export const AdminBookings: React.FC = () => {
                     <TableHead>
                         <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
                             <TableCell sx={{ fontWeight: 700 }}>Mã Đặt Vé</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>Email Khách Hàng</TableCell>
+                            <TableCell sx={{ fontWeight: 700 }}>User ID</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Suất Chiếu</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Số Ghế</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Thời Gian Đặt</TableCell>
@@ -147,7 +162,7 @@ export const AdminBookings: React.FC = () => {
                             const statusStyle = getStatusColor(booking.status);
                             return (
                                 <TableRow
-                                    key={booking.id}
+                                    key={booking.bookingId}
                                     sx={{
                                         '&:hover': {
                                             backgroundColor: 'rgba(0, 0, 0, 0.02)',
@@ -155,12 +170,12 @@ export const AdminBookings: React.FC = () => {
                                     }}
                                 >
                                     <TableCell>
-                                        <Typography fontWeight={600}>#{booking.id}</Typography>
+                                        <Typography fontWeight={600}>#{booking.bookingId}</Typography>
                                     </TableCell>
-                                    <TableCell>{booking.customerEmail}</TableCell>
+                                    <TableCell>{booking.userId}</TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={`Suất #${booking.screening.id}`}
+                                            label={`Suất #${booking.showTimeId}`}
                                             size="small"
                                             sx={{
                                                 backgroundColor: 'rgba(33, 150, 243, 0.1)',
@@ -169,7 +184,7 @@ export const AdminBookings: React.FC = () => {
                                             }}
                                         />
                                     </TableCell>
-                                    <TableCell>1 ghế</TableCell>
+                                    <TableCell>{booking.seatCodes?.join(', ') || 'N/A'}</TableCell>
                                     <TableCell>
                                         {new Date(booking.bookingTime).toLocaleString('vi-VN', {
                                             day: '2-digit',
@@ -201,8 +216,9 @@ export const AdminBookings: React.FC = () => {
                                                 <Tooltip title="Xác Nhận">
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => handleConfirmBooking(booking.id)}
+                                                        onClick={() => handleConfirmBooking(booking.bookingId)}
                                                         sx={{ color: '#4caf50' }}
+                                                        disabled={loading}
                                                     >
                                                         <CheckCircleIcon />
                                                     </IconButton>
@@ -210,8 +226,9 @@ export const AdminBookings: React.FC = () => {
                                                 <Tooltip title="Hủy Đặt Vé">
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => handleCancelBooking(booking.id)}
+                                                        onClick={() => handleCancelBooking(booking.bookingId)}
                                                         sx={{ color: '#f44336' }}
+                                                        disabled={loading}
                                                     >
                                                         <CancelIcon />
                                                     </IconButton>

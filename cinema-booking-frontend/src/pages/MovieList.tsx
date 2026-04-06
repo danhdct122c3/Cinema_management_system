@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
+import { Container, Typography, Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';

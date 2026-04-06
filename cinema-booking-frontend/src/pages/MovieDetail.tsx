@@ -9,7 +9,6 @@ import {
     Grid,
     Paper,
     CircularProgress,
-    Rating,
     Divider,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -27,20 +26,19 @@ export const MovieDetail: React.FC = () => {
     const [rating] = useState((Math.random() * 2.5 + 7).toFixed(1));
 
     useEffect(() => {
+        const fetchMovieDetail = async () => {
+            try {
+                if (!id) return;
+                const response = await movieService.getMovieById(id);
+                setMovie(response.data.result);
+            } catch (error) {
+                console.error('Error fetching movie detail:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchMovieDetail();
     }, [id]);
-
-    const fetchMovieDetail = async () => {
-        try {
-            if (!id) return;
-            const response = await movieService.getMovieById(id);
-            setMovie(response.data.result);
-        } catch (error) {
-            console.error('Error fetching movie detail:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) {
         return (

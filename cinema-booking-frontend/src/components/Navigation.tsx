@@ -1,18 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Menu, MenuItem, Avatar, Select, FormControl, InputBase, Drawer, useMediaQuery, useTheme } from '@mui/material';
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    Container,
+    Box,
+    IconButton,
+    Menu,
+    MenuItem,
+    Avatar,
+    Select,
+    FormControl,
+    InputBase,
+    Drawer,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MovieIcon from '@mui/icons-material/Movie';
 import HistoryIcon from '@mui/icons-material/History';
 import HomeIcon from '@mui/icons-material/Home';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { useGenre } from '../context/GenreContext';
 import { useSearch } from '../context/SearchContext';
+import { useAuth } from '../context/AuthContext';
 import { genreService } from '../services/api';
 import { Genre } from '../types';
 
@@ -20,23 +37,19 @@ export const Navigation: React.FC = () => {
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    // Contexts
     const { selectedGenreId, setSelectedGenre } = useGenre();
-    const { searchKeyword, setSearchKeyword } = useSearch();
+    const { setSearchKeyword } = useSearch();
+    const { isLoggedIn: authLoggedIn, user, logout } = useAuth();
+
+    // States
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userEmail, setUserEmail] = useState('');
     const [genres, setGenres] = useState<Genre[]>([]);
     const [searchInput, setSearchInput] = useState('');
 
     useEffect(() => {
-        // Check login status
-        const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const email = localStorage.getItem('userEmail') || '';
-        setIsLoggedIn(loggedIn);
-        setUserEmail(email);
-
-        // Fetch genres
         fetchGenres();
     }, []);
 
@@ -52,13 +65,15 @@ export const Navigation: React.FC = () => {
     const handleGenreChange = (event: any) => {
         const genreId = event.target.value;
         const selectedGenre = genres.find(g => g.id === genreId);
-        
+
         if (!genreId) {
             setSelectedGenre(null, null);
-            navigate('/');
         } else {
             setSelectedGenre(genreId, selectedGenre?.name || null);
-            navigate('/');
+        }
+        navigate('/');
+        if (isMobile) {
+            setMobileDrawerOpen(false);
         }
     };
 
@@ -66,18 +81,12 @@ export const Navigation: React.FC = () => {
         event.preventDefault();
         if (searchInput.trim()) {
             setSearchKeyword(searchInput.trim());
-            setSelectedGenre(null, null); // Reset genre filter when searching
+            setSelectedGenre(null, null);
             navigate('/');
         }
     };
 
-    const handleSearchClear = () => {
-        setSearchInput('');
-        setSearchKeyword(null);
-    };
-
     const handleLogoClick = () => {
-        // Reset all filters and search
         setSelectedGenre(null, null);
         setSearchKeyword(null);
         setSearchInput('');
@@ -92,17 +101,16 @@ export const Navigation: React.FC = () => {
         setAnchorEl(null);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
-        setIsLoggedIn(false);
-        setUserEmail('');
+    const handleLogout = async () => {
+        await logout();
         handleMenuClose();
+        setMobileDrawerOpen(false);
         navigate('/');
     };
 
     const getUserInitial = () => {
-        return userEmail.charAt(0).toUpperCase();
+        const email = user?.email || '';
+        return email.charAt(0).toUpperCase();
     };
 
     return (
@@ -134,7 +142,7 @@ export const Navigation: React.FC = () => {
                             </Typography>
                         </Box>
                         
-                        {/* Desktop Nav */}
+                        {/* Desktop Navigation */}
                         <Box sx={{ 
                             display: { xs: 'none', md: 'flex' },
                             gap: 2, 
@@ -144,7 +152,6 @@ export const Navigation: React.FC = () => {
                         }}>
                             <Button
                                 sx={{
-                                    display: 'none',
                                     color: 'text.primary',
                                     whiteSpace: 'nowrap',
                                     '&:hover': {
@@ -159,7 +166,6 @@ export const Navigation: React.FC = () => {
                             </Button>
                             <Button
                                 sx={{
-                                    display: 'none',
                                     color: 'text.primary',
                                     whiteSpace: 'nowrap',
                                     '&:hover': {
@@ -256,90 +262,39 @@ export const Navigation: React.FC = () => {
                             </Box>
                         </Box>
 
-                        {/* Desktop Auth Buttons */}
+                        {/* Desktop Auth Button */}
                         <Box sx={{ 
                             display: { xs: 'none', md: 'flex' },
                             gap: 1,
                             alignItems: 'center',
                         }}>
-                            {isLoggedIn ? (
+                            {authLoggedIn ? (
                                 <>
-                                    <IconButton
-                                        onClick={handleMenuOpen}
-                                        sx={{
-                                            '&:hover': {
-                                                backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                                            },
-                                        }}
-                                    >
-                                        <Avatar 
-                                            sx={{ 
-                                                width: 36, 
-                                                height: 36, 
-                                                bgcolor: '#ff6b00',
-                                                fontSize: '1rem',
-                                                fontWeight: 600,
-                                            }}
-                                        >
+                                    <IconButton onClick={handleMenuOpen}>
+                                        <Avatar sx={{ width: 36, height: 36, bgcolor: '#ff6b00' }}>
                                             {getUserInitial()}
                                         </Avatar>
                                     </IconButton>
-                                    <Menu
-                                        anchorEl={anchorEl}
-                                        open={Boolean(anchorEl)}
-                                        onClose={handleMenuClose}
-                                        anchorOrigin={{
-                                            vertical: 'bottom',
-                                            horizontal: 'right',
-                                        }}
-                                        transformOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'right',
-                                        }}
-                                    >
+                                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                                         <MenuItem disabled>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {userEmail}
-                                            </Typography>
+                                            <Typography variant="body2">{user?.email}</Typography>
                                         </MenuItem>
                                         <MenuItem onClick={() => { handleMenuClose(); navigate('/booking-history'); }}>
-                                            <HistoryIcon sx={{ mr: 1, fontSize: 20 }} />
+                                            <HistoryIcon sx={{ mr: 1 }} />
                                             Lịch sử đặt vé
                                         </MenuItem>
                                         <MenuItem onClick={handleLogout}>
-                                            <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
+                                            <LogoutIcon sx={{ mr: 1 }} />
                                             Đăng xuất
                                         </MenuItem>
                                     </Menu>
                                 </>
                             ) : (
                                 <>
-                                    <Button
-                                        variant="outlined"
-                                        startIcon={<LoginIcon />}
-                                        onClick={() => navigate('/login')}
-                                        sx={{
-                                            borderColor: '#ff6b00',
-                                            color: '#ff6b00',
-                                            '&:hover': {
-                                                borderColor: '#d95a00',
-                                                backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                                            },
-                                        }}
-                                    >
+                                    <Button variant="outlined" startIcon={<LoginIcon />} onClick={() => navigate('/login')}>
                                         Đăng Nhập
                                     </Button>
-                                    <Button
-                                        variant="contained"
-                                        startIcon={<PersonAddIcon />}
-                                        onClick={() => navigate('/register')}
-                                        sx={{
-                                            backgroundColor: '#ff6b00',
-                                            '&:hover': {
-                                                backgroundColor: '#d95a00',
-                                            },
-                                        }}
-                                    >
+                                    <Button variant="contained" startIcon={<PersonAddIcon />} onClick={() => navigate('/register')}>
                                         Đăng Ký
                                     </Button>
                                 </>
@@ -347,79 +302,18 @@ export const Navigation: React.FC = () => {
                         </Box>
 
                         {/* Mobile Menu Button */}
-                        <Box sx={{ 
-                            display: { xs: 'flex', md: 'none' },
-                            gap: 1,
-                            alignItems: 'center',
-                            marginLeft: 'auto',
-                        }}>
-                            <IconButton
-                                onClick={() => setMobileDrawerOpen(true)}
-                                sx={{
-                                    color: '#ff6b00',
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                                    },
-                                }}
-                            >
+                        <Box sx={{ display: { xs: 'flex', md: 'none' }, ml: 'auto' }}>
+                            <IconButton onClick={() => setMobileDrawerOpen(true)} sx={{ color: '#ff6b00' }}>
                                 <MenuIcon />
                             </IconButton>
                         </Box>
                     </Toolbar>
 
-                    {/* Mobile Search Bar (below navbar) */}
-                    <Box sx={{ 
-                        display: { xs: 'flex', md: 'none' },
-                        pb: 1,
-                    }}>
-                        <Box
-                            component="form"
-                            onSubmit={handleSearchSubmit}
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                                borderRadius: 1,
-                                border: '1px solid rgba(0, 0, 0, 0.12)',
-                                px: 1.5,
-                                py: 0.5,
-                                width: '100%',
-                                '&:hover': {
-                                    borderColor: '#ff6b00',
-                                    backgroundColor: 'rgba(255, 107, 0, 0.05)',
-                                },
-                                '&:focus-within': {
-                                    borderColor: '#ff6b00',
-                                    backgroundColor: 'rgba(255, 107, 0, 0.02)',
-                                },
-                            }}
-                        >
-                            <InputBase
-                                placeholder="Tìm phim..."
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                sx={{
-                                    flex: 1,
-                                    fontSize: '0.875rem',
-                                    '& input': {
-                                        padding: 0,
-                                    },
-                                    '& input::placeholder': {
-                                        opacity: 0.7,
-                                    },
-                                }}
-                            />
-                            <IconButton
-                                type="submit"
-                                size="small"
-                                sx={{
-                                    color: '#ff6b00',
-                                    p: 0.5,
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                                    },
-                                }}
-                            >
+                    {/* Mobile Search Bar */}
+                    <Box sx={{ display: { xs: 'flex', md: 'none' }, pb: 1 }}>
+                        <Box component="form" onSubmit={handleSearchSubmit} sx={{ width: '100%', display: 'flex', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.05)', borderRadius: 1, px: 1.5, py: 0.5 }}>
+                            <InputBase placeholder="Tìm phim..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} sx={{ flex: 1 }} />
+                            <IconButton type="submit" size="small" sx={{ color: '#ff6b00' }}>
                                 <SearchIcon fontSize="small" />
                             </IconButton>
                         </Box>
@@ -428,162 +322,57 @@ export const Navigation: React.FC = () => {
             </AppBar>
 
             {/* Mobile Drawer */}
-            <Drawer
-                anchor="right"
-                open={mobileDrawerOpen}
-                onClose={() => setMobileDrawerOpen(false)}
-            >
+            <Drawer anchor="right" open={mobileDrawerOpen} onClose={() => setMobileDrawerOpen(false)}>
                 <Box sx={{ width: 280, p: 2 }}>
-                    {/* Close Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                        <IconButton
-                            onClick={() => setMobileDrawerOpen(false)}
-                            sx={{
-                                color: '#ff6b00',
-                            }}
-                        >
+                        <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: '#ff6b00' }}>
                             <CloseIcon />
                         </IconButton>
                     </Box>
 
-                    {/* Genre Filter in Drawer */}
-                    <FormControl fullWidth sx={{ mb: 2 }} size="small">
-                        <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                            Thể loại
-                        </Typography>
-                        <Select
-                            value={selectedGenreId || ''}
-                            onChange={(event) => {
-                                handleGenreChange(event);
-                                setMobileDrawerOpen(false);
-                            }}
-                            displayEmpty
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    '& fieldset': {
-                                        borderColor: 'rgba(0, 0, 0, 0.23)',
-                                    },
-                                    '&:hover fieldset': {
-                                        borderColor: '#ff6b00',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#ff6b00',
-                                    },
-                                },
-                            }}
-                        >
+                    {/* Genre Filter */}
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>Thể loại</Typography>
+                    <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                        <Select value={selectedGenreId || ''} onChange={(e) => { handleGenreChange(e); setMobileDrawerOpen(false); }} displayEmpty>
                             <MenuItem value="">Tất cả thể loại</MenuItem>
-                            {genres.map((genre) => (
-                                <MenuItem key={genre.id} value={genre.id}>
-                                    {genre.name}
-                                </MenuItem>
-                            ))}
+                            {genres.map((genre) => <MenuItem key={genre.id} value={genre.id}>{genre.name}</MenuItem>)}
                         </Select>
                     </FormControl>
 
-                    {/* Navigation Menu Items */}
-                    <MenuItem
-                        onClick={() => {
-                            navigate('/');
-                            setMobileDrawerOpen(false);
-                        }}
-                        sx={{ mb: 1, borderRadius: 1, display: 'none' }}
-                    >
+                    {/* Navigation Items */}
+                    <MenuItem onClick={() => { navigate('/'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
                         <HomeIcon sx={{ mr: 2, color: '#ff6b00' }} />
                         <Typography>Trang Chủ</Typography>
                     </MenuItem>
-
-                    <MenuItem
-                        onClick={() => {
-                            navigate('/booking-history');
-                            setMobileDrawerOpen(false);
-                        }}
-                        sx={{ mb: 1, borderRadius: 1, display: 'none' }}
-                    >
+                    <MenuItem onClick={() => { navigate('/booking-history'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
                         <HistoryIcon sx={{ mr: 2, color: '#ff6b00' }} />
                         <Typography>Lịch Sử Đặt Vé</Typography>
                     </MenuItem>
 
                     <Box sx={{ borderTop: '1px solid rgba(0, 0, 0, 0.12)', my: 2 }} />
 
-                    {/* Auth Buttons in Drawer */}
-                    {isLoggedIn ? (
+                    {/* Auth Section */}
+                    {authLoggedIn ? (
                         <>
                             <MenuItem disabled sx={{ mb: 1 }}>
-                                <Avatar 
-                                    sx={{ 
-                                        mr: 2,
-                                        width: 32, 
-                                        height: 32, 
-                                        bgcolor: '#ff6b00',
-                                        fontSize: '0.9rem',
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    {getUserInitial()}
-                                </Avatar>
-                                <Typography variant="body2" color="text.secondary">
-                                    {userEmail}
-                                </Typography>
+                                <Avatar sx={{ mr: 2, width: 32, height: 32, bgcolor: '#ff6b00' }}>{getUserInitial()}</Avatar>
+                                <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
                             </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    navigate('/booking-history');
-                                    setMobileDrawerOpen(false);
-                                }}
-                                sx={{ mb: 1, borderRadius: 1 }}
-                            >
-                                <HistoryIcon sx={{ mr: 2, color: '#ff6b00', fontSize: 20 }} />
+                            <MenuItem onClick={() => { navigate('/booking-history'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
+                                <HistoryIcon sx={{ mr: 2, color: '#ff6b00' }} />
                                 <Typography>Lịch sử đặt vé</Typography>
                             </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    handleLogout();
-                                    setMobileDrawerOpen(false);
-                                }}
-                                sx={{ borderRadius: 1 }}
-                            >
-                                <LogoutIcon sx={{ mr: 2, color: '#ff6b00', fontSize: 20 }} />
+                            <MenuItem onClick={handleLogout} sx={{ borderRadius: 1 }}>
+                                <LogoutIcon sx={{ mr: 2, color: '#ff6b00' }} />
                                 <Typography>Đăng xuất</Typography>
                             </MenuItem>
                         </>
                     ) : (
                         <>
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                startIcon={<LoginIcon />}
-                                onClick={() => {
-                                    navigate('/login');
-                                    setMobileDrawerOpen(false);
-                                }}
-                                sx={{
-                                    borderColor: '#ff6b00',
-                                    color: '#ff6b00',
-                                    mb: 1,
-                                    '&:hover': {
-                                        borderColor: '#d95a00',
-                                        backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                                    },
-                                }}
-                            >
+                            <Button fullWidth variant="outlined" startIcon={<LoginIcon />} onClick={() => { navigate('/login'); setMobileDrawerOpen(false); }} sx={{ mb: 1 }}>
                                 Đăng Nhập
                             </Button>
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                startIcon={<PersonAddIcon />}
-                                onClick={() => {
-                                    navigate('/register');
-                                    setMobileDrawerOpen(false);
-                                }}
-                                sx={{
-                                    backgroundColor: '#ff6b00',
-                                    '&:hover': {
-                                        backgroundColor: '#d95a00',
-                                    },
-                                }}
-                            >
+                            <Button fullWidth variant="contained" startIcon={<PersonAddIcon />} onClick={() => { navigate('/register'); setMobileDrawerOpen(false); }}>
                                 Đăng Ký
                             </Button>
                         </>

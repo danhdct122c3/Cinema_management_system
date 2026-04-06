@@ -11,7 +11,6 @@ import {
     DialogActions,
     Alert,
     CircularProgress,
-    Container,
     Table,
     TableBody,
     TableCell,
@@ -21,7 +20,7 @@ import {
     Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import axios from 'axios';
+import { adminRoomService } from '../services/adminApi';
 
 interface Room {
     id: string;
@@ -59,7 +58,7 @@ export const AdminRooms: React.FC = () => {
     const fetchRooms = async () => {
         try {
             setLoadingRooms(true);
-            const response = await axios.get(`${API_BASE_URL}/rooms`);
+            const response = await adminRoomService.getAllRooms();
             console.log('Rooms response:', response.data);
             setRooms(response.data.result || []);
             setError('');
@@ -112,7 +111,7 @@ export const AdminRooms: React.FC = () => {
                 return;
             }
 
-            const response = await axios.post(`${API_BASE_URL}/rooms`, formData);
+            const response = await adminRoomService.createRoom(formData);
 
             if (response.data.result) {
                 setSuccess(`Tạo phòng chiếu "${formData.roomName}" thành công! Tổng ${formData.totalRows * formData.totalColumns} ghế.`);

@@ -6,29 +6,29 @@ interface BookingFormProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: BookingRequest) => void;
-    screeningId: string;
-    seatId: string;
+    showTimeId: string;
+    seatShowTimeIds: string[];
+    defaultUserId?: string;
 }
 
 export const BookingForm: React.FC<BookingFormProps> = ({
     open,
     onClose,
     onSubmit,
-    screeningId,
-    seatId,
+    showTimeId,
+    seatShowTimeIds,
+    defaultUserId,
 }) => {
-    const [formData, setFormData] = React.useState<Omit<BookingRequest, 'screeningId' | 'seatId'>>({
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
+    const [formData, setFormData] = React.useState<Pick<BookingRequest, 'userId'>>({
+        userId: defaultUserId || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmit({
             ...formData,
-            screeningId,
-            seatId,
+            showTimeId,
+            seatShowTimeIds,
         });
     };
 
@@ -49,26 +49,9 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                         <TextField
                             required
                             fullWidth
-                            label="Name"
-                            name="customerName"
-                            value={formData.customerName}
-                            onChange={handleChange}
-                        />
-                        <TextField
-                            required
-                            fullWidth
-                            label="Email"
-                            name="customerEmail"
-                            type="email"
-                            value={formData.customerEmail}
-                            onChange={handleChange}
-                        />
-                        <TextField
-                            required
-                            fullWidth
-                            label="Phone"
-                            name="customerPhone"
-                            value={formData.customerPhone}
+                            label="User ID"
+                            name="userId"
+                            value={formData.userId}
                             onChange={handleChange}
                         />
                     </Box>

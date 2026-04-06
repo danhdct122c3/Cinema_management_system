@@ -13,8 +13,9 @@ import {
     CardContent,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse } from '../types';
-import { holdService, showtimeService, userService } from '../services/api';
+import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
+import { holdService, userService } from '../services/api';
+import { adminBookingService } from '../services/adminApi';
 import HoldCountdown from '../components/HoldCountdown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -41,6 +42,8 @@ export const BookingConfirmation: React.FC = () => {
     const [paymentInProgress, setPaymentInProgress] = useState(false);
     const [userId, setUserId] = useState<string>('');
     const [seatAlreadyHeld, setSeatAlreadyHeld] = useState(false);
+    const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [bookingResult, setBookingResult] = useState<Booking | null>(null);
 
     // Initialize and hold seats
     useEffect(() => {
@@ -113,7 +116,7 @@ export const BookingConfirmation: React.FC = () => {
         };
 
         initializeHold();
-    }, [selectedSeatIds, showtimeId]);
+    }, [selectedSeatIds, showtimeId, holdResponse]);
 
     // Handle hold expiration
     const handleHoldExpired = async () => {
@@ -150,13 +153,26 @@ export const BookingConfirmation: React.FC = () => {
                 }
             }
 
-            // TODO: Integrate with payment gateway here
-            // This will be handled by the payment team
-            console.log('Processing payment for seats:', selectedSeats);
-            console.log('Total price:', totalPrice);
+            if (!showtimeId || !selectedSeatIds || selectedSeatIds.length === 0) {
+                setError('Missing booking information. Please try again.');
+                setPaymentInProgress(false);
+                return;
+            }
 
-            // Placeholder: show success message
-            alert('Payment functionality will be integrated by the payment team');
+            if (!userId) {
+                setError('User information not found. Please log in again.');
+                setPaymentInProgress(false);
+                return;
+            }
+
+            const bookingResponse = await adminBookingService.createBooking({
+                userId,
+                showTimeId: showtimeId,
+                seatShowTimeIds: selectedSeatIds,
+            });
+
+            setBookingResult(bookingResponse.data.result);
+            setBookingSuccess(true);
             setPaymentInProgress(false);
         } catch (err) {
             console.error('Error during payment:', err);
@@ -253,6 +269,58 @@ export const BookingConfirmation: React.FC = () => {
                         Redirecting to seat selection...
                     </Typography>
                 </Box>
+            </Container>
+        );
+    }
+
+    if (bookingSuccess && bookingResult) {
+        return (
+            <Container maxWidth="sm" sx={{ py: 6 }}>
+                <Paper sx={{ p: 4 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
+                        <Typography variant="h5" color="success.main" gutterBottom>
+                            Booking Confirmed
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                            Your booking has been created successfully.
+                        </Typography>
+                    </Box>
+
+                    <Divider sx={{ mb: 3 }} />
+
+                    <Box sx={{ display: 'grid', gap: 1 }}>
+                        <Typography variant="body2">
+                            <strong>Booking ID:</strong> {bookingResult.bookingId}
+                        </Typography>
+                        <Typography variant="body2">
+                            <strong>Status:</strong> {bookingResult.status}
+                        </Typography>
+                        <Typography variant="body2">
+                            <strong>Total:</strong> ${bookingResult.totalPrice?.toFixed(2) || totalPrice.toFixed(2)}
+                        </Typography>
+                        <Typography variant="body2">
+                            <strong>Seats:</strong> {bookingResult.seatCodes?.join(', ') || selectedSeats.map(s => s.seatCode).join(', ')}
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            onClick={() => navigate('/booking-history')}
+                        >
+                            View Booking History
+                        </Button>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            onClick={() => navigate('/')}
+                        >
+                            Back to Home
+                        </Button>
+                    </Box>
+                </Paper>
             </Container>
         );
     }
