@@ -4,6 +4,7 @@ import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.BookingRequest;
 import com.example.cinema_booking.dto.response.BookingResponse;
 import com.example.cinema_booking.service.BookingService;
+import com.example.cinema_booking.utils.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,9 @@ public class BookingController {
 
     @PostMapping
     public APIResponse<BookingResponse> createBooking(@RequestBody BookingRequest request) {
+        // Force userId from authenticated JWT (prevents spoofing)
+        request.setUserId(SecurityUtils.getCurrentUserId());
+
         return APIResponse.<BookingResponse>builder()
                 .result(bookingService.createBooking(request))
                 .build();
@@ -41,10 +45,10 @@ public class BookingController {
                 .build();
     }
 
-    @GetMapping("/user/{userId}")
-    public APIResponse<List<BookingResponse>> getBookingsByUser(@PathVariable String userId) {
+    @GetMapping("/me")
+    public APIResponse<List<BookingResponse>> getMyBookings() {
         return APIResponse.<List<BookingResponse>>builder()
-                .result(bookingService.getBookingsByUser(userId))
+                .result(bookingService.getBookingsByUser(SecurityUtils.getCurrentUserId()))
                 .build();
     }
 }
