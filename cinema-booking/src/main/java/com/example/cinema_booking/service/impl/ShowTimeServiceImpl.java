@@ -19,6 +19,8 @@ import com.example.cinema_booking.service.ShowTimeService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cglib.core.Local;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -90,15 +92,32 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
     }
 
     public ShowTimeResponse getShowTimeById(String id) {
+
+        LocalDateTime now = LocalDateTime.now();
+
         ShowTime showTime = showTimeRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_EXIST));
-        return showTimeMapper.toShowTimeResponse(showTime);
+        // return showTimeMapper.toShowTimeResponse(showTime);
+        if(showTime.getStartTime().isAfter(now)){
+            return showTimeMapper.toShowTimeResponse(showTime);
+        }
+        return null;
+                
 
     }
 
     public List<ShowTimeResponse> getAllShowTimes() {
         List<ShowTime> showTimes = showTimeRepository.findAll();
         return showTimes.stream()
+                .map(showTimeMapper::toShowTimeResponse)
+                .toList();
+    }
+
+    public List<ShowTimeResponse> getAllShowTimesForUser() {
+        LocalDateTime now = LocalDateTime.now();
+        List<ShowTime> showTimes = showTimeRepository.findAll();
+        return showTimes.stream()
+                .filter(showTime -> showTime.getStartTime().isAfter(now))
                 .map(showTimeMapper::toShowTimeResponse)
                 .toList();
     }

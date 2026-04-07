@@ -19,6 +19,7 @@ import {
     Chip,
     Select,
     MenuItem,
+    ListItemText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -37,11 +38,11 @@ export const AdminMovies: React.FC = () => {
         title: '',
         description: '',
         duration: '',
-        genreId: '',
+        genreIds: [] as string[],  // Change to array for multiple genres
         releaseDate: '',
         imageUrl: '',
         trailerUrl: '',
-status: 'COMING_SOON',
+        status: 'COMING_SOON',
     });
     const [uploadingImage, setUploadingImage] = useState(false);
     const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -61,6 +62,7 @@ status: 'COMING_SOON',
             console.log('Genre response:', response.data);
             const genreList = response.data?.result || [];
             setGenres(Array.isArray(genreList) ? genreList : []);
+            console.log('Genres loaded:', genreList);
         } catch (error) {
             console.error('Error fetching genres:', error);
             setGenres([]);
@@ -83,7 +85,7 @@ status: 'COMING_SOON',
                 title: movie.title,
                 description: movie.description,
                 duration: movie.duration,
-                genreId: movie.genreId,
+                genreIds: movie.genreIds || [], // Use array directly
                 releaseDate: movie.releaseDate,
                 imageUrl: movie.imageUrl,
                 trailerUrl: movie.trailerUrl,
@@ -95,7 +97,7 @@ status: 'COMING_SOON',
                 title: '',
                 description: '',
                 duration: '',
-                genreId: '',
+                genreIds: [], // Initialize as empty array
                 releaseDate: '',
                 imageUrl: '',
                 trailerUrl: '',
@@ -128,7 +130,9 @@ status: 'COMING_SOON',
     const handleGenreChange = (e: any) => {
         setFormData({
             ...formData,
-            genreId: e.target.value,
+            genreIds: typeof e.target.value === 'string' 
+                ? e.target.value.split(',').filter(Boolean) 
+                : (e.target.value as string[]),
         });
     };
 
@@ -217,7 +221,7 @@ status: 'COMING_SOON',
             // Auto select the newly created genre
             setFormData({
                 ...formData,
-                genreId: newGenre.id,
+                genreIds: [...formData.genreIds, newGenre.id],
             });
 
             handleCloseGenreDialog();
@@ -239,8 +243,8 @@ status: 'COMING_SOON',
                     title: formData.title,
                     description: formData.description,
                     duration: formData.duration,
-                    genreId: formData.genreId,
-                    genreName: '',
+                    genreIds: formData.genreIds,
+                    genreNames: [],
                     releaseDate: formData.releaseDate,
                     imageUrl: formData.imageUrl,
                     trailerUrl: formData.trailerUrl,
@@ -252,8 +256,8 @@ status: 'COMING_SOON',
                     title: formData.title,
                     description: formData.description,
                     duration: formData.duration,
-                    genreId: formData.genreId,
-                    genreName: '',
+                    genreIds: formData.genreIds,
+                    genreNames: [],
                     releaseDate: formData.releaseDate,
                     imageUrl: formData.imageUrl,
                     trailerUrl: formData.trailerUrl,
@@ -357,7 +361,7 @@ status: 'COMING_SOON',
                                 </TableCell>
                                 <TableCell>
                                     <Chip
-                                        label={movie.genreName}
+                                        label={movie.genreNames?.join(', ')}
                                         size="small"
                                         sx={{
                                             backgroundColor: 'rgba(255, 107, 0, 0.1)',
@@ -434,32 +438,43 @@ status: 'COMING_SOON',
                                 onChange={handleInputChange}
                                 required
                             />
-                            <Select
-                                fullWidth
-                                name="genreId"
-                                value={formData.genreId}
-                                onChange={handleGenreChange}
-                                displayEmpty
+                            <Box sx={{ flex: 1 }}>
+                                <Select
+                                    fullWidth
+                                    multiple
+                                    name="genreIds"
+                                    value={formData.genreIds}
+                                    onChange={handleGenreChange}
+                                    displayEmpty
+                                    renderValue={(selected: string[]) => 
+                                        selected.length === 0 
+                                            ? 'Chọn Thể Loại'
+                                            : selected.map(id => genres.find(g => g.id === id)?.name).filter(Boolean).join(', ')
+                                    }
+                                    sx={{
+                                        backgroundColor: 'white',
+                                        borderRadius: 1,
+                                    }}
+                                >
+                                    {genres.map((genre) => (
+                                        <MenuItem key={genre.id} value={genre.id}>
+                                            <ListItemText primary={genre.name} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </Box>
+                            <Button
+                                variant="outlined"
+                                onClick={handleOpenGenreDialog}
                                 sx={{
-                                    backgroundColor: 'white',
-                                    borderRadius: 1,
+                                    borderColor: '#ff6b00',
+                                    color: '#ff6b00',
+                                    fontWeight: 600,
+                                    whiteSpace: 'nowrap',
                                 }}
                             >
-                                <MenuItem value="">
-                                    <em>Chọn Thể Loại</em>
-                                </MenuItem>
-                                {genres.map((genre) => (
-                                    <MenuItem key={genre.id} value={genre.id}>
-                                        {genre.name}
-                                    </MenuItem>
-                                ))}
-                                <MenuItem 
-                                    onClick={handleOpenGenreDialog}
-                                    sx={{ color: '#ff6b00', fontWeight: 600 }}
-                                >
-                                    ➕ Thêm Thể Loại Mới
-                                </MenuItem>
-                            </Select>
+                                ➕ Thêm Loại
+                            </Button>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField

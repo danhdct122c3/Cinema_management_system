@@ -141,8 +141,8 @@ export interface MovieCreateRequest {
     title: string;
     description: string;
     duration: string;
-    genreId: string;
-    genreName?: string;
+    genreIds?: string[];          // Danh sách ID thể loại
+    genreNames?: string[];        // Danh sách tên thể loại
     releaseDate: string;
     imageUrl: string;
     trailerUrl: string;

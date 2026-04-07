@@ -40,12 +40,11 @@ public class MovieServiceImpl implements MovieService {
      @Transactional
     public MovieResponse createMovie(MovieCreateRequest request) {
 
+        // Tìm hoặc tạo genres từ genreIds và genreNames
+        var genres = genreService.findOrCreateGenres(request.getGenreIds(), request.getGenreNames());
 
-        Genre genre= genreService.findOrCreateGenre(request.getGenreId(), request.getGenreName());
-
-        Movie movie= movieMapper.toMovie(request);
-        movie.setGenre(genre);
-//         movie.setImage_url(request.getImageUrl());
+        Movie movie = movieMapper.toMovie(request);
+        movie.setGenres(genres);
 
          // 🔥 xử lý status
          if (request.getStatus() != null) {
@@ -55,12 +54,8 @@ public class MovieServiceImpl implements MovieService {
          }
 
         Movie save = movieRepository.save(movie);
-         // ép Hibernate load genre
-         Genre g = save.getGenre();
-         if (g != null) {
-             g.getName();
-         }
-
+         // ép Hibernate load genres
+         save.getGenres().size();
 
         return movieMapper.toMovieResponse(save);
     }
@@ -83,17 +78,17 @@ public class MovieServiceImpl implements MovieService {
 
         movieMapper.updateMovieFromRequest(request, movie);
 
-        // Nếu có genreId hoặc genreName mới, cập nhật genre
-        if (request.getGenreId() != null || request.getGenreName() != null) {
-            Genre genre = genreService.findOrCreateGenre(request.getGenreId(), request.getGenreName());
-            movie.setGenre(genre);
+        // Cập nhật genres nếu có genreIds hoặc genreNames
+        if ((request.getGenreIds() != null && !request.getGenreIds().isEmpty()) ||
+            (request.getGenreNames() != null && !request.getGenreNames().isEmpty())) {
+            var genres = genreService.findOrCreateGenres(request.getGenreIds(), request.getGenreNames());
+            movie.setGenres(genres);
         }
 
         // xử lý status (enum)
         if (request.getStatus() != null) {
             movie.setStatus(MovieStatus.valueOf(request.getStatus()));
         }
-
 
         Movie updatedMovie = movieRepository.save(movie);
         return movieMapper.toMovieResponse(updatedMovie);

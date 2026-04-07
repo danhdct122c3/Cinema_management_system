@@ -11,4 +11,5 @@ public interface ShowTimeService {
     ShowTimeResponse createScreening(ShowTimeCreateRequest request);
     ShowTimeResponse getShowTimeById(String showTimeId);
     List<ShowTimeResponse> getAllShowTimes();
+    List<ShowTimeResponse> getAllShowTimesForUser();
 }

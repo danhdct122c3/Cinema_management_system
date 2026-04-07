@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,10 +18,8 @@ public class MovieUpdateRequest {
     private String duration;
     private String status;
     private LocalDate releaseDate;
-
-    private String genreId;
-    private String genreName;
-
+    private List<String> genreIds;        // Danh sách ID thể loại
+    private List<String> genreNames;      // Danh sách tên thể loại
     private String imageUrl;
     private String trailerUrl;
 }

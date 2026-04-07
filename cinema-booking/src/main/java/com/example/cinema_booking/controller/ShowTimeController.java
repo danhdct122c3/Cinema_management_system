@@ -34,11 +34,16 @@ public class ShowTimeController {
     }
 
     @GetMapping()
+    public APIResponse<List<ShowTimeResponse>> getAllShowTimesForUser() {
+        return APIResponse.<List<ShowTimeResponse>>builder()
+                .result(showTimeService.getAllShowTimesForUser())
+                .build();
+    }
+
+    @GetMapping("/all")
     public APIResponse<List<ShowTimeResponse>> getAllShowTimes() {
         return APIResponse.<List<ShowTimeResponse>>builder()
                 .result(showTimeService.getAllShowTimes())
                 .build();
     }
-
-
 }

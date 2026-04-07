@@ -95,7 +95,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 </Box>
                 {/* Age Rating Badge */}
                 <Chip
-                    label={getAgeRating(movie.genreName)}
+                    label={getAgeRating(movie.genreNames?.[0])}
                     size="small"
                     sx={{
                         position: 'absolute',
@@ -133,7 +133,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
                     <Chip
-                        label={movie.genreName || 'Unknown'}
+                        label={movie.genreNames?.join(', ') || 'Unknown'}
                         size="small"
                         sx={{
                             width: 'fit-content',

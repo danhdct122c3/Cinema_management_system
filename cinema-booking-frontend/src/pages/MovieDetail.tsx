@@ -129,7 +129,7 @@ export const MovieDetail: React.FC = () => {
                                             fontSize: '0.85rem',
                                         }}
                                     >
-                                        {getAgeRating(movie.genreName)}
+                                        {getAgeRating(movie.genreNames?.[0])}
                                     </Box>
                                 </Box>
                             </Paper>
@@ -155,7 +155,7 @@ export const MovieDetail: React.FC = () => {
                             <Box sx={{ mb: 3 }}>
                                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                                     <Chip
-                                        label={movie.genreName}
+                                        label={movie.genreNames?.join(', ')}
                                         sx={{
                                             backgroundColor: 'rgba(255, 107, 0, 0.1)',
                                             color: '#ff6b00',
@@ -208,7 +208,7 @@ export const MovieDetail: React.FC = () => {
                                     Thể loại:
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
-                                    {movie.genreName}
+                                    {movie.genreNames?.join(', ')}
                                 </Typography>
 
                                 <Typography variant="subtitle2" sx={{ color: '#666', mb: 1 }}>

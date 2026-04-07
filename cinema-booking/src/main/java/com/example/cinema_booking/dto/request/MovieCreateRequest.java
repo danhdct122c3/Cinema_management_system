@@ -3,7 +3,7 @@ package com.example.cinema_booking.dto.request;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,8 +15,8 @@ public class MovieCreateRequest {
     private String duration;
     private String status;
     private LocalDate releaseDate;
-    private String genreId;  // ID nếu chọn thể loại có sẵn
-    private String genreName;  // Tên nếu tạo thể loại mới
-    private String imageUrl;  // URL của ảnh đại diện
-    private String trailerUrl; // URL của trailer
+    private List<String> genreIds;        // Danh sách ID thể loại (có sẵn)
+    private List<String> genreNames;      // Danh sách tên thể loại (tạo mới nếu chưa có)
+    private String imageUrl;              // URL của ảnh đại diện
+    private String trailerUrl;            // URL của trailer
 }

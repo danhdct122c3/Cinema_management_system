@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,8 +24,8 @@ public class Genre {
     @Column(unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "genres")
     @Builder.Default
     @JsonIgnore
-    private List<Movie> movies = new ArrayList<>();
+    private Set<Movie> movies = new HashSet<>();
 }

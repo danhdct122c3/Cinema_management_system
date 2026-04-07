@@ -10,8 +10,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +47,46 @@ public class GenreServiceImpl implements GenreService {
         return genreRepository.save(newGenre);
     }
 
+    /**
+     * Tìm hoặc tạo nhiều genre từ danh sách IDs và Names
+     */
+    public Set<Genre> findOrCreateGenres(List<String> genreIds, List<String> genreNames) {
+        Set<Genre> genres = new HashSet<>();
+
+        // Xử lý genreIds - tìm genre theo ID (phải tồn tại)
+        if (genreIds != null && !genreIds.isEmpty()) {
+            for (String id : genreIds) {
+                if (id != null && !id.isBlank()) {
+                    Genre genre = genreRepository.findById(id)
+                            .orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_EXIST));
+                    genres.add(genre);
+                }
+            }
+        }
+
+        // Xử lý genreNames - tìm hoặc tạo mới
+        if (genreNames != null && !genreNames.isEmpty()) {
+            for (String name : genreNames) {
+                if (name != null && !name.isBlank()) {
+                    Optional<Genre> existing = genreRepository.findByNameIgnoreCase(name.trim());
+                    if (existing.isPresent()) {
+                        genres.add(existing.get());
+                    } else {
+                        Genre newGenre = new Genre();
+                        newGenre.setName(name.trim());
+                        genres.add(genreRepository.save(newGenre));
+                    }
+                }
+            }
+        }
+
+        // Nếu không có genre nào, throw error
+        if (genres.isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_GENRE);
+        }
+
+        return genres;
+    }
 
     public List<Genre> findAllGenres() {
         return genreRepository.findAll();

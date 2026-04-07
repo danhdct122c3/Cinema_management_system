@@ -29,8 +29,8 @@ export interface MovieCreateRequest {
     title: string;
     description: string;
     duration: string;
-    genreId: string;
-    genreName?: string;
+    genreIds?: string[];          // Danh sách ID thể loại
+    genreNames?: string[];        // Danh sách tên thể loại
     releaseDate: string;
     imageUrl: string;
     trailerUrl: string;
@@ -81,7 +81,7 @@ export const adminRoomService = {
 
 export const adminShowtimeService = {
     getAllShowtimes: (): Promise<AxiosResponse<APIResponse<ShowTimeResponse[]>>> =>
-        adminAxios.get<APIResponse<ShowTimeResponse[]>>('/showtimes'),
+        adminAxios.get<APIResponse<ShowTimeResponse[]>>('/showtimes/all'),
 
     getShowtimeById: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
         adminAxios.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),

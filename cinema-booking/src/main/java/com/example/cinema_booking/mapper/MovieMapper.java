@@ -10,19 +10,22 @@ import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface MovieMapper {
 
-    @Mapping(target = "genre", ignore = true) //  để Service xử lý
+    @Mapping(target = "genres", ignore = true) //  để Service xử lý
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Movie toMovie(MovieCreateRequest request);
 
-    @Mapping(target = "genreId", source = "genre.id")
-    @Mapping(target = "genreName", source = "genre.name")
+    @Mapping(target = "genreIds", expression = "java(movie.getGenres().stream().map(g -> g.getId()).collect(java.util.stream.Collectors.toList()))")
+    @Mapping(target = "genreNames", expression = "java(movie.getGenres().stream().map(g -> g.getName()).collect(java.util.stream.Collectors.toList()))")
     MovieResponse toMovieResponse(Movie movie);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

@@ -132,9 +132,9 @@ export const BookingConfirmation: React.FC = () => {
             }
         }
 
-        // Redirect after 3 seconds
+        // Redirect to home page after 3 seconds (always home, not back to seat selection)
         setTimeout(() => {
-            navigate(`/seat-selection/${movieId}/${showtimeId}`);
+            navigate(`/`);
         }, 3000);
     };
 
@@ -186,8 +186,9 @@ export const BookingConfirmation: React.FC = () => {
         try {
             if (selectedSeatIds) {
                 await holdService.releaseHold(selectedSeatIds);
-                navigate(`/seat-selection/${movieId}/${showtimeId}`);
             }
+            // Always go to home
+            navigate(`/`);
         } catch (err) {
             console.error('Error releasing hold:', err);
             setError('Failed to release hold. Please try again.');
@@ -198,11 +199,21 @@ export const BookingConfirmation: React.FC = () => {
     useEffect(() => {
         if (seatAlreadyHeld) {
             const timer = setTimeout(() => {
-                navigate(`/seat-selection/${movieId}/${showtimeId}`);
+                navigate(`/`);
             }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [seatAlreadyHeld, movieId, showtimeId, navigate]);
+    }, [seatAlreadyHeld, navigate]);
+
+    // Auto-redirect when hold expired
+    useEffect(() => {
+        if (holdExpired) {
+            const timer = setTimeout(() => {
+                navigate(`/`);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [holdExpired, navigate]);
 
     if (loading) {
         return (
@@ -257,18 +268,29 @@ export const BookingConfirmation: React.FC = () => {
     if (error && holdExpired) {
         return (
             <Container maxWidth="sm" sx={{ py: 8 }}>
-                <Box sx={{ textAlign: 'center' }}>
-                    <ErrorIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
-                    <Typography variant="h5" color="error" gutterBottom>
-                        Hold Expired
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-                        {error}
-                    </Typography>
-                    <Typography variant="caption" sx={{ mt: 4, display: 'block', color: '#999' }}>
-                        Redirecting to seat selection...
-                    </Typography>
-                </Box>
+                <Paper sx={{ p: 4 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <ErrorIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
+                        <Typography variant="h5" color="error" gutterBottom>
+                            Hold Expired
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+                            {error}
+                        </Typography>
+                        <Typography variant="caption" sx={{ mt: 4, display: 'block', color: '#999' }}>
+                            Redirecting...
+                        </Typography>
+                    </Box>
+                    <Box sx={{ mt: 4 }}>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            onClick={() => navigate(`/`)}
+                        >
+                            Back to Home
+                        </Button>
+                    </Box>
+                </Paper>
             </Container>
         );
     }

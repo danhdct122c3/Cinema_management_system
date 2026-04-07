@@ -11,7 +11,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -28,9 +30,14 @@ public class Movie {
 
     private String title;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "genre_id", nullable = false)
-    private Genre genre;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "movie_genre",
+        joinColumns = @JoinColumn(name = "movie_id"),
+        inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
 
     private String description;
     private Integer duration;

@@ -16,8 +16,8 @@ export interface Movie {
     duration: string;
     imageUrl: string;
     trailerUrl: string;
-    genreId: string;
-    genreName: string;
+    genreIds?: string[];          // Danh sách ID thể loại
+    genreNames?: string[];        // Danh sách tên thể loại
     status: 'COMING_SOON' | 'NOW_SHOWING' | 'ENDED';
     releaseDate: string;
     createdAt: string;
