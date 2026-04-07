@@ -43,7 +43,7 @@ public class SeatHoldServiceImpl implements SeatHoldService {
 
         LocalDateTime now = LocalDateTime.now();
         // Convert minutes to seconds: holdDuration is in minutes
-        int holdDurationSeconds = request.getHoldDuration() * 60;
+        int holdDurationSeconds = request.getHoldDuration() * 5;
         LocalDateTime expireTime = now.plusSeconds(holdDurationSeconds);
 
         // get user

@@ -44,26 +44,30 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXIST));
 
-        validateShowTime(movie, request.getStartTime(), request.getEndTime());
+        // tự động tính thời gian kết thúc dựa trên thời lượng phim + 10 phút nghỉ giữa các suất chiếu
+        LocalDateTime endTime = request.getStartTime().plusMinutes(movie.getDuration()).plusMinutes(10);
+
+        validateShowTime(movie, request.getStartTime(), endTime);
         log.info("Validated showtime for movie {} in room {}", movie.getTitle(), room.getId());
+
+
+
         // ❗ check overlap
         if (showTimeRepository.existsOverlap(
                 room.getId(),
                 request.getStartTime(),
-                request.getEndTime()
+                endTime
         )) {
             throw new AppException(ErrorCode.SHOWTIME_OVERLAP);
         }
 
-//        LocalDateTime expectedEnd = request.getStartTime().plusMinutes(movie.getDuration());
-//
-//        if (endTime.isBefore(expectedEnd)) {
-//            throw new AppException(ErrorCode.SHOWTIME_TOO_SHORT);
-//        }
+
+
 
         ShowTime showTime = showTimeMapper.toShowTime(request);
         showTime.setMovie(movie);
         showTime.setRoom(room);
+        showTime.setEndTime(endTime );
         showTime.setStatus(ShowTimeStatus.ACTIVE);
 
         ShowTime savedShowTime = showTimeRepository.save(showTime);

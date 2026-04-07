@@ -33,7 +33,7 @@ public class Movie {
     private Genre genre;
 
     private String description;
-    private String duration;
+    private Integer duration;
 
     private LocalDate releaseDate;
 

@@ -366,7 +366,7 @@ status: 'COMING_SOON',
                                         }}
                                     />
                                 </TableCell>
-                                <TableCell>{movie.duration}</TableCell>
+                                <TableCell>{movie.duration} phút</TableCell>
                                 <TableCell>
                                     <Chip
                                         label={movie.status}

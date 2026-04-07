@@ -20,6 +20,5 @@ public class ShowTimeCreateRequest {
     String roomId;
 
     LocalDateTime startTime;
-    LocalDateTime endTime;
 
 }

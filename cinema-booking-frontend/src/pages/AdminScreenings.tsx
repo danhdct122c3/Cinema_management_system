@@ -27,7 +27,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { movieService, showtimeService } from '../services/api';
-import { Movie, ShowTimeResponse } from '../types';
+import { Movie, ShowTimeResponse, ShowTimeCreateRequest } from '../types';
 import axios from 'axios';
 
 interface Room {
@@ -74,7 +74,6 @@ export const AdminScreenings: React.FC = () => {
         movieId: '',
         roomId: '',
         startTime: '',
-        endTime: '',
     });
 
     // Seat Price Management
@@ -87,6 +86,7 @@ export const AdminScreenings: React.FC = () => {
     const [loadingPrice, setLoadingPrice] = useState(false);
     const [errorPrice, setErrorPrice] = useState('');
     const [successPrice, setSuccessPrice] = useState('');
+    const [calculatedEndTime, setCalculatedEndTime] = useState('');
 
     // Load initial data
     useEffect(() => {
@@ -94,6 +94,29 @@ export const AdminScreenings: React.FC = () => {
         fetchMovies();
         fetchRooms();
     }, []);
+
+    // Tính toán thời gian kết thúc tự động khi movieId hoặc startTime thay đổi
+    useEffect(() => {
+        if (showtimeFormData.movieId && showtimeFormData.startTime) {
+            const selectedMovie = movies.find(m => m.id === showtimeFormData.movieId);
+            if (selectedMovie && selectedMovie.duration) {
+                const durationMinutes = parseDurationToMinutes(selectedMovie.duration);
+                const startDateTime = new Date(showtimeFormData.startTime);
+                const endDateTime = new Date(startDateTime.getTime() + (durationMinutes + 10) * 60000);
+                
+                // Format lại cho datetime-local input
+                const year = endDateTime.getFullYear();
+                const month = String(endDateTime.getMonth() + 1).padStart(2, '0');
+                const date = String(endDateTime.getDate()).padStart(2, '0');
+                const hours = String(endDateTime.getHours()).padStart(2, '0');
+                const minutes = String(endDateTime.getMinutes()).padStart(2, '0');
+                
+                setCalculatedEndTime(`${year}-${month}-${date}T${hours}:${minutes}`);
+            }
+        } else {
+            setCalculatedEndTime('');
+        }
+    }, [showtimeFormData.movieId, showtimeFormData.startTime, movies]);
 
     const fetchShowtimes = async () => {
         try {
@@ -128,12 +151,37 @@ export const AdminScreenings: React.FC = () => {
     };
 
     // Showtime Dialog
+    const parseDurationToMinutes = (duration: string): number => {
+        if (!duration) return 0;
+        
+        // Format: "120" hoặc "120 minutes"
+        if (/^\d+\s*(minutes?)?$/.test(duration)) {
+            return parseInt(duration.replace(/[^0-9]/g, ''), 10);
+        }
+        
+        let totalMinutes = 0;
+        
+        // Format: "2 hours 30 minutes" hoặc "2h 30m"
+        const parts = duration.toLowerCase().split(/\s+/);
+        for (let i = 0; i < parts.length; i++) {
+            const num = parseInt(parts[i], 10);
+            if (!isNaN(num) && i + 1 < parts.length) {
+                if (parts[i + 1].startsWith('h')) {
+                    totalMinutes += num * 60;
+                } else if (parts[i + 1].startsWith('m')) {
+                    totalMinutes += num;
+                }
+            }
+        }
+        
+        return totalMinutes || parseInt(duration.replace(/[^0-9]/g, ''), 10);
+    };
+
     const handleOpenShowtimeDialog = () => {
         setShowtimeFormData({
             movieId: '',
             roomId: '',
             startTime: '',
-            endTime: '',
         });
         setErrorShowtime('');
         setSuccessShowtime('');
@@ -142,6 +190,7 @@ export const AdminScreenings: React.FC = () => {
 
     const handleCloseShowtimeDialog = () => {
         setOpenShowtimeDialog(false);
+        setCalculatedEndTime('');
     };
 
     const handleShowtimeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,8 +211,8 @@ export const AdminScreenings: React.FC = () => {
                 return;
             }
 
-            if (!showtimeFormData.startTime || !showtimeFormData.endTime) {
-                setErrorShowtime('Vui lòng nhập thời gian bắt đầu và kết thúc');
+            if (!showtimeFormData.startTime) {
+                setErrorShowtime('Vui lòng nhập thời gian bắt đầu');
                 return;
             }
 
@@ -171,8 +220,7 @@ export const AdminScreenings: React.FC = () => {
                 movieId: showtimeFormData.movieId,
                 roomId: showtimeFormData.roomId,
                 startTime: new Date(showtimeFormData.startTime).toISOString(),
-                endTime: new Date(showtimeFormData.endTime).toISOString(),
-            } as any);
+            });
 
             if (response.data.result) {
                 setSuccessShowtime('Tạo suất chiếu thành công!');
@@ -443,17 +491,26 @@ export const AdminScreenings: React.FC = () => {
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                             disabled={loadingShowtimes}
+                            helperText="Thời gian kết thúc sẽ được tính tự động dựa vào thời lượng phim + 10 phút nghỉ"
                         />
 
                         <TextField
                             type="datetime-local"
-                            label="Thời Gian Kết Thúc"
-                            name="endTime"
-                            value={showtimeFormData.endTime}
-                            onChange={handleShowtimeInputChange}
+                            label="Thời Gian Kết Thúc (Tự động)"
+                            value={calculatedEndTime}
                             InputLabelProps={{ shrink: true }}
                             fullWidth
-                            disabled={loadingShowtimes}
+                            disabled={true}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            sx={{
+                                backgroundColor: '#f5f5f5',
+                                '& .MuiOutlinedInput-root': {
+                                    cursor: 'not-allowed',
+                                }
+                            }}
+                            helperText={calculatedEndTime ? `Khoảng ${parseDurationToMinutes(movies.find(m => m.id === showtimeFormData.movieId)?.duration || '') + 10} phút` : 'Vui lòng chọn phim và thời gian bắt đầu'}
                         />
 
                         {errorShowtime && (

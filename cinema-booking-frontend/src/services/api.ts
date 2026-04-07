@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre, ShowTimeResponse, SeatShowTimeResponse, HoldSeatRequest, HoldSeatResponse } from '../types';
+import { Movie, Screening, Seat, Booking, BookingRequest, APIResponse, Genre, ShowTimeResponse, SeatShowTimeResponse, HoldSeatRequest, HoldSeatResponse, ShowTimeCreateRequest } from '../types';
 
 const API_BASE_URL = 'http://localhost:8080/home';
 
@@ -57,7 +57,7 @@ export const showtimeService = {
         axiosInstance.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),
     
     // ✅ POST /showtimes
-    createShowtime: (data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> => 
+    createShowtime: (data: ShowTimeCreateRequest): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> => 
         axiosInstance.post<APIResponse<ShowTimeResponse>>('/showtimes', data),
     
     // ✅ GET /seat-showtimes/{showTimeId}

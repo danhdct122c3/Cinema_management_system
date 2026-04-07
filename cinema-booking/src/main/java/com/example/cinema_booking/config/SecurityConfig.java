@@ -35,11 +35,12 @@ public class SecurityConfig {
     private CustomJwtDecoder customJwtDecoder;
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login",
-            "/auth/introspect",
-            "/users",
-            "/auth/logout",
-            "/auth/refresh"
+//            "/auth/login",
+//            "/auth/introspect",
+//            "/users",
+//            "/auth/logout",
+//            "/auth/refresh"
+            "/**"
     };
 
 
@@ -49,9 +50,11 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(request ->
                 // cho phép truy cập công khai vào các endpoint bắt đầu bằng /auth/
-                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+//                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+
                         // yêu cầu xác thực cho tất cả các endpoint khác
-                .anyRequest().authenticated()
+//               request.anyRequest().authenticated()
+                request.anyRequest().permitAll()
         );
 
         httpSecurity.oauth2ResourceServer(oauth2 ->

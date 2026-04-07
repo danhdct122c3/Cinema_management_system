@@ -67,6 +67,13 @@ export interface ErrorResponse {
 }
 
 // ===== ShowTime Related =====
+export interface ShowTimeCreateRequest {
+    movieId: string;
+    roomId: string;
+    startTime: string;  // ISO DateTime: "2024-12-31T14:00:00"
+    // endTime được tính tự động bởi backend dựa vào duration phim + 10 phút nghỉ
+}
+
 export interface ShowTimeResponse {
     id: string;
     movieId: string;
