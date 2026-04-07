@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import { Movie } from '../types';
 import StarIcon from '@mui/icons-material/Star';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 interface MovieCardProps {
     movie: Movie;

@@ -42,4 +42,29 @@ public interface SeatShowTimeRepository  extends JpaRepository<SeatShowTime, Str
     """)
     List<SeatShowTime> findByShowTimeIdForUpdate(@Param("showtimeId") String showtimeId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT sst FROM SeatShowTime sst
+    WHERE sst.id IN :ids
+    """)
+    List<SeatShowTime> findByIdInForUpdate(@Param("ids") List<String> ids);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT sst FROM SeatShowTime sst
+    WHERE sst.showtime.id = :showtimeId AND sst.seat.id IN :seatIds
+    """)
+    List<SeatShowTime> findByShowtimeIdAndSeatIdInForUpdate(
+            @Param("showtimeId") String showtimeId,
+            @Param("seatIds") List<String> seatIds
+    );
+
+    @Query("""
+    SELECT sst FROM SeatShowTime sst
+    WHERE sst.showtime.id = :showtimeId AND sst.seat.id IN :seatIds
+    """)
+    List<SeatShowTime> findByShowtimeIdAndSeatIdIn(
+            @Param("showtimeId") String showtimeId,
+            @Param("seatIds") List<String> seatIds
+    );
 }

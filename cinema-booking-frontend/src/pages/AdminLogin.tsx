@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
 import {
-    Container,
-    Box,
-    TextField,
-    Button,
-    Typography,
-    Link,
-    Paper,
-    InputAdornment,
-    IconButton,
     Alert,
+    Box,
+    Button,
+    Container,
+    InputAdornment,
+    Paper,
+    TextField,
+    Typography,
+    IconButton,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import MovieIcon from '@mui/icons-material/Movie';
-import { useAuth } from '../context/AuthContext';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import axios from 'axios';
 
-export const Login: React.FC = () => {
+export const AdminLogin: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
     const navigate = useNavigate();
-    const { loginWithPassword } = useAuth();
+    const { loginAdmin } = useAdminAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,19 +40,18 @@ export const Login: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            const result = await loginWithPassword(email, password);
+            const result = await loginAdmin(email, password);
             if (!result.isAuthenticated) {
-                setError('Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản/mật khẩu.');
+                setError('Đăng nhập admin thất bại.');
                 return;
             }
-            navigate('/');
+            navigate('/admin');
         } catch (err: any) {
-            // Ưu tiên message từ backend nếu có
             if (axios.isAxiosError(err)) {
                 const msg = (err.response?.data as any)?.message || (err.response?.data as any)?.error;
-                setError(msg || 'Đăng nhập thất bại. Vui lòng thử lại.');
+                setError(msg || 'Đăng nhập admin thất bại. Vui lòng thử lại.');
             } else {
-                setError('Đăng nhập thất bại. Vui lòng thử lại.');
+                setError('Đăng nhập admin thất bại. Vui lòng thử lại.');
             }
         } finally {
             setIsSubmitting(false);
@@ -63,7 +62,7 @@ export const Login: React.FC = () => {
         <Box
             sx={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c3a 50%, #ffc107 100%)',
+                background: 'linear-gradient(135deg, #1f2937 0%, #111827 50%, #0b1220 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 py: 8,
@@ -71,21 +70,20 @@ export const Login: React.FC = () => {
         >
             <Container maxWidth="sm">
                 <Paper
-                    elevation={8}
+                    elevation={10}
                     sx={{
                         p: 5,
                         borderRadius: 3,
                         backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                        backdropFilter: 'blur(10px)',
                     }}
                 >
                     <Box sx={{ textAlign: 'center', mb: 4 }}>
-                        <MovieIcon sx={{ fontSize: 60, color: '#ff6b00', mb: 2 }} />
-                        <Typography variant="h4" component="h1" fontWeight={700} color="#ff6b00" gutterBottom>
-                            Đăng Nhập
+                        <AdminPanelSettingsIcon sx={{ fontSize: 60, color: '#111827', mb: 1 }} />
+                        <Typography variant="h4" component="h1" fontWeight={800} color="#111827" gutterBottom>
+                            Admin Login
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Đăng nhập để đặt vé xem phim
+                            Khu vực quản trị hệ thống
                         </Typography>
                     </Box>
 
@@ -130,33 +128,14 @@ export const Login: React.FC = () => {
                                 ),
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            edge="end"
-                                        >
+                                        <IconButton onClick={() => setShowPassword(v => !v)} edge="end">
                                             {showPassword ? <VisibilityOff /> : <Visibility />}
                                         </IconButton>
                                     </InputAdornment>
                                 ),
                             }}
-                            sx={{ mb: 1 }}
+                            sx={{ mb: 3 }}
                         />
-
-                        <Box sx={{ textAlign: 'right', mb: 3 }}>
-                            <Link
-                                href="#"
-                                variant="body2"
-                                sx={{
-                                    color: '#ff6b00',
-                                    textDecoration: 'none',
-                                    '&:hover': {
-                                        textDecoration: 'underline',
-                                    },
-                                }}
-                            >
-                                Quên mật khẩu?
-                            </Link>
-                        </Box>
 
                         <Button
                             type="submit"
@@ -166,39 +145,24 @@ export const Login: React.FC = () => {
                             disabled={isSubmitting}
                             sx={{
                                 py: 1.5,
-                                fontSize: '1.1rem',
-                                fontWeight: 600,
-                                backgroundColor: '#ff6b00',
-                                mb: 2,
-                                '&:hover': {
-                                    backgroundColor: '#d95a00',
-                                    transform: 'translateY(-2px)',
-                                },
-                                transition: 'all 0.3s',
+                                fontSize: '1.05rem',
+                                fontWeight: 700,
+                                backgroundColor: '#111827',
+                                '&:hover': { backgroundColor: '#0b1220' },
                             }}
                         >
-                            {isSubmitting ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+                            {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập Admin'}
                         </Button>
 
-                        <Box sx={{ textAlign: 'center' }}>
-                            <Typography variant="body2" color="text.secondary">
-                                Chưa có tài khoản?{' '}
-                                <Link
-                                    onClick={() => navigate('/register')}
-                                    sx={{
-                                        color: '#ff6b00',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        textDecoration: 'none',
-                                        '&:hover': {
-                                            textDecoration: 'underline',
-                                        },
-                                    }}
-                                >
-                                    Đăng ký ngay
-                                </Link>
-                            </Typography>
-                        </Box>
+                        <Button
+                            type="button"
+                            fullWidth
+                            variant="text"
+                            sx={{ mt: 2 }}
+                            onClick={() => navigate('/')}
+                        >
+                            Về trang đặt vé
+                        </Button>
                     </form>
                 </Paper>
             </Container>

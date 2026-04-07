@@ -44,6 +44,7 @@ public class GenreServiceImpl implements GenreService {
         return genreRepository.save(newGenre);
     }
 
+
     public List<Genre> findAllGenres() {
         return genreRepository.findAll();
     }

@@ -35,11 +35,12 @@ public class SecurityConfig {
     private CustomJwtDecoder customJwtDecoder;
 
     private final String[] PUBLIC_ENDPOINTS = {
-//            "/auth/login",
-//            "/auth/introspect",
-//            "/users",
-//            "/auth/logout",
-//            "/auth/refresh"
+            "/auth/login",
+            "/auth/introspect",
+            "/users",
+            "/auth/logout",
+            "/auth/refresh",
+            "/genres",
             "/**"
     };
 
@@ -49,14 +50,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity.authorizeHttpRequests(request ->
-                // cho phép truy cập công khai vào các endpoint bắt đầu bằng /auth/
-//                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
 
-                        // yêu cầu xác thực cho tất cả các endpoint khác
-//               request.anyRequest().authenticated()
+                request
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Cho phép preflight CORS
+                        .requestMatchers(HttpMethod.DELETE, PUBLIC_ENDPOINTS).permitAll()
                 request.anyRequest().permitAll()
         );
 
+        // Enable CORS at the Spring Security layer so it picks up the configuration from WebConfig
+        httpSecurity.cors(cors -> {});
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
                         jwtConfigurer.decoder(customJwtDecoder)

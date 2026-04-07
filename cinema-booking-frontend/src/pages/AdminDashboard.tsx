@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Paper, Typography, Card, CardContent, IconButton } from '@mui/material';
+import { Box, Grid, Paper, Typography, Card, CardContent } from '@mui/material';
 import MovieIcon from '@mui/icons-material/Movie';
 import EventIcon from '@mui/icons-material/Event';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { movieService } from '../services/api';
+import { adminMovieService } from '../services/adminApi';
 
 interface StatCard {
     title: string;
@@ -20,7 +20,7 @@ export const AdminDashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const moviesResponse = await movieService.getAllMovies();
+                const moviesResponse = await adminMovieService.getAllMovies();
                 setTotalMovies(moviesResponse.data.result.length);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);

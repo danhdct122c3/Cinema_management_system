@@ -26,9 +26,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { movieService, showtimeService } from '../services/api';
-import { Movie, ShowTimeResponse, ShowTimeCreateRequest } from '../types';
-import axios from 'axios';
+import { adminMovieService, adminShowtimeService, adminAxios } from '../services/adminApi';
+import { Movie, ShowTimeResponse } from '../types';
 
 interface Room {
     id: string;
@@ -121,7 +120,7 @@ export const AdminScreenings: React.FC = () => {
     const fetchShowtimes = async () => {
         try {
             setLoadingShowtimes(true);
-            const response = await showtimeService.getAllShowtimes();
+            const response = await adminShowtimeService.getAllShowtimes();
             setShowtimes(response.data.result || []);
             setErrorShowtime('');
         } catch (error) {
@@ -134,7 +133,7 @@ export const AdminScreenings: React.FC = () => {
 
     const fetchMovies = async () => {
         try {
-            const response = await movieService.getAllMovies();
+            const response = await adminMovieService.getAllMovies();
             setMovies(response.data.result || []);
         } catch (error) {
             console.error('Error fetching movies:', error);
@@ -143,7 +142,7 @@ export const AdminScreenings: React.FC = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/rooms`);
+            const response = await adminAxios.get('/rooms');
             setRooms(response.data.result || []);
         } catch (error) {
             console.error('Error fetching rooms:', error);
@@ -216,7 +215,7 @@ export const AdminScreenings: React.FC = () => {
                 return;
             }
 
-            const response = await showtimeService.createShowtime({
+            const response = await adminShowtimeService.createShowtime({
                 movieId: showtimeFormData.movieId,
                 roomId: showtimeFormData.roomId,
                 startTime: new Date(showtimeFormData.startTime).toISOString(),
@@ -246,7 +245,7 @@ export const AdminScreenings: React.FC = () => {
             setSuccessPrice('');
             
             // Fetch current seat prices from database
-            const response = await showtimeService.getSeatsByShowtime(showtime.id);
+            const response = await adminShowtimeService.getSeatsByShowtime(showtime.id);
             const seats = response.data.result || [];
             
             // Get current prices by seat type
@@ -296,14 +295,14 @@ export const AdminScreenings: React.FC = () => {
             if (!selectedShowtime) return;
 
             // Update NORMAL price
-            await showtimeService.updateSeatPrice(
+            await adminShowtimeService.updateSeatPrice(
                 selectedShowtime.id,
                 'NORMAL',
                 priceFormData.normalPrice
             );
 
             // Update VIP price
-            await showtimeService.updateSeatPrice(
+            await adminShowtimeService.updateSeatPrice(
                 selectedShowtime.id,
                 'VIP',
                 priceFormData.vipPrice
