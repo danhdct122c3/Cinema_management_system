@@ -52,6 +52,13 @@ public class BookingController {
                 .build();
     }
 
+    @GetMapping("/user/{userId}")
+    public APIResponse<List<BookingResponse>> getBookingsByUser(@PathVariable String userId) {
+        return APIResponse.<List<BookingResponse>>builder()
+                .result(bookingService.getBookingsByUser(userId))
+                .build();
+    }
+    
     @GetMapping("/admin")
     public APIResponse<List<BookingResponse>> getAllBookingsForAdmin() {
         return APIResponse.<List<BookingResponse>>builder()

@@ -31,4 +31,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
                                            @Param("fromDateTime") LocalDateTime fromDateTime,
                                            @Param("toDateTime") LocalDateTime toDateTime,
                                            @Param("movieId") String movieId);
+
+    long countByShowTimeAndStatusIn(ShowTime showTime, List<BookingStatus> pending);
 }

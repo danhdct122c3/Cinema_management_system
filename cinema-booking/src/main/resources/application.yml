@@ -25,7 +25,7 @@ spring:
 
 jwt:
   signerKey: "vZAWIS53RKXfbNNKEuzpJdS/+/qxK22dSEw5qEMQsHDJwdp7hEmw4BGO9i691dB/"
-  valid-duration: 1800 # inseconds
+  valid-duration: 5400 # inseconds
   refreshable-duration: 3600 # inseconds
 
 cloudinary:
@@ -34,4 +34,4 @@ cloudinary:
   api-secret: "Ns8TJjf8KhgGaUZ_v_pcML6V_HM"
 
 user:
-  id: "11c33042-4bd3-40ca-85fb-4e8e6f07281d"
+  id: "e032a980-18f1-446e-9217-41501ced0c28"
