@@ -14,8 +14,8 @@ import {
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
-import { holdService, userService } from '../services/api';
-import { adminBookingService } from '../services/adminApi';
+import { holdService, bookingService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import HoldCountdown from '../components/HoldCountdown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -24,6 +24,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 export const BookingConfirmation: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
 
     // State from navigation
     const selectedSeats = location.state?.selectedSeats as SeatShowTimeResponse[];
@@ -40,7 +41,6 @@ export const BookingConfirmation: React.FC = () => {
     const [holdStartTime, setHoldStartTime] = useState<number>(0);
     const [holdExpired, setHoldExpired] = useState(false);
     const [paymentInProgress, setPaymentInProgress] = useState(false);
-    const [userId, setUserId] = useState<string>('');
     const [seatAlreadyHeld, setSeatAlreadyHeld] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [bookingResult, setBookingResult] = useState<Booking | null>(null);
@@ -54,22 +54,12 @@ export const BookingConfirmation: React.FC = () => {
 
         const initializeHold = async () => {
             try {
-                // Get user ID from localStorage first, or from API test endpoint
-                let userIdFromStorage = localStorage.getItem('userId') || '';
-                
-                if (!userIdFromStorage) {
-                    // Fetch test user ID from backend
-                    const testUserResponse = await userService.getTestUserId();
-                    userIdFromStorage = testUserResponse.data.result;
-                }
-
-                if (!userIdFromStorage) {
-                    setError('User information not found. Please log in again.');
+                // Require user login so backend can read user_id from JWT
+                if (!isLoggedIn) {
+                    setError('Please log in to continue booking.');
                     setLoading(false);
                     return;
                 }
-
-                setUserId(userIdFromStorage);
 
                 // Validate inputs
                 if (!showtimeId) {
@@ -78,13 +68,12 @@ export const BookingConfirmation: React.FC = () => {
                     return;
                 }
 
-                // Call hold API with 5 minutes default hold duration
+                // Call hold API (backend derives user_id from token claims)
                 const response = await holdService.holdSeats({
                     seatShowTimeIds: selectedSeatIds,
                     showTimeId: showtimeId,
-                    userId: userIdFromStorage,
                     holdDuration: 5, // 5 minutes
-                });
+                } as any);
 
                 if (response.data.result) {
                     setHoldResponse(response.data.result);
@@ -97,26 +86,23 @@ export const BookingConfirmation: React.FC = () => {
             } catch (err: any) {
                 console.error('Error holding seats:', err);
 
-                // Extract error message from backend response
                 const errorMessage = err.response?.data?.message || err.message || 'Failed to hold seats';
-                
-                // If the error is about seats already being held, suppress it and redirect back
-                // The user will see the updated seat status in real-time
+
                 if (errorMessage.toLowerCase().includes('already held')) {
                     console.warn('Seat already held - redirecting to seat selection');
-                    setError(''); // Clear error
+                    setError('');
                     setSeatAlreadyHeld(true);
                     setLoading(false);
                     return;
                 }
-                
+
                 setError(errorMessage);
                 setLoading(false);
             }
         };
 
         initializeHold();
-    }, [selectedSeatIds, showtimeId, holdResponse]);
+    }, [selectedSeatIds, showtimeId, holdResponse, isLoggedIn]);
 
     // Handle hold expiration
     const handleHoldExpired = async () => {
@@ -138,10 +124,16 @@ export const BookingConfirmation: React.FC = () => {
         }, 3000);
     };
 
-    // Handle payment (placeholder for now)
+    // Handle payment
     const handlePayment = async () => {
         try {
             setPaymentInProgress(true);
+
+            if (!isLoggedIn) {
+                setError('Please log in to continue booking.');
+                setPaymentInProgress(false);
+                return;
+            }
 
             // Validate hold is still valid
             if (selectedSeatIds && selectedSeatIds.length > 0) {
@@ -159,17 +151,11 @@ export const BookingConfirmation: React.FC = () => {
                 return;
             }
 
-            if (!userId) {
-                setError('User information not found. Please log in again.');
-                setPaymentInProgress(false);
-                return;
-            }
-
-            const bookingResponse = await adminBookingService.createBooking({
-                userId,
+            // Create booking using user token (backend reads user_id from JWT)
+            const bookingResponse = await bookingService.createBooking({
                 showTimeId: showtimeId,
                 seatShowTimeIds: selectedSeatIds,
-            });
+            } as any);
 
             setBookingResult(bookingResponse.data.result);
             setBookingSuccess(true);
@@ -523,4 +509,4 @@ export const BookingConfirmation: React.FC = () => {
             </Container>
         </Box>
     );
-}; 
+};

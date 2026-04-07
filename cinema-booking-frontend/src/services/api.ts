@@ -15,7 +15,7 @@ export const createTokenStorage = (tokenKey: string) => ({
 });
 
 // ========== API Client Factory ==========
-export const createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<typeof createTokenStorage> }) => {
+export const  createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<typeof createTokenStorage> }) => {
     const instance = axios.create({
         baseURL: API_BASE_URL,
         headers: { 'Content-Type': 'application/json' },
@@ -212,7 +212,13 @@ export const bookingService = {
     createBooking: (data: BookingRequest): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.post<APIResponse<Booking>>('/bookings', data),
     getBookingById: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => axiosInstance.get<APIResponse<Booking>>(`/bookings/${id}`),
     cancelBooking: (id: string): Promise<AxiosResponse<void>> => axiosInstance.delete(`/bookings/${id}`),
+
+    // Legacy endpoint (requires userId in path)
     getBookingsByUser: (userId: string): Promise<AxiosResponse<APIResponse<Booking[]>>> => axiosInstance.get<APIResponse<Booking[]>>(`/bookings/user/${userId}`),
+
+    // Token-based endpoint (backend derives user_id from JWT). Adjust path if your BE uses a different route.
+    getMyBookings: (): Promise<AxiosResponse<APIResponse<Booking[]>>> => axiosInstance.get<APIResponse<Booking[]>>('/bookings/me'),
+
     reserveSeat: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         axiosInstance.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/reserve`),
     releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
@@ -231,7 +237,4 @@ export const holdService = {
         axiosInstance.get<APIResponse<boolean>>(`/seat-holds/${seatShowTimeId}/valid`)
 };
 
-export const userService = {
-    getTestUserId: (): Promise<AxiosResponse<APIResponse<string>>> =>
-        axiosInstance.get<APIResponse<string>>('/users/test-user/id')
-};
+// NOTE: user_id is now taken from JWT claims on the backend; FE no longer uses a test-user endpoint.

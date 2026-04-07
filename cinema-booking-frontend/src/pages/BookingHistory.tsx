@@ -20,10 +20,12 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Booking } from '../types';
-import { bookingService, userService } from '../services/api';
+import { bookingService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export const BookingHistory: React.FC = () => {
     const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
     const [userId, setUserId] = useState('');
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(false);
@@ -34,14 +36,29 @@ export const BookingHistory: React.FC = () => {
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
     useEffect(() => {
-        const savedUserId = localStorage.getItem('userId');
-        if (savedUserId) {
-            setUserId(savedUserId);
-            fetchBookings(savedUserId);
+        if (!isLoggedIn) return;
+        // Prefer token-based endpoint: backend derives user_id from JWT
+        fetchMyBookings();
+    }, [isLoggedIn]);
+
+    const fetchMyBookings = async () => {
+        try {
+            setLoading(true);
+            setError('');
+            const response = await bookingService.getMyBookings();
+            const result = response.data?.result || [];
+            setBookings(result);
+            if (result.length === 0) setError('No bookings found for this user');
+        } catch (error: any) {
+            console.error('Error fetching my bookings:', error);
+            setError(error.response?.data?.message || 'Failed to fetch bookings. Please try again.');
+        } finally {
+            setLoading(false);
         }
-    }, []);
+    };
 
     const fetchBookings = async (targetUserId: string) => {
+        // Legacy fallback when BE still supports /bookings/user/{userId}
         if (!targetUserId) {
             setError('Please enter your user ID');
             return;
@@ -64,7 +81,9 @@ export const BookingHistory: React.FC = () => {
     };
 
     const handleSearch = async () => {
-        await fetchBookings(userId);
+        // If user typed an id, use legacy search; otherwise reload "me"
+        if (userId?.trim()) await fetchBookings(userId.trim());
+        else await fetchMyBookings();
     };
 
     const handleConfirmBooking = async () => {
@@ -77,7 +96,7 @@ export const BookingHistory: React.FC = () => {
             setSuccess('Booking confirmed successfully!');
 
             // Refresh the bookings list
-            await fetchBookings(userId);
+            await fetchMyBookings();
         } catch (error: any) {
             console.error('Error confirming booking:', error);
             setError(error.response?.data?.message || 'Failed to confirm booking. Please try again.');
@@ -98,7 +117,7 @@ export const BookingHistory: React.FC = () => {
             setSuccess('Booking cancelled successfully! The seat is now available for booking.');
 
             // Refresh the bookings list
-            await fetchBookings(userId);
+            await fetchMyBookings();
         } catch (error: any) {
             console.error('Error cancelling booking:', error);
             setError(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
@@ -159,13 +178,10 @@ export const BookingHistory: React.FC = () => {
                     <Button
                         variant="outlined"
                         onClick={async () => {
-                            const response = await userService.getTestUserId();
-                            const id = response.data.result;
-                            setUserId(id);
-                            localStorage.setItem('userId', id);
+                            // test user removed
                         }}
-                        disabled={loading}
-                        sx={{ height: 56 }}
+                        disabled={true}
+                        sx={{ height: 56, display: 'none' }}
                     >
                         Use Test User
                     </Button>
@@ -307,4 +323,4 @@ export const BookingHistory: React.FC = () => {
             </Snackbar>
         </Container>
     );
-}; 
+};

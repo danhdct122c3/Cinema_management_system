@@ -1,13 +1,11 @@
 package com.example.cinema_booking.controller;
 
 
-import com.example.cinema_booking.config.TestUserConfig;
 import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.HoldSeatRequest;
 import com.example.cinema_booking.dto.response.HoldSeatResponse;
-import com.example.cinema_booking.exception.AppException;
-import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.service.SeatHoldService;
+import com.example.cinema_booking.utils.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,7 +20,6 @@ import java.util.List;
 public class SeatHoldController {
 
     SeatHoldService seatHoldService;
-    TestUserConfig testUserConfig;
 
     /**
      * Hold ghế tại bước thanh toán
@@ -31,9 +28,9 @@ public class SeatHoldController {
     @PostMapping("/reserve")
     public APIResponse<HoldSeatResponse> holdSeats(@RequestBody HoldSeatRequest request) {
         try {
-            if (request.getUserId() == null || request.getUserId().isBlank()) {
-                request.setUserId(testUserConfig.getId());
-            }
+            // Force userId from authenticated JWT (prevents spoofing & removes hardcode)
+            request.setUserId(SecurityUtils.getCurrentUserId());
+
             HoldSeatResponse response = seatHoldService.createHoldSeat(request);
             return APIResponse.<HoldSeatResponse>builder()
                     .result(response)
