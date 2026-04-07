@@ -1,13 +1,17 @@
 # 📱 POSTMAN API COLLECTION - CINEMA BOOKING
 
-This file contains the main API endpoints for testing the Cinema Booking system. Use these endpoints in Postman or any API client for testing. Replace `{id}` or other path variables as needed. All endpoints assume base URL: `http://localhost:8080` (adjust if different).
+This file contains the main API endpoints for testing the Cinema Booking system. Use these endpoints in Postman or any API client for testing. Replace `{id}` or other path variables as needed.
+
+Base URL currently follows Spring context-path in `application.yml`:
+
+- `http://localhost:8080/home`
 
 ---
 
 ## Authentication
 
 ### Login
-- **POST** `/api/auth/login`
+- **POST** `/auth/login`
 - **Body (JSON):**
 ```json
 {
@@ -22,7 +26,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ## User APIs
 
 ### Register User
-- **POST** `/api/users/register`
+- **POST** `/users`
 - **Body (JSON):**
 ```json
 {
@@ -34,7 +38,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update User Status
-- **PUT** `/api/users/{id}/status`
+- **PUT** `/users/{id}/status`
 - **Body (JSON):**
 ```json
 {
@@ -43,7 +47,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Assign Role to User
-- **PUT** `/api/users/{id}/roles`
+- **PUT** `/users/{id}/roles`
 - **Body (JSON):**
 ```json
 {
@@ -52,17 +56,17 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete User
-- **DELETE** `/api/users/{id}`
+- **DELETE** `/users/{id}`
 
 ---
 
 ## Genre APIs
 
 ### Get All Genres
-- **GET** `/api/genres`
+- **GET** `/genres`
 
 ### Create Genre
-- **POST** `/api/genres`
+- **POST** `/genres`
 - **Body (JSON):**
 ```json
 {
@@ -72,7 +76,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update Genre
-- **PUT** `/api/genres/{id}`
+- **PUT** `/genres/{id}`
 - **Body (JSON):**
 ```json
 {
@@ -82,17 +86,17 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete Genre
-- **DELETE** `/api/genres/{id}`
+- **DELETE** `/genres/{id}`
 
 ---
 
 ## Movie APIs
 
 ### Get All Movies
-- **GET** `/api/movies`
+- **GET** `/movies`
 
 ### Create Movie
-- **POST** `/api/movies`
+- **POST** `/movies`
 - **Body (JSON):**
 ```json
 {
@@ -106,7 +110,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update Movie
-- **PUT** `/api/movies/{id}`
+- **PUT** `/movies/{id}`
 - **Body (JSON):**
 ```json
 {
@@ -120,14 +124,14 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete Movie
-- **DELETE** `/api/movies/{id}`
+- **DELETE** `/movies/{id}`
 
 ---
 
 ## Booking APIs
 
 ### Create Booking
-- **POST** `/api/bookings`
+- **POST** `/bookings`
 - **Body (JSON):**
 ```json
 {
@@ -138,20 +142,73 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Confirm Booking
-- **PATCH** `/api/bookings/{id}/confirm`
+- **PATCH** `/bookings/{id}/confirm`
 
 ### Get User Bookings
-- **GET** `/api/bookings/user/{userId}`
+- **GET** `/bookings/user/{userId}`
 
 ### Cancel Booking
-- **DELETE** `/api/bookings/{id}`
+- **DELETE** `/bookings/{id}`
+
+### Flow đề xuất khi test booking
+1. Hold ghế trước qua `/seat-holds/reserve`.
+2. Tạo booking qua `/bookings` (dùng `seatShowTimeIds` vừa hold).
+3. Confirm booking qua `/bookings/{id}/confirm` để chuyển ghế sang `BOOKED`.
+
+---
+
+## Admin Statistics APIs
+
+### Revenue Statistics (day/week/movie)
+- **POST** `/admin/statistics/revenue`
+- **Auth:** Bearer token role `ADMIN`
+- **Body (JSON):**
+```json
+{
+  "fromDate": "2026-04-01",
+  "toDate": "2026-04-07",
+  "movieId": "optional-movie-id",
+  "groupBy": "DAY"
+}
+```
+
+`groupBy` hỗ trợ: `DAY`, `WEEK`, `MOVIE`
+
+- **Sample Response:**
+```json
+{
+  "code": 1000,
+  "result": {
+    "fromDate": "2026-04-01",
+    "toDate": "2026-04-07",
+    "movieId": null,
+    "groupBy": "DAY",
+    "totalRevenue": 450000,
+    "totalBookings": 3,
+    "totalTickets": 6,
+    "items": [
+      {
+        "key": "2026-04-06",
+        "label": "2026-04-06",
+        "movieId": null,
+        "movieTitle": null,
+        "fromDate": "2026-04-06",
+        "toDate": "2026-04-06",
+        "bookingCount": 2,
+        "ticketCount": 4,
+        "revenue": 300000
+      }
+    ]
+  }
+}
+```
 
 ---
 
 ## Seat Hold APIs
 
 ### Hold Seats
-- **POST** `/api/seat-holds/reserve`
+- **POST** `/seat-holds/reserve`
 - **Body (JSON):**
 ```json
 {
@@ -163,24 +220,24 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Release Hold
-- **POST** `/api/seat-holds/release`
+- **POST** `/seat-holds/release`
 - **Body (JSON):**
 ```json
 ["seatShowTimeId1", "seatShowTimeId2"]
 ```
 
 ### Check Hold Valid
-- **GET** `/api/seat-holds/{seatShowTimeId}/valid`
+- **GET** `/seat-holds/{seatShowTimeId}/valid`
 
 ---
 
 ## ShowTime APIs
 
 ### Get All ShowTimes
-- **GET** `/api/showtimes`
+- **GET** `/showtimes`
 
 ### Create ShowTime
-- **POST** `/api/showtimes`
+- **POST** `/showtimes`
 - **Body (JSON):**
 ```json
 {
@@ -191,7 +248,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update ShowTime
-- **PUT** `/api/showtimes/{id}`
+- **PUT** `/showtimes/{id}`
 - **Body (JSON):**
 ```json
 {
@@ -202,17 +259,17 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete ShowTime
-- **DELETE** `/api/showtimes/{id}`
+- **DELETE** `/showtimes/{id}`
 
 ---
 
 ## Room APIs
 
 ### Get All Rooms
-- **GET** `/api/rooms`
+- **GET** `/rooms`
 
 ### Create Room
-- **POST** `/api/rooms`
+- **POST** `/rooms`
 - **Body (JSON):**
 ```json
 {
@@ -223,7 +280,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update Room
-- **PUT** `/api/rooms/{id}`
+- **PUT** `/rooms/{id}`
 - **Body (JSON):**
 ```json
 {
@@ -234,17 +291,17 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete Room
-- **DELETE** `/api/rooms/{id}`
+- **DELETE** `/rooms/{id}`
 
 ---
 
 ## Permission & Role APIs
 
 ### Get All Roles
-- **GET** `/api/roles`
+- **GET** `/roles`
 
 ### Create Role
-- **POST** `/api/roles`
+- **POST** `/roles`
 - **Body (JSON):**
 ```json
 {
@@ -254,7 +311,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update Role
-- **PUT** `/api/roles/{id}`
+- **PUT** `/roles/{id}`
 - **Body (JSON):**
 ```json
 {
@@ -264,13 +321,13 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete Role
-- **DELETE** `/api/roles/{id}`
+- **DELETE** `/roles/{id}`
 
 ### Get All Permissions
-- **GET** `/api/permissions`
+- **GET** `/permissions`
 
 ### Create Permission
-- **POST** `/api/permissions`
+- **POST** `/permissions`
 - **Body (JSON):**
 ```json
 {
@@ -280,7 +337,7 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Update Permission
-- **PUT** `/api/permissions/{id}`
+- **PUT** `/permissions/{id}`
 - **Body (JSON):**
 ```json
 {
@@ -290,16 +347,17 @@ This file contains the main API endpoints for testing the Cinema Booking system.
 ```
 
 ### Delete Permission
-- **DELETE** `/api/permissions/{id}`
+- **DELETE** `/permissions/{id}`
 
 ---
 
 ## Notes
-- Most endpoints (except login/register) require Bearer token authentication.
+- Most endpoints (except public auth/user endpoints configured in `SecurityConfig`) require Bearer token authentication.
 - Replace all `{id}` and other variables with actual values.
 - Adjust request bodies as needed for your schema.
-- For booking, ensure showtime and seat availability before testing.
+- For booking, test theo đúng flow: hold -> create booking -> confirm booking.
+- Admin revenue statistics endpoint requires an account with admin role.
 
 ---
 
-*Last updated: 2026-04-05*
+*Last updated: 2026-04-07*

@@ -1,7 +1,10 @@
 package com.example.cinema_booking.service.impl;
 
 import com.example.cinema_booking.dto.request.BookingRequest;
+import com.example.cinema_booking.dto.request.RevenueStatisticsRequest;
 import com.example.cinema_booking.dto.response.BookingResponse;
+import com.example.cinema_booking.dto.response.RevenueStatisticsItemResponse;
+import com.example.cinema_booking.dto.response.RevenueStatisticsResponse;
 import com.example.cinema_booking.entity.Booking;
 import com.example.cinema_booking.entity.BookingSeat;
 import com.example.cinema_booking.entity.SeatShowTime;
@@ -9,6 +12,7 @@ import com.example.cinema_booking.entity.ShowTime;
 import com.example.cinema_booking.entity.User;
 import com.example.cinema_booking.enums.BookingStatus;
 import com.example.cinema_booking.enums.SeatStatus;
+import com.example.cinema_booking.enums.StatisticGroupBy;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.repository.BookingRepository;
@@ -19,13 +23,20 @@ import com.example.cinema_booking.repository.UserRepository;
 import com.example.cinema_booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.time.temporal.WeekFields;
 
 @Service
 @Slf4j
@@ -223,6 +234,15 @@ public class BookingServiceImpl implements BookingService {
 
         List<Booking> bookings = bookingRepository.findByUserOrderByBookingTimeDesc(user);
         return bookings.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getAllBookingsForAdmin() {
+        return bookingRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }

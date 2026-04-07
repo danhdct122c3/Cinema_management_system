@@ -34,9 +34,7 @@ export const AdminBookings: React.FC = () => {
     const fetchBookings = async () => {
         try {
             setLoading(true);
-            // TODO: Implement getAll endpoint in backend
-            // For now, using temporary user scope endpoint
-            const response = await adminBookingService.getBookingsByUser('admin@example.com');
+            const response = await adminBookingService.getAllBooking();
             setBookings(response.data.result);
         } catch (error) {
             console.error('Error fetching bookings:', error);

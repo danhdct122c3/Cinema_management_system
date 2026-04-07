@@ -69,6 +69,7 @@ export const adminBookingService = {
     releaseSeatReservation: (screeningId: string, seatId: string): Promise<AxiosResponse<APIResponse<boolean>>> =>
         adminAxios.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
     confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => adminAxios.post<APIResponse<Booking>>(`/bookings/${id}/confirm`),
+    getAllBooking: (): Promise<AxiosResponse<APIResponse<Booking[]>>> => adminAxios.get<APIResponse<Booking[]>>('/bookings/admin'),
 };
 
 export const adminRoomService = {

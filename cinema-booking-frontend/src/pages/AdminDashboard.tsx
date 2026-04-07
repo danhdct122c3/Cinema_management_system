@@ -1,10 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Grid, Paper, Typography, Card, CardContent } from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+    Box,
+    Grid,
+    Paper,
+    Typography,
+    Card,
+    CardContent,
+    Button,
+    ButtonGroup,
+    Stack,
+    Chip,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+} from '@mui/material';
 import MovieIcon from '@mui/icons-material/Movie';
 import EventIcon from '@mui/icons-material/Event';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { adminMovieService } from '../services/adminApi';
+import { adminBookingService, adminMovieService, adminShowtimeService } from '../services/adminApi';
+import { Booking, Movie, ShowTimeResponse } from '../types';
 
 interface StatCard {
     title: string;
@@ -14,14 +32,33 @@ interface StatCard {
     bgColor: string;
 }
 
+type RevenueFilter = 'DAY' | 'WEEK' | 'MOVIE';
+
+interface RevenueRow {
+    dimension: string;
+    showtimeId: string;
+    ticketsSold: number;
+    revenue: number;
+}
+
 export const AdminDashboard: React.FC = () => {
-    const [totalMovies, setTotalMovies] = useState(0);
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [showtimes, setShowtimes] = useState<ShowTimeResponse[]>([]);
+    const [revenueFilter, setRevenueFilter] = useState<RevenueFilter>('DAY');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const moviesResponse = await adminMovieService.getAllMovies();
-                setTotalMovies(moviesResponse.data.result.length);
+                const [moviesResponse, bookingsResponse, showtimesResponse] = await Promise.all([
+                    adminMovieService.getAllMovies(),
+                    adminBookingService.getAllBooking(),
+                    adminShowtimeService.getAllShowtimes(),
+                ]);
+
+                setMovies(moviesResponse.data.result ?? []);
+                setBookings(bookingsResponse.data.result ?? []);
+                setShowtimes(showtimesResponse.data.result ?? []);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
             }
@@ -30,42 +67,192 @@ export const AdminDashboard: React.FC = () => {
         fetchData();
     }, []);
 
+    const getTicketCount = (booking: Booking) => {
+        if (booking.seatCodes?.length) return booking.seatCodes.length;
+        if (booking.seatShowTimeIds?.length) return booking.seatShowTimeIds.length;
+        return 0;
+    };
+
+    const isSameDay = (dateA: Date, dateB: Date) =>
+        dateA.getFullYear() === dateB.getFullYear()
+        && dateA.getMonth() === dateB.getMonth()
+        && dateA.getDate() === dateB.getDate();
+
+    const getWeekInfo = (date: Date) => {
+        const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = utcDate.getUTCDay() || 7;
+        utcDate.setUTCDate(utcDate.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
+        const weekNo = Math.ceil((((utcDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+        return {
+            label: `Tuần ${weekNo}/${utcDate.getUTCFullYear()}`,
+            sortKey: utcDate.getUTCFullYear() * 100 + weekNo,
+        };
+    };
+
+    const confirmedBookings = useMemo(
+        () => bookings.filter((booking) => booking.status === 'CONFIRMED'),
+        [bookings]
+    );
+
+    const today = new Date();
+    const todayShowtimes = showtimes.filter((showtime) => {
+        const start = new Date(showtime.startTime);
+        return !Number.isNaN(start.getTime()) && isSameDay(start, today) && showtime.status === 'ACTIVE';
+    });
+
+    const todayBookings = confirmedBookings.filter((booking) => {
+        const bookingDate = new Date(booking.bookingTime);
+        return !Number.isNaN(bookingDate.getTime()) && isSameDay(bookingDate, today);
+    });
+
+    const totalTickets = confirmedBookings.reduce((sum, booking) => sum + getTicketCount(booking), 0);
+    const totalRevenue = confirmedBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+
+    const revenueDataByFilter = useMemo(() => {
+        const movieMap = new Map(movies.map((movie) => [movie.id, movie.title]));
+        const showtimeMovieTitleMap = new Map(
+            showtimes.map((showtime) => [showtime.id, movieMap.get(showtime.movieId) || `Phim #${showtime.movieId}`])
+        );
+
+        type Bucket = {
+            dimension: string;
+            showtimeId: string;
+            ticketsSold: number;
+            revenue: number;
+            sortKey: number;
+        };
+
+        const dayBuckets = new Map<string, Bucket>();
+        const weekBuckets = new Map<string, Bucket>();
+        const movieBuckets = new Map<string, Bucket>();
+
+        confirmedBookings.forEach((booking) => {
+            const bookingDate = new Date(booking.bookingTime);
+            if (Number.isNaN(bookingDate.getTime())) return;
+
+            const ticketCount = getTicketCount(booking);
+            const revenue = booking.totalPrice || 0;
+            const showTimeId = booking.showTimeId || 'N/A';
+
+            const dayLabel = bookingDate.toLocaleDateString('vi-VN');
+            const daySortKey = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), bookingDate.getDate()).getTime();
+            const dayKey = `${dayLabel}__${showTimeId}`;
+            const day = dayBuckets.get(dayKey) || {
+                dimension: dayLabel,
+                showtimeId: showTimeId,
+                ticketsSold: 0,
+                revenue: 0,
+                sortKey: daySortKey,
+            };
+            day.ticketsSold += ticketCount;
+            day.revenue += revenue;
+            dayBuckets.set(dayKey, day);
+
+            const weekInfo = getWeekInfo(bookingDate);
+            const weekKey = `${weekInfo.label}__${showTimeId}`;
+            const week = weekBuckets.get(weekKey) || {
+                dimension: weekInfo.label,
+                showtimeId: showTimeId,
+                ticketsSold: 0,
+                revenue: 0,
+                sortKey: weekInfo.sortKey,
+            };
+            week.ticketsSold += ticketCount;
+            week.revenue += revenue;
+            weekBuckets.set(weekKey, week);
+
+            const movieLabel = showtimeMovieTitleMap.get(showTimeId) || `Phim #${showTimeId}`;
+            const movieKey = `${movieLabel}__${showTimeId}`;
+            const movie = movieBuckets.get(movieKey) || {
+                dimension: movieLabel,
+                showtimeId: showTimeId,
+                ticketsSold: 0,
+                revenue: 0,
+                sortKey: 0,
+            };
+            movie.ticketsSold += ticketCount;
+            movie.revenue += revenue;
+            movieBuckets.set(movieKey, movie);
+        });
+
+        const toRows = (buckets: Map<string, Bucket>, sortByRevenue = false): RevenueRow[] => {
+            const rows: Array<RevenueRow & { sortKey: number }> = Array.from(buckets.values()).map((bucket) => ({
+                dimension: bucket.dimension,
+                showtimeId: bucket.showtimeId,
+                ticketsSold: bucket.ticketsSold,
+                revenue: bucket.revenue,
+                sortKey: bucket.sortKey,
+            }));
+
+            if (sortByRevenue) {
+                rows.sort((a, b) => b.revenue - a.revenue);
+            } else {
+                rows.sort((a, b) => b.sortKey - a.sortKey);
+            }
+
+            return rows.map(({ sortKey, ...row }) => row);
+        };
+
+        return {
+            DAY: toRows(dayBuckets),
+            WEEK: toRows(weekBuckets),
+            MOVIE: toRows(movieBuckets, true),
+        };
+    }, [confirmedBookings, movies, showtimes]);
+
+    const formatCurrency = (value: number) =>
+        value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+
     const stats: StatCard[] = [
         {
             title: 'Tổng Số Phim',
-            value: totalMovies,
+            value: movies.length,
             icon: <MovieIcon sx={{ fontSize: 40 }} />,
             color: '#ff6b00',
             bgColor: 'rgba(255, 107, 0, 0.1)',
         },
         {
             title: 'Suất Chiếu Hôm Nay',
-            value: 12,
+            value: todayShowtimes.length,
             icon: <EventIcon sx={{ fontSize: 40 }} />,
             color: '#2196f3',
             bgColor: 'rgba(33, 150, 243, 0.1)',
         },
         {
             title: 'Vé Đã Đặt',
-            value: 156,
+            value: totalTickets,
             icon: <ConfirmationNumberIcon sx={{ fontSize: 40 }} />,
             color: '#4caf50',
             bgColor: 'rgba(76, 175, 80, 0.1)',
         },
         {
-            title: 'Doanh Thu Hôm Nay',
-            value: '15.5M VNĐ',
+            title: 'Tổng doanh thu',
+            value: formatCurrency(totalRevenue),
             icon: <TrendingUpIcon sx={{ fontSize: 40 }} />,
             color: '#ffc107',
             bgColor: 'rgba(255, 193, 7, 0.1)',
         },
     ];
 
+    const revenueRows = revenueDataByFilter[revenueFilter];
+
+    const revenueDimensionLabel: Record<RevenueFilter, string> = {
+        DAY: 'Ngày',
+        WEEK: 'Tuần',
+        MOVIE: 'Phim',
+    };
+
     return (
-        <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom sx={{ mb: 4 }}>
-                Dashboard
-            </Typography>
+        <Box sx={{ pb: 2 }}>
+            <Box sx={{ mb: 3 }}>
+                <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: 0.2 }}>
+                    Dashboard
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Tổng quan hoạt động rạp phim theo thời gian thực
+                </Typography>
+            </Box>
 
             <Grid container spacing={3}>
                 {stats.map((stat, index) => (
@@ -73,12 +260,13 @@ export const AdminDashboard: React.FC = () => {
                         <Card
                             elevation={0}
                             sx={{
-                                borderRadius: 3,
+                                borderRadius: 4,
                                 border: '1px solid rgba(0, 0, 0, 0.08)',
-                                transition: 'all 0.3s ease',
+                                background: 'linear-gradient(180deg, #fff 0%, #fff8f2 100%)',
+                                transition: 'all 0.25s ease',
                                 '&:hover': {
-                                    transform: 'translateY(-4px)',
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                                    transform: 'translateY(-3px)',
+                                    boxShadow: '0 10px 26px rgba(0,0,0,0.10)',
                                 },
                             }}
                         >
@@ -88,7 +276,7 @@ export const AdminDashboard: React.FC = () => {
                                         <Typography variant="body2" color="text.secondary" gutterBottom>
                                             {stat.title}
                                         </Typography>
-                                        <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }}>
+                                        <Typography variant="h4" fontWeight={800} sx={{ mt: 1, fontSize: { xs: '1.7rem', md: '2rem' } }}>
                                             {stat.value}
                                         </Typography>
                                     </Box>
@@ -96,7 +284,7 @@ export const AdminDashboard: React.FC = () => {
                                         sx={{
                                             backgroundColor: stat.bgColor,
                                             color: stat.color,
-                                            borderRadius: 2,
+                                            borderRadius: 3,
                                             p: 1.5,
                                             display: 'flex',
                                             alignItems: 'center',
@@ -113,92 +301,125 @@ export const AdminDashboard: React.FC = () => {
             </Grid>
 
             <Grid container spacing={3} sx={{ mt: 2 }}>
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12}>
                     <Paper
                         elevation={0}
                         sx={{
                             p: 3,
-                            borderRadius: 3,
+                            borderRadius: 4,
                             border: '1px solid rgba(0, 0, 0, 0.08)',
-                            height: '400px',
+                            background: '#fff',
                         }}
                     >
-                        <Typography variant="h6" fontWeight={600} gutterBottom>
-                            Doanh Thu Tuần Này
-                        </Typography>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                height: '320px',
-                                color: 'text.secondary',
-                            }}
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            alignItems={{ xs: 'flex-start', sm: 'center' }}
+                            justifyContent="space-between"
+                            spacing={1.5}
+                            sx={{ mb: 2 }}
                         >
-                            <Typography>Biểu đồ doanh thu (Coming soon)</Typography>
+                            <Box>
+                                <Typography variant="h6" fontWeight={700}>
+                                    Doanh Thu
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    Theo dõi doanh thu theo ngày, tuần hoặc phim
+                                </Typography>
+                            </Box>
+                            <Chip
+                                label={`Bộ lọc hiện tại: ${revenueDimensionLabel[revenueFilter]}`}
+                                sx={{
+                                    fontWeight: 600,
+                                    backgroundColor: 'rgba(255, 107, 0, 0.12)',
+                                    color: '#ff6b00',
+                                }}
+                            />
+                        </Stack>
+
+                        <Box sx={{ mb: 2 }}>
+                            <ButtonGroup
+                                variant="outlined"
+                                size="medium"
+                                aria-label="revenue filter"
+                                sx={{
+                                    '& .MuiButton-root': {
+                                        px: 3,
+                                        py: 0.9,
+                                        fontWeight: 700,
+                                        fontSize: '0.9rem',
+                                        textTransform: 'none',
+                                        borderColor: 'rgba(255, 107, 0, 0.4)',
+                                        color: '#ff6b00',
+                                    },
+                                    '& .MuiButton-contained': {
+                                        background: 'linear-gradient(90deg, #ff6b00 0%, #ff8c3a 100%)',
+                                        color: '#fff',
+                                        borderColor: 'transparent',
+                                        boxShadow: '0 4px 14px rgba(255, 107, 0, 0.35)',
+                                    },
+                                }}
+                            >
+                                <Button
+                                    variant={revenueFilter === 'DAY' ? 'contained' : 'outlined'}
+                                    onClick={() => setRevenueFilter('DAY')}
+                                >
+                                    Ngày
+                                </Button>
+                                <Button
+                                    variant={revenueFilter === 'WEEK' ? 'contained' : 'outlined'}
+                                    onClick={() => setRevenueFilter('WEEK')}
+                                >
+                                    Tuần
+                                </Button>
+                                <Button
+                                    variant={revenueFilter === 'MOVIE' ? 'contained' : 'outlined'}
+                                    onClick={() => setRevenueFilter('MOVIE')}
+                                >
+                                    Phim
+                                </Button>
+                            </ButtonGroup>
                         </Box>
+
+                        <TableContainer sx={{ maxHeight: 330, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 3 }}>
+                            <Table size="small" stickyHeader>
+                                <TableHead>
+                                    <TableRow sx={{ '& .MuiTableCell-root': { backgroundColor: '#f7f8fa' } }}>
+                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }}>{revenueDimensionLabel[revenueFilter]}</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }}>Mã suất chiếu</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }} align="right">Vé đã bán</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }} align="right">Doanh thu</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {revenueRows.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={4} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                                                Chưa có dữ liệu từ database
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                    {revenueRows.map((row) => (
+                                        <TableRow
+                                            key={row.dimension}
+                                            hover
+                                            sx={{
+                                                '&:nth-of-type(even)': { backgroundColor: 'rgba(0,0,0,0.01)' },
+                                            }}
+                                        >
+                                            <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{row.dimension}</TableCell>
+                                            <TableCell sx={{ fontSize: '0.95rem', fontFamily: 'monospace' }}>{row.showtimeId}</TableCell>
+                                            <TableCell align="right" sx={{ fontSize: '0.95rem' }}>{row.ticketsSold}</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 700, color: '#1b5e20', fontSize: '0.95rem' }}>
+                                                {formatCurrency(row.revenue)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </Paper>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 3,
-                            borderRadius: 3,
-                            border: '1px solid rgba(0, 0, 0, 0.08)',
-                            height: '400px',
-                        }}
-                    >
-                        <Typography variant="h6" fontWeight={600} gutterBottom>
-                            Top Phim Hot
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                            {[1, 2, 3, 4, 5].map((item) => (
-                                <Box
-                                    key={item}
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2,
-                                        p: 1.5,
-                                        borderRadius: 2,
-                                        mb: 1,
-                                        '&:hover': {
-                                            backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                                        },
-                                    }}
-                                >
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            width: 32,
-                                            height: 32,
-                                            backgroundColor: '#ff6b00',
-                                            color: 'white',
-                                            borderRadius: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 700,
-                                            fontSize: '0.875rem',
-                                        }}
-                                    >
-                                        {item}
-                                    </Typography>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" fontWeight={600}>
-                                            Movie Title {item}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {120 - item * 10} vé
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            ))}
-                        </Box>
-                    </Paper>
-                </Grid>
             </Grid>
         </Box>
     );
