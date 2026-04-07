@@ -13,7 +13,9 @@ public interface ShowTimeMapper {
     ShowTime toShowTime(ShowTimeCreateRequest request);
 
     @Mapping(target = "movieId", source = "movie.id")
+    @Mapping(target = "movie", source = "movie")
     @Mapping(target = "roomId", source = "room.id")
     @Mapping(target = "roomName", source = "room.roomName")
+    @Mapping(target = "room", source = "room")
     ShowTimeResponse toShowTimeResponse(ShowTime showTime);
 }

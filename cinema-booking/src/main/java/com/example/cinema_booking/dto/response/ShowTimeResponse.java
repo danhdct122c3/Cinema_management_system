@@ -20,9 +20,12 @@ public class ShowTimeResponse {
     String id;
 
     String movieId;
+    Movie movie;  // NEW: Full movie object for frontend
 
     String roomId;
     String roomName;  // NEW: Room name for display
+    
+    Room room;  // NEW: Full room object for frontend
 
     LocalDateTime startTime;
 

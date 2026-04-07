@@ -26,7 +26,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { adminMovieService, adminShowtimeService, adminAxios } from '../services/adminApi';
+import { adminMovieService, adminShowtimeService, adminRoomService, adminAxios } from '../services/adminApi';
 import { Movie, ShowTimeResponse } from '../types';
 
 interface Room {
@@ -65,8 +65,9 @@ export const AdminScreenings: React.FC = () => {
     const [showtimes, setShowtimes] = useState<ShowTimeResponse[]>([]);
     const [movies, setMovies] = useState<Movie[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [openShowtimeDialog, setOpenShowtimeDialog] = useState(false);
     const [loadingShowtimes, setLoadingShowtimes] = useState(true);
+    const [loadingRooms, setLoadingRooms] = useState(true);
+    const [openShowtimeDialog, setOpenShowtimeDialog] = useState(false);
     const [errorShowtime, setErrorShowtime] = useState('');
     const [successShowtime, setSuccessShowtime] = useState('');
     const [showtimeFormData, setShowtimeFormData] = useState({
@@ -142,10 +143,15 @@ export const AdminScreenings: React.FC = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await adminAxios.get('/rooms');
+            setLoadingRooms(true);
+            const response = await adminRoomService.getAllRooms();
             setRooms(response.data.result || []);
+            setErrorShowtime('');
         } catch (error) {
             console.error('Error fetching rooms:', error);
+            setErrorShowtime('Không thể tải danh sách phòng chiếu');
+        } finally {
+            setLoadingRooms(false);
         }
     };
 
