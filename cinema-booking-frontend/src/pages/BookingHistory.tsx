@@ -2,121 +2,118 @@ import React, { useEffect, useState } from 'react';
 import {
     Container,
     Typography,
-    Paper,
     Box,
     Button,
     CircularProgress,
     Snackbar,
     Alert,
-    TextField,
     Card,
     CardContent,
     Grid,
     Chip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Booking } from '../types';
-import { bookingService, userService } from '../services/api';
+import { bookingService, showtimeService } from '../services/api';
+
+interface BookingView extends Booking {
+    room_name?: string;
+}
+
+interface ShowtimeDisplayInfo {
+    roomName: string;
+    displayTime: string;
+}
 
 export const BookingHistory: React.FC = () => {
     const navigate = useNavigate();
     const [userId, setUserId] = useState('');
-    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [bookings, setBookings] = useState<BookingView[]>([]);
+    const [showtimeInfoById, setShowtimeInfoById] = useState<Record<string, ShowtimeDisplayInfo>>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
-    const [success, setSuccess] = useState<string>('');
-    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-    const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+
+    const enrichRoomsFromShowtimes = async (bookingList: BookingView[]) => {
+        const uniqueShowtimeIds = Array.from(
+            new Set(bookingList.map((b) => b.showTimeId).filter(Boolean))
+        );
+
+        if (uniqueShowtimeIds.length === 0) {
+            setShowtimeInfoById({});
+            return;
+        }
+
+        const responses = await Promise.allSettled(
+            uniqueShowtimeIds.map((id) => showtimeService.getShowtimeById(id))
+        );
+
+        const mapping: Record<string, ShowtimeDisplayInfo> = {};
+        responses.forEach((result, index) => {
+            const showtimeId = uniqueShowtimeIds[index];
+            if (result.status === 'fulfilled') {
+                const detail = result.value.data?.result;
+                const startTime = detail?.startTime ? new Date(detail.startTime) : null;
+                const endTime = detail?.endTime ? new Date(detail.endTime) : null;
+                const displayTime = startTime && !Number.isNaN(startTime.getTime())
+                    ? `${startTime.toLocaleDateString('vi-VN')} ${startTime.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    })}${endTime && !Number.isNaN(endTime.getTime())
+                        ? ` - ${endTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+                        : ''}`
+                    : 'N/A';
+
+                mapping[showtimeId] = {
+                    roomName: detail?.roomName || 'N/A',
+                    displayTime,
+                };
+            } else {
+                mapping[showtimeId] = {
+                    roomName: 'N/A',
+                    displayTime: 'N/A',
+                };
+            }
+        });
+
+        setShowtimeInfoById(mapping);
+    };
 
     useEffect(() => {
-        const savedUserId = localStorage.getItem('userId');
-        if (savedUserId) {
+        const loadBookingsForCurrentUser = async () => {
+            const savedUserId = localStorage.getItem('userId');
+            if (!savedUserId) {
+                setError('Không tìm thấy userId trong phiên đăng nhập. Vui lòng đăng nhập lại.');
+                return;
+            }
+
             setUserId(savedUserId);
-            fetchBookings(savedUserId);
-        }
+            await fetchBookings(savedUserId);
+        };
+
+        loadBookingsForCurrentUser();
     }, []);
 
     const fetchBookings = async (targetUserId: string) => {
         if (!targetUserId) {
-            setError('Please enter your user ID');
+            setError('Không tìm thấy userId hợp lệ.');
             return;
         }
         try {
             setLoading(true);
             setError('');
             const response = await bookingService.getBookingsByUser(targetUserId);
-            const result = response.data?.result || [];
+            const result = (response.data?.result || []) as BookingView[];
             setBookings(result);
+            await enrichRoomsFromShowtimes(result);
             if (result.length === 0) {
-                setError('No bookings found for this user');
+                setError('Không có booking nào cho tài khoản hiện tại.');
             }
         } catch (error: any) {
             console.error('Error fetching bookings:', error);
-            setError(error.response?.data?.message || 'Failed to fetch bookings. Please try again.');
+            setError(error.response?.data?.message || 'Không thể tải danh sách booking. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleSearch = async () => {
-        await fetchBookings(userId);
-    };
-
-    const handleConfirmBooking = async () => {
-        if (!selectedBookingId) return;
-
-        try {
-            setLoading(true);
-            setError('');
-            await bookingService.confirmBooking(selectedBookingId);
-            setSuccess('Booking confirmed successfully!');
-
-            // Refresh the bookings list
-            await fetchBookings(userId);
-        } catch (error: any) {
-            console.error('Error confirming booking:', error);
-            setError(error.response?.data?.message || 'Failed to confirm booking. Please try again.');
-        } finally {
-            setLoading(false);
-            setConfirmDialogOpen(false);
-            setSelectedBookingId(null);
-        }
-    };
-
-    const handleCancelBooking = async () => {
-        if (!selectedBookingId) return;
-
-        try {
-            setLoading(true);
-            setError('');
-            await bookingService.cancelBooking(selectedBookingId);
-            setSuccess('Booking cancelled successfully! The seat is now available for booking.');
-
-            // Refresh the bookings list
-            await fetchBookings(userId);
-        } catch (error: any) {
-            console.error('Error cancelling booking:', error);
-            setError(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
-        } finally {
-            setLoading(false);
-            setCancelDialogOpen(false);
-            setSelectedBookingId(null);
-        }
-    };
-
-    const openConfirmDialog = (bookingId: string) => {
-        setSelectedBookingId(bookingId);
-        setConfirmDialogOpen(true);
-    };
-
-    const openCancelDialog = (bookingId: string) => {
-        setSelectedBookingId(bookingId);
-        setCancelDialogOpen(true);
     };
 
     const getStatusColor = (status: string) => {
@@ -134,43 +131,32 @@ export const BookingHistory: React.FC = () => {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
+            <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 800, mb: 3 }}>
                 Booking History
             </Typography>
 
-            <Paper sx={{ p: 4, mb: 4 }}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <TextField
-                        fullWidth
-                        label="Enter your user ID"
-                        value={userId}
-                        onChange={(e) => setUserId(e.target.value)}
-                        error={!!error && !userId}
-                        helperText={!userId && error ? 'User ID is required' : ''}
-                    />
-                    <Button
-                        variant="contained"
-                        onClick={handleSearch}
-                        disabled={loading || !userId}
-                        sx={{ height: 56 }}
-                    >
-                        {loading ? <CircularProgress size={24} /> : 'Search'}
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={async () => {
-                            const response = await userService.getTestUserId();
-                            const id = response.data.result;
-                            setUserId(id);
-                            localStorage.setItem('userId', id);
-                        }}
-                        disabled={loading}
-                        sx={{ height: 56 }}
-                    >
-                        Use Test User
-                    </Button>
-                </Box>
-            </Paper>
+            <Box
+                sx={{
+                    mb: 3,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    p: 2,
+                    borderRadius: 3,
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    backgroundColor: 'background.paper',
+                }}
+            >
+
+                <Button
+                    variant="contained"
+                    onClick={() => fetchBookings(userId)}
+                    disabled={loading || !userId}
+                    sx={{ px: 3, borderRadius: 2, fontWeight: 700 }}
+                >
+                    Làm mới
+                </Button>
+            </Box>
 
             {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
@@ -181,61 +167,52 @@ export const BookingHistory: React.FC = () => {
             <Grid container spacing={3}>
                 {bookings.map((booking) => (
                     <Grid item xs={12} key={booking.bookingId}>
-                        <Card>
-                            <CardContent>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                borderRadius: 3,
+                                border: '1px solid rgba(0,0,0,0.08)',
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                    boxShadow: '0 10px 24px rgba(0,0,0,0.08)',
+                                    transform: 'translateY(-2px)',
+                                },
+                            }}
+                        >
+                            <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                    <Typography variant="h6">
+                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                                         Booking #{booking.bookingId}
                                     </Typography>
+                                   
                                     <Chip
                                         label={booking.status}
                                         color={getStatusColor(booking.status) as any}
+                                        sx={{ fontWeight: 700 }}
                                     />
                                 </Box>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
                                         <Typography>
-                                            <strong>Show Time ID:</strong> {booking.showTimeId}
+                                            <strong>Showtime:</strong> {showtimeInfoById[booking.showTimeId]?.displayTime || 'N/A'}
                                         </Typography>
                                         <Typography>
-                                            <strong>Seats:</strong> {booking.seatCodes?.join(', ') || 'N/A'}
+                                            <strong>Room:</strong> {showtimeInfoById[booking.showTimeId]?.roomName || booking.room_name || 'N/A'}
                                         </Typography>
                                         <Typography>
-                                            <strong>Booking Time:</strong> {new Date(booking.bookingTime).toLocaleString()}
+                                            <strong>Total:</strong> {booking.totalPrice?.toLocaleString('vi-VN') || '0'} đ
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
+                                         <Typography>
+                                            <strong>Booking Time:</strong> {new Date(booking.bookingTime).toLocaleString()}
+                                    </Typography>
                                         <Typography>
-                                            <strong>User ID:</strong> {booking.userId}
+                                            <strong>Seats:</strong> {booking.seatCodes?.join(', ') || 'N/A'}
                                         </Typography>
-                                        <Typography>
-                                            <strong>Total:</strong> ${booking.totalPrice?.toFixed(2) || '0.00'}
-                                        </Typography>
-                                        <Typography>
-                                            <strong>Seat IDs:</strong> {booking.seatShowTimeIds?.join(', ') || 'N/A'}
-                                        </Typography>
+                                        
                                     </Grid>
                                 </Grid>
-                                {booking.status === 'PENDING' && (
-                                    <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => openConfirmDialog(booking.bookingId)}
-                                            disabled={loading}
-                                        >
-                                            Confirm
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            onClick={() => openCancelDialog(booking.bookingId)}
-                                            disabled={loading}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Box>
-                                )}
                             </CardContent>
                         </Card>
                     </Grid>
@@ -252,38 +229,6 @@ export const BookingHistory: React.FC = () => {
                 </Button>
             </Box>
 
-            {/* Confirm Dialog */}
-            <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-                <DialogTitle>Confirm Booking</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to confirm this booking? This action cannot be undone.
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setConfirmDialogOpen(false)} disabled={loading}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleConfirmBooking} color="primary" disabled={loading}>
-                        {loading ? <CircularProgress size={24} /> : 'Confirm'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Cancel Dialog */}
-            <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
-                <DialogTitle>Cancel Booking</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to cancel this booking? The seat will become available for others to book.
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setCancelDialogOpen(false)} disabled={loading}>
-                        No
-                    </Button>
-                    <Button onClick={handleCancelBooking} color="error" disabled={loading}>
-                        {loading ? <CircularProgress size={24} /> : 'Yes, Cancel'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
             <Snackbar
                 open={!!error}
                 autoHideDuration={6000}
@@ -292,17 +237,6 @@ export const BookingHistory: React.FC = () => {
             >
                 <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
                     {error}
-                </Alert>
-            </Snackbar>
-
-            <Snackbar
-                open={!!success}
-                autoHideDuration={6000}
-                onClose={() => setSuccess('')}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={() => setSuccess('')} severity="success" sx={{ width: '100%' }}>
-                    {success}
                 </Alert>
             </Snackbar>
         </Container>
