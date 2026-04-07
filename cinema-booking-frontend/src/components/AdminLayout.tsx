@@ -33,7 +33,7 @@ export const AdminLayout: React.FC = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const navigate = useNavigate();
     const location = useLocation();
-    const { isAdminLoggedIn, logoutAdmin, isAdminInitialized } = useAdminAuth() as any;
+    const { isAdminLoggedIn, logoutAdmin, isAdminInitialized, adminEmail } = useAdminAuth() as any;
 
     useEffect(() => {
         if (!isAdminInitialized) return;
@@ -176,7 +176,7 @@ export const AdminLayout: React.FC = () => {
                     >
                         <MenuItem disabled>
                             <Typography variant="body2" color="text.secondary">
-                                admin@cinema.vn
+                                {adminEmail || 'admin'}
                             </Typography>
                         </MenuItem>
                         <MenuItem onClick={handleLogout}>

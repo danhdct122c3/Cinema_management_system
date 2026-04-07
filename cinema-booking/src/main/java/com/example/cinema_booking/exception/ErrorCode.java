@@ -42,7 +42,8 @@ public enum ErrorCode {
     BOOKING_ALREADY_CANCELLED(1029, "Booking already cancelled", HttpStatus.BAD_REQUEST),
     BOOKING_ALREADY_CONFIRMED(1030, "Booking already confirmed", HttpStatus.BAD_REQUEST),
     BOOKING_NOT_PENDING(1031, "Booking is not pending", HttpStatus.BAD_REQUEST),
-    SHOWTIME_ALREADY_PASSED(1032, "Show time already passed", HttpStatus.BAD_REQUEST);
+    SHOWTIME_ALREADY_PASSED(1032, "Show time already passed", HttpStatus.BAD_REQUEST),
+    SHOWTIME_HAS_BOOKINGS(1033, "Cannot delete or update showtime with existing bookings", HttpStatus.BAD_REQUEST);
 
 
 

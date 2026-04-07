@@ -12,4 +12,6 @@ public interface ShowTimeService {
     ShowTimeResponse getShowTimeById(String showTimeId);
     List<ShowTimeResponse> getAllShowTimes();
     List<ShowTimeResponse> getAllShowTimesForUser();
+    void deleteShowTime(String showTimeId);
+    ShowTimeResponse updateShowTime(String showTimeId, ShowTimeCreateRequest request);
 }

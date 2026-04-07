@@ -101,6 +101,12 @@ export const adminShowtimeService = {
             seatType,
             price
         }),
+
+    deleteShowtime: (id: string): Promise<AxiosResponse<APIResponse<void>>> =>
+        adminAxios.delete<APIResponse<void>>(`/showtimes/${id}`),
+
+    updateShowtime: (id: string, data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
+        adminAxios.put<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`, data),
 };
 
 // ========== Admin File Upload Instance (with token interceptor) ==========

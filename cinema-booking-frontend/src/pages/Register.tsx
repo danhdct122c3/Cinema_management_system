@@ -11,6 +11,7 @@ import {
     IconButton,
     Alert,
     Grid,
+    CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EmailIcon from '@mui/icons-material/Email';
@@ -20,6 +21,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import MovieIcon from '@mui/icons-material/Movie';
+import { userService } from '../services/api';
 
 export const Register: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -33,6 +35,7 @@ export const Register: React.FC = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,9 +69,14 @@ export const Register: React.FC = () => {
             return;
         }
 
-        // TODO: Call API register
         try {
-            console.log('Register:', formData);
+            setLoading(true);
+            await userService.register({
+                name: formData.fullName,
+                email: formData.email,
+                password: formData.password,
+                phone: formData.phone,
+            });
             
             setSuccess(true);
             
@@ -76,8 +84,13 @@ export const Register: React.FC = () => {
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
-        } catch (err) {
-            setError('Đăng ký thất bại. Vui lòng thử lại.');
+        } catch (err: any) {
+            console.error('Register error:', err);
+            setError(
+                err.response?.data?.message || err.message || 'Đăng ký thất bại. Vui lòng thử lại.'
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -240,6 +253,7 @@ export const Register: React.FC = () => {
                             fullWidth
                             variant="contained"
                             size="large"
+                            disabled={loading}
                             sx={{
                                 mt: 4,
                                 mb: 2,
@@ -252,9 +266,14 @@ export const Register: React.FC = () => {
                                     transform: 'translateY(-2px)',
                                 },
                                 transition: 'all 0.3s',
+                                position: 'relative',
                             }}
                         >
-                            Đăng Ký
+                            {loading ? (
+                                <CircularProgress size={24} sx={{ color: 'white' }} />
+                            ) : (
+                                'Đăng Ký'
+                            )}
                         </Button>
 
                         <Box sx={{ textAlign: 'center' }}>

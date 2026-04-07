@@ -237,4 +237,9 @@ export const holdService = {
         axiosInstance.get<APIResponse<boolean>>(`/seat-holds/${seatShowTimeId}/valid`)
 };
 
+export const userService = {
+    register: (data: { name: string; email: string; password: string; phone: string }): Promise<AxiosResponse<APIResponse<any>>> =>
+        axiosInstance.post<APIResponse<any>>('/users', data, { skipAuth: true } as any)
+};
+
 // NOTE: user_id is now taken from JWT claims on the backend; FE no longer uses a test-user endpoint.

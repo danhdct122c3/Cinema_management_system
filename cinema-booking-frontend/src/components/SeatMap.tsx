@@ -63,10 +63,14 @@ export const SeatMap: React.FC<SeatMapProps> = ({
 
     const handleSeatClick = (seat: SeatShowTimeResponse) => {
         const isSelected = selectedSeats.some(s => s.id === seat.id);
+        const currentUserEmail = localStorage.getItem('userEmail');
 
         if (isSelected) {
             onDeselectSeat(seat.seatCode);
         } else if (seat.status === 'AVAILABLE') {
+            onSelectSeat(seat);
+        } else if (seat.status === 'HOLD' && currentUserEmail && seat.heldByUserEmail === currentUserEmail) {
+            // Allow user to resume booking their own held seats
             onSelectSeat(seat);
         }
     };
@@ -121,15 +125,21 @@ export const SeatMap: React.FC<SeatMapProps> = ({
                                     const numB = parseInt(b.seatCode.substring(1));
                                     return numA - numB;
                                 })
-                                .map((seat) => (
-                                    <SeatButton
-                                        key={seat.id}
-                                        seat={seat}
-                                        isSelected={selectedSeats.some(s => s.id === seat.id)}
-                                        isDisabled={seat.status !== 'AVAILABLE' && !selectedSeats.some(s => s.id === seat.id)}
-                                        onClick={() => handleSeatClick(seat)}
-                                    />
-                                ))}
+                                .map((seat) => {
+                                    const currentUserEmail = localStorage.getItem('userEmail');
+                                    const isUsersSeat = seat.status === 'HOLD' && currentUserEmail && seat.heldByUserEmail === currentUserEmail;
+                                    const isDisabledSeat = seat.status !== 'AVAILABLE' && !isUsersSeat && !selectedSeats.some(s => s.id === seat.id);
+                                    
+                                    return (
+                                        <SeatButton
+                                            key={seat.id}
+                                            seat={seat}
+                                            isSelected={selectedSeats.some(s => s.id === seat.id)}
+                                            isDisabled={isDisabledSeat}
+                                            onClick={() => handleSeatClick(seat)}
+                                        />
+                                    );
+                                })}
                         </Box>
                     </Box>
                 ))}

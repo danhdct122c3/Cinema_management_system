@@ -39,6 +39,7 @@ public class Movie {
     @Builder.Default
     private Set<Genre> genres = new HashSet<>();
 
+    @Column(columnDefinition = "TEXT")
     private String description;
     private Integer duration;
 

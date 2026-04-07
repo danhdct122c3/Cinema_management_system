@@ -11,6 +11,10 @@ import {
     Divider,
     Card,
     CardContent,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
@@ -44,6 +48,7 @@ export const BookingConfirmation: React.FC = () => {
     const [seatAlreadyHeld, setSeatAlreadyHeld] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [bookingResult, setBookingResult] = useState<Booking | null>(null);
+    const [exitConfirmDialogOpen, setExitConfirmDialogOpen] = useState(false);
 
     // Initialize and hold seats
     useEffect(() => {
@@ -124,6 +129,36 @@ export const BookingConfirmation: React.FC = () => {
         }, 3000);
     };
 
+    // Warn if user tries to close tab/refresh while holding seats
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (holdResponse && !bookingSuccess) {
+                e.preventDefault();
+                e.returnValue = 'Your held seats will be released if you leave this page.';
+                return e.returnValue;
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        // Handle browser back button
+        const handlePopState = (e: PopStateEvent) => {
+            if (holdResponse && !bookingSuccess) {
+                e.preventDefault();
+                setExitConfirmDialogOpen(true);
+                window.history.pushState(null, '', window.location.href);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        window.history.pushState(null, '', window.location.href);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [holdResponse, bookingSuccess]);
+
     // Handle payment
     const handlePayment = async () => {
         try {
@@ -167,18 +202,40 @@ export const BookingConfirmation: React.FC = () => {
         }
     };
 
-    // Handle release hold manually
-    const handleReleaseHold = async () => {
+    // Cleanup: Auto-release hold when user leaves without confirming payment
+    useEffect(() => {
+        return () => {
+            // Only auto-release if payment wasn't successful
+            if (!bookingSuccess && selectedSeatIds && selectedSeatIds.length > 0) {
+                holdService.releaseHold(selectedSeatIds).catch(err => 
+                    console.error('Error releasing hold on unmount:', err)
+                );
+            }
+        };
+    }, [selectedSeatIds, bookingSuccess]);
+
+    // Handle back button - show confirmation dialog
+    const handleBackClick = () => {
+        setExitConfirmDialogOpen(true);
+    };
+
+    // Confirm exit and release hold
+    const handleConfirmExit = async () => {
+        setExitConfirmDialogOpen(false);
         try {
             if (selectedSeatIds) {
                 await holdService.releaseHold(selectedSeatIds);
             }
-            // Always go to home
             navigate(`/`);
         } catch (err) {
             console.error('Error releasing hold:', err);
             setError('Failed to release hold. Please try again.');
         }
+    };
+
+    // Cancel exit
+    const handleCancelExit = () => {
+        setExitConfirmDialogOpen(false);
     };
 
     // Auto-redirect when seat is already held
@@ -241,7 +298,7 @@ export const BookingConfirmation: React.FC = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={handleReleaseHold}
+                            onClick={handleBackClick}
                         >
                             Back to Seat Selection
                         </Button>
@@ -344,7 +401,7 @@ export const BookingConfirmation: React.FC = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={handleReleaseHold}
+                            onClick={handleBackClick}
                         >
                             Back to Seat Selection
                         </Button>
@@ -360,7 +417,7 @@ export const BookingConfirmation: React.FC = () => {
                 {/* Back Button */}
                 <Button
                     startIcon={<ArrowBackIcon />}
-                    onClick={handleReleaseHold}
+                    onClick={handleBackClick}
                     sx={{ mb: 3 }}
                 >
                     Back to Seat Selection
@@ -493,7 +550,7 @@ export const BookingConfirmation: React.FC = () => {
                         fullWidth
                         variant="outlined"
                         size="large"
-                        onClick={handleReleaseHold}
+                        onClick={handleBackClick}
                         disabled={holdExpired}
                     >
                         Cancel & Release Hold
@@ -506,6 +563,39 @@ export const BookingConfirmation: React.FC = () => {
                         💡 <strong>Note:</strong> Your seats will be held for 5 minutes. After that, they will be released and available for other customers to book.
                     </Typography>
                 </Paper>
+
+                {/* Exit Confirmation Dialog */}
+                <Dialog
+                    open={exitConfirmDialogOpen}
+                    onClose={handleCancelExit}
+                    maxWidth="sm"
+                    fullWidth
+                >
+                    <DialogTitle>Release Seats and Exit?</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                            If you exit now, your held seats will be released and will become available for other customers to book.
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 2, fontWeight: 'bold', color: 'warning.main' }}>
+                            ⚠️ You will need to select seats again if you want to continue booking.
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={handleCancelExit}
+                            variant="outlined"
+                        >
+                            Continue Booking
+                        </Button>
+                        <Button
+                            onClick={handleConfirmExit}
+                            variant="contained"
+                            color="error"
+                        >
+                            Exit & Release Hold
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Container>
         </Box>
     );

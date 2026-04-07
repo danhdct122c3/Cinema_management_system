@@ -17,4 +17,11 @@ public interface ShowTimeRepository  extends JpaRepository<ShowTime,String> {
                           @Param("startTime") LocalDateTime startTime,
                           @Param("endTime") LocalDateTime endTime);
 
+    @Query("SELECT COUNT(s) > 0 FROM ShowTime s WHERE s.room.id = :roomId AND " +
+            "s.id != :showTimeId AND " +
+            "((s.startTime < :endTime AND s.endTime > :startTime))")
+    boolean existsOverlapExcluding(@Param("roomId") String roomId,
+                                   @Param("showTimeId") String showTimeId,
+                                   @Param("startTime") LocalDateTime startTime,
+                                   @Param("endTime") LocalDateTime endTime);
 }

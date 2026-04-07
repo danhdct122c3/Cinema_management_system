@@ -60,6 +60,48 @@ public class SeatHoldServiceImpl implements SeatHoldService {
 
         log.info("Filtered to {} seats to hold", seatsToHold.size());
 
+        // Release any EXPIRED holds (from any user) first
+        List<SeatShowTime> expiredHolds = seatsToCheck.stream()
+                .filter(s -> s.getStatus().equals(SeatStatus.HOLD) &&
+                            s.getHoldExpireTime() != null &&
+                            s.getHoldExpireTime().isBefore(now))
+                .toList();
+
+        if (!expiredHolds.isEmpty()) {
+            expiredHolds.forEach(seat -> {
+                seat.setStatus(SeatStatus.AVAILABLE);
+                seat.setHoldStartTime(null);
+                seat.setHoldExpireTime(null);
+                seat.setHeldByUser(null);
+            });
+            seatShowTimeRepository.saveAll(expiredHolds);
+            log.info("Auto-released {} expired holds", expiredHolds.size());
+        }
+
+        // Release ALL existing holds for this user on this showtime (including seats they're trying to hold again)
+        // This allows users to resume their booking or switch seats
+        List<SeatShowTime> userAllHolds = seatsToCheck.stream()
+                .filter(s -> s.getStatus().equals(SeatStatus.HOLD) &&
+                            s.getHeldByUser() != null &&
+                            s.getHeldByUser().getId().equals(currentUser.getId()))
+                .toList();
+
+        if (!userAllHolds.isEmpty()) {
+            userAllHolds.forEach(seat -> {
+                seat.setStatus(SeatStatus.AVAILABLE);
+                seat.setHoldStartTime(null);
+                seat.setHoldExpireTime(null);
+                seat.setHeldByUser(null);
+            });
+            seatShowTimeRepository.saveAll(userAllHolds);
+            log.info("Released {} old holds for user {} to allow re-holding or switching seats", userAllHolds.size(), currentUser.getEmail());
+        }
+
+        // Re-fetch seats after cleanup
+        seatsToCheck = seatShowTimeRepository.findByShowTimeIdForUpdate(request.getShowTimeId());
+        seatsToHold = seatsToCheck.stream()
+                .filter(s -> request.getSeatShowTimeIds().contains(s.getId()))
+                .toList();
 
         seatsToHold.forEach(seat -> {
             if (!seat.getStatus().equals(SeatStatus.AVAILABLE)) {

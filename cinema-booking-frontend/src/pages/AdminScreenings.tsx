@@ -26,6 +26,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { adminMovieService, adminShowtimeService, adminRoomService, adminAxios } from '../services/adminApi';
 import { Movie, ShowTimeResponse } from '../types';
 
@@ -68,6 +69,7 @@ export const AdminScreenings: React.FC = () => {
     const [loadingShowtimes, setLoadingShowtimes] = useState(true);
     const [loadingRooms, setLoadingRooms] = useState(true);
     const [openShowtimeDialog, setOpenShowtimeDialog] = useState(false);
+    const [editingShowtimeId, setEditingShowtimeId] = useState<string | null>(null);
     const [errorShowtime, setErrorShowtime] = useState('');
     const [successShowtime, setSuccessShowtime] = useState('');
     const [showtimeFormData, setShowtimeFormData] = useState({
@@ -75,6 +77,10 @@ export const AdminScreenings: React.FC = () => {
         roomId: '',
         startTime: '',
     });
+
+    // Delete Confirmation
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [showtimeToDelete, setShowtimeToDelete] = useState<ShowTimeResponse | null>(null);
 
     // Seat Price Management
     const [selectedShowtime, setSelectedShowtime] = useState<ShowTimeResponse | null>(null);
@@ -183,6 +189,7 @@ export const AdminScreenings: React.FC = () => {
     };
 
     const handleOpenShowtimeDialog = () => {
+        setEditingShowtimeId(null);
         setShowtimeFormData({
             movieId: '',
             roomId: '',
@@ -195,6 +202,7 @@ export const AdminScreenings: React.FC = () => {
 
     const handleCloseShowtimeDialog = () => {
         setOpenShowtimeDialog(false);
+        setEditingShowtimeId(null);
         setCalculatedEndTime('');
     };
 
@@ -221,25 +229,84 @@ export const AdminScreenings: React.FC = () => {
                 return;
             }
 
-            const response = await adminShowtimeService.createShowtime({
+            const startDateTime = new Date(showtimeFormData.startTime);
+            const now = new Date();
+
+            if (startDateTime <= now) {
+                setErrorShowtime('Thời gian bắt đầu phải ở trong tương lai');
+                setLoadingShowtimes(false);
+                return;
+            }
+
+            // Chuyển local datetime thành ISO string (giữ giờ địa phương, không convert UTC)
+            // Ví dụ: 04:13 ở VN → "2026-04-08T04:13:00"
+            const offset = startDateTime.getTimezoneOffset() * 60000;
+            const isoString = new Date(startDateTime.getTime() - offset).toISOString().slice(0, 19);
+
+            const payload = {
                 movieId: showtimeFormData.movieId,
                 roomId: showtimeFormData.roomId,
-                startTime: new Date(showtimeFormData.startTime).toISOString(),
-            });
+                startTime: isoString,
+            };
+
+            let response;
+            if (editingShowtimeId) {
+                // Update mode
+                response = await adminShowtimeService.updateShowtime(editingShowtimeId, payload);
+                setSuccessShowtime('Sửa suất chiếu thành công!');
+            } else {
+                // Create mode
+                response = await adminShowtimeService.createShowtime(payload);
+                setSuccessShowtime('Tạo suất chiếu thành công!');
+            }
 
             if (response.data.result) {
-                setSuccessShowtime('Tạo suất chiếu thành công!');
                 handleCloseShowtimeDialog();
                 fetchShowtimes();
                 setTimeout(() => setSuccessShowtime(''), 3000);
             }
         } catch (error: any) {
-            console.error('Error creating showtime:', error);
+            console.error('Error creating/updating showtime:', error);
             setErrorShowtime(
-                error.response?.data?.message || 'Lỗi khi tạo suất chiếu'
+                error.response?.data?.message || 'Lỗi khi tạo/sửa suất chiếu'
             );
         } finally {
             setLoadingShowtimes(false);
+        }
+    };
+
+    const handleOpenEditDialog = (showtime: ShowTimeResponse) => {
+        setEditingShowtimeId(showtime.id);
+        setShowtimeFormData({
+            movieId: showtime.movieId,
+            roomId: showtime.roomId,
+            startTime: showtime.startTime.slice(0, 16), // "2026-04-08T04:13"
+        });
+        setErrorShowtime('');
+        setSuccessShowtime('');
+        setOpenShowtimeDialog(true);
+    };
+
+    const handleOpenDeleteDialog = (showtime: ShowTimeResponse) => {
+        setShowtimeToDelete(showtime);
+        setOpenDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!showtimeToDelete) return;
+
+        try {
+            await adminShowtimeService.deleteShowtime(showtimeToDelete.id);
+            setSuccessShowtime('Xóa suất chiếu thành công!');
+            setOpenDeleteDialog(false);
+            setShowtimeToDelete(null);
+            fetchShowtimes();
+            setTimeout(() => setSuccessShowtime(''), 3000);
+        } catch (error: any) {
+            console.error('Error deleting showtime:', error);
+            setErrorShowtime(
+                error.response?.data?.message || 'Lỗi khi xóa suất chiếu'
+            );
         }
     };
 
@@ -337,6 +404,22 @@ export const AdminScreenings: React.FC = () => {
         return rooms.find(r => r.id === roomId)?.roomName || roomId;
     };
 
+    const formatDateTime = (dateTimeString: string): string => {
+        // dateTimeString format: "2026-04-08T04:13:00"
+        // Convert to: "04:13 08/04/2026"
+        try {
+            const parts = dateTimeString.split('T');
+            if (parts.length !== 2) return dateTimeString;
+            
+            const [year, month, day] = parts[0].split('-');
+            const time = parts[1].substring(0, 5); // "04:13"
+            
+            return `${time} ${day}/${month}/${year}`;
+        } catch {
+            return dateTimeString;
+        }
+    };
+
     return (
         <Box sx={{ py: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -348,7 +431,6 @@ export const AdminScreenings: React.FC = () => {
             <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid rgba(0,0,0,0.08)' }}>
                 <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)}>
                     <Tab label="📽️ Suất Chiếu" />
-                    <Tab label="💺 Giá Ghế" />
                 </Tabs>
 
                 {/* Tab 1: Showtimes */}
@@ -404,7 +486,7 @@ export const AdminScreenings: React.FC = () => {
                                                 <TableCell>{getMovieTitle(showtime.movieId)}</TableCell>
                                                 <TableCell>{getRoomName(showtime.roomId)}</TableCell>
                                                 <TableCell>
-                                                    {new Date(showtime.startTime).toLocaleString('vi-VN')}
+                                                    {formatDateTime(showtime.startTime)}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Chip
@@ -415,14 +497,32 @@ export const AdminScreenings: React.FC = () => {
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleOpenPriceDialog(showtime)}
-                                                        title="Cập nhật giá"
-                                                        sx={{ color: '#ff6b00' }}
-                                                    >
-                                                        <EditIcon />
-                                                    </IconButton>
+                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleOpenPriceDialog(showtime)}
+                                                            title="Cập nhật giá"
+                                                            sx={{ color: '#ff6b00' }}
+                                                        >
+                                                            <AttachMoneyIcon fontSize="small" />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleOpenEditDialog(showtime)}
+                                                            title="Chỉnh sửa thông tin"
+                                                            sx={{ color: '#2196f3' }}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleOpenDeleteDialog(showtime)}
+                                                            title="Xóa suất chiếu"
+                                                            sx={{ color: '#f44336' }}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Box>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -433,25 +533,13 @@ export const AdminScreenings: React.FC = () => {
                     </Box>
                 </TabPanel>
 
-                {/* Tab 2: Seat Prices */}
-                <TabPanel value={tabValue} index={1}>
-                    <Box sx={{ px: 3, pb: 3 }}>
-                        {successPrice && (
-                            <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-                                {successPrice}
-                            </Alert>
-                        )}
-                        <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                            💡 Chọn suất chiếu từ tab "Suất Chiếu" ở trên để cập nhật giá ghế
-                        </Typography>
-                    </Box>
-                </TabPanel>
+
             </Paper>
 
-            {/* Create Showtime Dialog */}
+            {/* Create/Edit Showtime Dialog */}
             <Dialog open={openShowtimeDialog} onClose={handleCloseShowtimeDialog} maxWidth="sm" fullWidth>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.3rem' }}>
-                    Tạo Suất Chiếu
+                    {editingShowtimeId ? 'Sửa Suất Chiếu' : 'Tạo Suất Chiếu'}
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
@@ -496,6 +584,9 @@ export const AdminScreenings: React.FC = () => {
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                             disabled={loadingShowtimes}
+                            inputProps={{
+                                min: new Date().toISOString().slice(0, 16),
+                            }}
                             helperText="Thời gian kết thúc sẽ được tính tự động dựa vào thời lượng phim + 10 phút nghỉ"
                         />
 
@@ -537,7 +628,7 @@ export const AdminScreenings: React.FC = () => {
                         }}
                     >
                         {loadingShowtimes ? <CircularProgress size={20} sx={{ mr: 1 }} /> : null}
-                        Tạo
+                        {editingShowtimeId ? 'Lưu' : 'Tạo'}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -555,7 +646,7 @@ export const AdminScreenings: React.FC = () => {
                                     <strong>Phim:</strong> {getMovieTitle(selectedShowtime.movieId)}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Thời Gian:</strong> {new Date(selectedShowtime.startTime).toLocaleString('vi-VN')}
+                                    <strong>Thời Gian:</strong> {formatDateTime(selectedShowtime.startTime)}
                                 </Typography>
                             </Paper>
 
@@ -608,6 +699,32 @@ export const AdminScreenings: React.FC = () => {
                     >
                         {loadingPrice ? <CircularProgress size={20} sx={{ mr: 1 }} /> : null}
                         Cập Nhật Giá
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+                <DialogTitle sx={{ fontWeight: 700 }}>Xác Nhận Xóa</DialogTitle>
+                <DialogContent sx={{ py: 3 }}>
+                    <Typography>
+                        Bạn có chắc muốn xóa suất chiếu <strong>{showtimeToDelete && getMovieTitle(showtimeToDelete.movieId)}</strong> lúc <strong>{showtimeToDelete && formatDateTime(showtimeToDelete.startTime)}</strong>?
+                    </Typography>
+                    <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                        ⚠️ Hành động này không thể hoàn tác. Suất chiếu sẽ bị xóa vĩnh viễn.
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 2, gap: 1 }}>
+                    <Button onClick={() => setOpenDeleteDialog(false)}>
+                        Hủy
+                    </Button>
+                    <Button
+                        onClick={handleConfirmDelete}
+                        variant="contained"
+                        color="error"
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Xóa
                     </Button>
                 </DialogActions>
             </Dialog>

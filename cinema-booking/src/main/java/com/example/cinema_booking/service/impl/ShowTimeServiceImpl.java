@@ -37,6 +37,8 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
     private final SeatRepository seatRepository;
     private final ShowTimeMapper showTimeMapper;
     private  final SeatShowTimeService seatShowTimeService;
+    private final com.example.cinema_booking.repository.BookingRepository bookingRepository;
+    private final com.example.cinema_booking.repository.SeatShowTimeRepository seatShowTimeRepository;
 
     @Transactional
     public ShowTimeResponse createScreening(ShowTimeCreateRequest request) {
@@ -81,14 +83,21 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
 
 
     private void validateShowTime(Movie movie, LocalDateTime startTime, LocalDateTime endTime) {
-        // không chiếu trước ngày phát hành của phim
-         if(startTime.toLocalDate().isBefore(movie.getReleaseDate())){
-                throw new AppException(ErrorCode.SHOWTIME_BEFORE_MOVIE_RELEASE);
+        LocalDateTime now = LocalDateTime.now();
+
+        // không chiếu từ quá khứ
+        if(startTime.isBefore(now)){
+            throw new AppException(ErrorCode.SHOWTIME_ALREADY_PASSED);
         }
 
-         if(!endTime.isAfter(startTime)){
-                throw new AppException(ErrorCode.SHOWTIME_END_BEFORE_START);
-         }
+        // không chiếu trước ngày phát hành của phim
+        if(startTime.toLocalDate().isBefore(movie.getReleaseDate())){
+            throw new AppException(ErrorCode.SHOWTIME_BEFORE_MOVIE_RELEASE);
+        }
+
+        if(!endTime.isAfter(startTime)){
+            throw new AppException(ErrorCode.SHOWTIME_END_BEFORE_START);
+        }
     }
 
     public ShowTimeResponse getShowTimeById(String id) {
@@ -120,6 +129,78 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
                 .filter(showTime -> showTime.getStartTime().isAfter(now))
                 .map(showTimeMapper::toShowTimeResponse)
                 .toList();
+    }
+
+    @Transactional
+    public void deleteShowTime(String showTimeId) {
+        ShowTime showTime = showTimeRepository.findById(showTimeId)
+                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_EXIST));
+
+        // Kiểm tra xem có booking nào cho suất chiếu này không
+        long bookingCount = bookingRepository.countByShowTimeAndStatusIn(
+                showTime, 
+                java.util.List.of(
+                    com.example.cinema_booking.enums.BookingStatus.PENDING,
+                    com.example.cinema_booking.enums.BookingStatus.CONFIRMED
+                )
+        );
+
+        if (bookingCount > 0) {
+            throw new AppException(ErrorCode.SHOWTIME_HAS_BOOKINGS);
+        }
+
+        // Xóa tất cả SeatShowTime của suất chiếu này trước (để tránh FK constraint)
+        java.util.List<com.example.cinema_booking.entity.SeatShowTime> seatShowTimes = 
+                seatShowTimeRepository.findByShowtimeId(showTimeId);
+        seatShowTimes.forEach(seatShowTimeRepository::delete);
+
+        // Bây giờ xóa ShowTime
+        showTimeRepository.delete(showTime);
+        log.info("Deleted showtime: {}", showTimeId);
+    }
+
+    @Transactional
+    public ShowTimeResponse updateShowTime(String showTimeId, ShowTimeCreateRequest request) {
+        ShowTime showTime = showTimeRepository.findById(showTimeId)
+                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_EXIST));
+
+        // Kiểm tra xem có booking nào cho suất chiếu này không
+        long bookingCount = bookingRepository.countByShowTimeAndStatusIn(
+                showTime,
+                java.util.List.of(
+                    com.example.cinema_booking.enums.BookingStatus.PENDING,
+                    com.example.cinema_booking.enums.BookingStatus.CONFIRMED
+                )
+        );
+
+        if (bookingCount > 0) {
+            throw new AppException(ErrorCode.SHOWTIME_HAS_BOOKINGS);
+        }
+
+        Movie movie = movieRepository.findById(request.getMovieId())
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));
+
+        Room room = roomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXIST));
+
+        LocalDateTime endTime = request.getStartTime().plusMinutes(movie.getDuration()).plusMinutes(10);
+
+        validateShowTime(movie, request.getStartTime(), endTime);
+
+        // Kiểm tra overlap với các suất chiếu khác (loại trừ chính nó)
+        if (showTimeRepository.existsOverlapExcluding(room.getId(), showTimeId, request.getStartTime(), endTime)) {
+            throw new AppException(ErrorCode.SHOWTIME_OVERLAP);
+        }
+
+        showTime.setMovie(movie);
+        showTime.setRoom(room);
+        showTime.setStartTime(request.getStartTime());
+        showTime.setEndTime(endTime);
+
+        ShowTime updatedShowTime = showTimeRepository.save(showTime);
+        log.info("Updated showtime: {}", showTimeId);
+
+        return showTimeMapper.toShowTimeResponse(updatedShowTime);
     }
 //
 //    @Async
