@@ -101,11 +101,6 @@ export const AdminDashboard: React.FC = () => {
         return !Number.isNaN(start.getTime()) && isSameDay(start, today) && showtime.status === 'ACTIVE';
     });
 
-    const todayBookings = confirmedBookings.filter((booking) => {
-        const bookingDate = new Date(booking.bookingTime);
-        return !Number.isNaN(bookingDate.getTime()) && isSameDay(bookingDate, today);
-    });
-
     const totalTickets = confirmedBookings.reduce((sum, booking) => sum + getTicketCount(booking), 0);
     const totalRevenue = confirmedBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
 
@@ -381,13 +376,13 @@ export const AdminDashboard: React.FC = () => {
                         </Box>
 
                         <TableContainer sx={{ maxHeight: 330, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 3 }}>
-                            <Table size="small" stickyHeader>
+                            <Table size="small" stickyHeader sx={{ tableLayout: 'fixed' }}>
                                 <TableHead>
                                     <TableRow sx={{ '& .MuiTableCell-root': { backgroundColor: '#f7f8fa' } }}>
-                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }}>{revenueDimensionLabel[revenueFilter]}</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }}>Mã suất chiếu</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }} align="right">Vé đã bán</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, fontSize: '0.92rem' }} align="right">Doanh thu</TableCell>
+                                        <TableCell sx={{ width: '30%', fontWeight: 800, fontSize: '0.92rem' }}>{revenueDimensionLabel[revenueFilter]}</TableCell>
+                                        <TableCell sx={{ width: '38%', fontWeight: 800, fontSize: '0.92rem' }}>Mã suất chiếu</TableCell>
+                                        <TableCell sx={{ width: '14%', fontWeight: 800, fontSize: '0.92rem' }} align="right">Vé đã bán</TableCell>
+                                        <TableCell sx={{ width: '18%', fontWeight: 800, fontSize: '0.92rem' }} align="right">Doanh thu</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -400,16 +395,28 @@ export const AdminDashboard: React.FC = () => {
                                     )}
                                     {revenueRows.map((row) => (
                                         <TableRow
-                                            key={row.dimension}
+                                            key={`${revenueFilter}-${row.dimension}-${row.showtimeId}`}
                                             hover
                                             sx={{
                                                 '&:nth-of-type(even)': { backgroundColor: 'rgba(0,0,0,0.01)' },
                                             }}
                                         >
-                                            <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{row.dimension}</TableCell>
-                                            <TableCell sx={{ fontSize: '0.95rem', fontFamily: 'monospace' }}>{row.showtimeId}</TableCell>
-                                            <TableCell align="right" sx={{ fontSize: '0.95rem' }}>{row.ticketsSold}</TableCell>
-                                            <TableCell align="right" sx={{ fontWeight: 700, color: '#1b5e20', fontSize: '0.95rem' }}>
+                                            <TableCell
+                                                sx={{
+                                                    width: '30%',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.95rem',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}
+                                                title={row.dimension}
+                                            >
+                                                {row.dimension}
+                                            </TableCell>
+                                            <TableCell sx={{ width: '38%', fontSize: '0.95rem', fontFamily: 'monospace' }}>{row.showtimeId}</TableCell>
+                                            <TableCell align="right" sx={{ width: '14%', fontSize: '0.95rem' }}>{row.ticketsSold}</TableCell>
+                                            <TableCell align="right" sx={{ width: '18%', fontWeight: 700, color: '#1b5e20', fontSize: '0.95rem' }}>
                                                 {formatCurrency(row.revenue)}
                                             </TableCell>
                                         </TableRow>
