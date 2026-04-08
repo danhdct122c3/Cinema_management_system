@@ -152,7 +152,7 @@ export interface MovieCreateRequest {
 export interface MovieUpdateRequest extends MovieCreateRequest {
 }
 
-// ========== Service Definitions ==========
+// ========== Service Definitions ===========
 export const movieService = {
     getAllMovies: (): Promise<AxiosResponse<APIResponse<Movie[]>>> => axiosInstance.get<APIResponse<Movie[]>>('/movies'),
     getMovieById: (id: string): Promise<AxiosResponse<APIResponse<Movie>>> => axiosInstance.get<APIResponse<Movie>>(`/movies/${id}`),
