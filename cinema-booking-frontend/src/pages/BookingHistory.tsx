@@ -80,20 +80,57 @@ export const BookingHistory: React.FC = () => {
         setShowtimeInfoById(mapping);
     };
 
+    const getStoredUserId = () => {
+        const directUserId = localStorage.getItem('userId');
+        if (directUserId) return directUserId;
+
+        const rawUser = localStorage.getItem('user');
+        if (!rawUser) return '';
+
+        try {
+            const parsed = JSON.parse(rawUser);
+            return parsed?.id || parsed?.userId || '';
+        } catch {
+            return '';
+        }
+    };
+
     useEffect(() => {
         const loadBookingsForCurrentUser = async () => {
-            const savedUserId = localStorage.getItem('userId');
-            if (!savedUserId) {
-                setError('Không tìm thấy userId trong phiên đăng nhập. Vui lòng đăng nhập lại.');
-                return;
-            }
+            if (!isLoggedIn) return;
 
-            setUserId(savedUserId);
-            await fetchBookings(savedUserId);
+            try {
+                setLoading(true);
+                setError('');
+
+                const response = await bookingService.getMyBookings();
+                const result = (response.data?.result || []) as BookingView[];
+                setBookings(result);
+                await enrichRoomsFromShowtimes(result);
+
+                const storedUserId = getStoredUserId();
+                setUserId(storedUserId);
+
+                if (result.length === 0) {
+                    setError('Không có booking nào cho tài khoản hiện tại.');
+                }
+            } catch (error: any) {
+                // Legacy fallback when BE has not exposed /bookings/me yet
+                const fallbackUserId = getStoredUserId();
+                if (!fallbackUserId) {
+                    setError('Không lấy được userId. Vui lòng đăng nhập lại.');
+                    return;
+                }
+
+                setUserId(fallbackUserId);
+                await fetchBookings(fallbackUserId);
+            } finally {
+                setLoading(false);
+            }
         };
 
         loadBookingsForCurrentUser();
-    }, []);
+    }, [isLoggedIn]);
 
     const fetchBookings = async (targetUserId: string) => {
         // Legacy fallback when BE still supports /bookings/user/{userId}
@@ -153,8 +190,24 @@ export const BookingHistory: React.FC = () => {
 
                 <Button
                     variant="contained"
-                    onClick={() => fetchBookings(userId)}
-                    disabled={loading || !userId}
+                    onClick={async () => {
+                        try {
+                            setLoading(true);
+                            setError('');
+                            const response = await bookingService.getMyBookings();
+                            const result = (response.data?.result || []) as BookingView[];
+                            setBookings(result);
+                            await enrichRoomsFromShowtimes(result);
+                            if (result.length === 0) {
+                                setError('Không có booking nào cho tài khoản hiện tại.');
+                            }
+                        } catch {
+                            await fetchBookings(userId);
+                        } finally {
+                            setLoading(false);
+                        }
+                    }}
+                    disabled={loading || (!userId && !isLoggedIn)}
                     sx={{ px: 3, borderRadius: 2, fontWeight: 700 }}
                 >
                     Làm mới
