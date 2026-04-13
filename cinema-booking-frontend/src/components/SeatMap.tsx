@@ -33,7 +33,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({
                 setError(null);
             } catch (err) {
                 console.error('Error fetching seats:', err);
-                setError('Failed to load seats');
+                setError('Không thể tải danh sách ghế');
             } finally {
                 setLoading(false);
             }
@@ -98,7 +98,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({
             {/* Screen */}
             <Paper elevation={2} sx={{ p: 2, mb: 3, textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
-                    🎬 SCREEN
+                    🎬 MÀN HÌNH
                 </Typography>
             </Paper>
 
@@ -149,10 +149,10 @@ export const SeatMap: React.FC<SeatMapProps> = ({
             {selectedSeats.length > 0 && (
                 <Paper elevation={2} sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
                     <Typography variant="body2">
-                        Selected Seats: {selectedSeats.map(s => s.seatCode).join(', ')}
+                        Ghế đã chọn: {selectedSeats.map(s => s.seatCode).join(', ')}
                     </Typography>
                     <Typography variant="h6" fontWeight="bold" sx={{ mt: 1, color: 'success.main' }}>
-                        Total: ₫{selectedSeats.reduce((sum, s) => sum + s.price, 0).toLocaleString('vi-VN')}
+                        Tổng tiền: ₫{selectedSeats.reduce((sum, s) => sum + s.price, 0).toLocaleString('vi-VN')}
                     </Typography>
                 </Paper>
             )}

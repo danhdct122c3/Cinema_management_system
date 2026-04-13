@@ -66,13 +66,13 @@ export const BookingHistory: React.FC = () => {
                     : 'N/A';
 
                 mapping[showtimeId] = {
-                    roomName: detail?.roomName || 'N/A',
+                    roomName: detail?.roomName || 'Không có',
                     displayTime,
                 };
             } else {
                 mapping[showtimeId] = {
-                    roomName: 'N/A',
-                    displayTime: 'N/A',
+                    roomName: 'Không có',
+                    displayTime: 'Không có',
                 };
             }
         });
@@ -172,7 +172,7 @@ export const BookingHistory: React.FC = () => {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 800, mb: 3 }}>
-                Booking History
+                Lịch Sử Đặt Vé
             </Typography>
 
             <Box
@@ -238,7 +238,7 @@ export const BookingHistory: React.FC = () => {
                             <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                        Booking #{booking.bookingId}
+                                        Đơn Đặt Vé #{booking.bookingId}
                                     </Typography>
                                    
                                     <Chip
@@ -250,21 +250,21 @@ export const BookingHistory: React.FC = () => {
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
                                         <Typography>
-                                            <strong>Showtime:</strong> {showtimeInfoById[booking.showTimeId]?.displayTime || 'N/A'}
+                                            <strong>Suất chiếu:</strong> {showtimeInfoById[booking.showTimeId]?.displayTime || 'Không có'}
                                         </Typography>
                                         <Typography>
-                                            <strong>Room:</strong> {showtimeInfoById[booking.showTimeId]?.roomName || booking.room_name || 'N/A'}
+                                            <strong>Phòng chiếu:</strong> {showtimeInfoById[booking.showTimeId]?.roomName || booking.room_name || 'Không có'}
                                         </Typography>
                                         <Typography>
-                                            <strong>Total:</strong> {booking.totalPrice?.toLocaleString('vi-VN') || '0'} đ
+                                            <strong>Tổng tiền:</strong> {booking.totalPrice?.toLocaleString('vi-VN') || '0'} đ
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
                                          <Typography>
-                                            <strong>Booking Time:</strong> {new Date(booking.bookingTime).toLocaleString()}
+                                            <strong>Thời gian đặt:</strong> {new Date(booking.bookingTime).toLocaleString()}
                                     </Typography>
                                         <Typography>
-                                            <strong>Seats:</strong> {booking.seatCodes?.join(', ') || 'N/A'}
+                                            <strong>Ghế:</strong> {booking.seatCodes?.join(', ') || 'Không có'}
                                         </Typography>
                                         
                                     </Grid>
@@ -281,7 +281,7 @@ export const BookingHistory: React.FC = () => {
                     onClick={() => navigate('/')}
                     disabled={loading}
                 >
-                    Back to Home
+                    Về Trang Chủ
                 </Button>
             </Box>
 

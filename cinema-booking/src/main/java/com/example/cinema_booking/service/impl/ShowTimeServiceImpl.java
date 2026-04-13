@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.cglib.core.Local;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,6 +41,8 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
     private final com.example.cinema_booking.repository.BookingRepository bookingRepository;
     private final com.example.cinema_booking.repository.SeatShowTimeRepository seatShowTimeRepository;
 
+
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public ShowTimeResponse createScreening(ShowTimeCreateRequest request) {
         Movie movie = movieRepository.findById(request.getMovieId())
@@ -131,6 +134,7 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
                 .toList();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void deleteShowTime(String showTimeId) {
         ShowTime showTime = showTimeRepository.findById(showTimeId)
@@ -159,6 +163,7 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
         log.info("Deleted showtime: {}", showTimeId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public ShowTimeResponse updateShowTime(String showTimeId, ShowTimeCreateRequest request) {
         ShowTime showTime = showTimeRepository.findById(showTimeId)

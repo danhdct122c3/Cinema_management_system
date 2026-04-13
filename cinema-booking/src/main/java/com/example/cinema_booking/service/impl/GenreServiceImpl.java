@@ -8,6 +8,7 @@ import com.example.cinema_booking.service.GenreService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -92,6 +93,7 @@ public class GenreServiceImpl implements GenreService {
         return genreRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Genre createGenre(String genreName) {
         if (genreName == null || genreName.isBlank()) {

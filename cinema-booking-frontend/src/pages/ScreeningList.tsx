@@ -46,7 +46,7 @@ export const ScreeningList: React.FC = () => {
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching data:', err);
-                setError('Failed to load showtimes');
+                setError('Không thể tải danh sách suất chiếu');
                 setLoading(false);
             }
         };
@@ -78,10 +78,10 @@ export const ScreeningList: React.FC = () => {
                     onClick={() => navigate(-1)}
                     sx={{ mt: 2 }}
                 >
-                    Back
+                    Quay lại
                 </Button>
                 <Alert severity="error" sx={{ mt: 4 }}>
-                    {error || 'Movie not found'}
+                    {error || 'Không tìm thấy phim'}
                 </Alert>
             </Container>
         );
@@ -94,15 +94,15 @@ export const ScreeningList: React.FC = () => {
                 onClick={() => navigate(-1)}
                 sx={{ mb: 3 }}
             >
-                Back
+                Quay lại
             </Button>
 
             <Typography variant="h4" fontWeight="bold" mb={4}>
-                Select a Showtime for {movie.title}
+                Chọn Suất Chiếu Cho {movie.title}
             </Typography>
 
             {showtimes.length === 0 ? (
-                <Alert severity="info">No showtimes available for this movie</Alert>
+                <Alert severity="info">Hiện chưa có suất chiếu cho phim này</Alert>
             ) : (
                 <Box sx={{ display: 'grid', gap: 2 }}>
                     {showtimes.map((showtime) => (
@@ -135,7 +135,7 @@ export const ScreeningList: React.FC = () => {
                                         variant="contained"
                                         onClick={() => handleSelectShowtime(showtime.id)}
                                     >
-                                        Select Seats
+                                        Chọn Ghế
                                     </Button>
                                 </Box>
                             </CardContent>

@@ -10,6 +10,7 @@ import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -39,9 +40,15 @@ public class CustomJwtDecoder implements JwtDecoder {
             var response = authenticationService.introspect(
                     IntrospectRequest.builder().token(token).build());
 
-            if (!response.isValid()) throw new JwtException("Token invalid");
+            if (!response.isValid()) {
+                throw new BadJwtException("Token invalid");
+            }
         } catch (JOSEException | ParseException e) {
-            throw new JwtException(e.getMessage());
+            throw new BadJwtException("Token invalid", e);
+        } catch (JwtException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new JwtException("JWT validation failed", e);
         }
 
         if (Objects.isNull(nimbusJwtDecoder)) {

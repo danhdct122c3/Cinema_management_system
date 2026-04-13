@@ -133,7 +133,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
                     <Chip
-                        label={movie.genreNames?.join(', ') || 'Unknown'}
+                        label={movie.genreNames?.join(', ') || 'Không rõ'}
                         size="small"
                         sx={{
                             width: 'fit-content',

@@ -303,7 +303,7 @@ export const AdminScreenings: React.FC = () => {
             fetchShowtimes();
             setTimeout(() => setSuccessShowtime(''), 3000);
         } catch (error: any) {
-            console.error('Error deleting showtime:', error);
+            console.error('Lỗi khi xóa suất chiếu:', error);
             setErrorShowtime(
                 error.response?.data?.message || 'Lỗi khi xóa suất chiếu'
             );
@@ -332,7 +332,7 @@ export const AdminScreenings: React.FC = () => {
             
             setOpenPriceDialog(true);
         } catch (error) {
-            console.error('Error fetching seat prices:', error);
+            console.error('Lỗi khi hiển thị giá ghế:', error);
             setPriceFormData({
                 normalPrice: 150000,
                 vipPrice: 200000,
@@ -387,7 +387,7 @@ export const AdminScreenings: React.FC = () => {
                 setSuccessPrice('');
             }, 1500);
         } catch (error: any) {
-            console.error('Error updating price:', error);
+            console.error('Lỗi khi cập nhật giá:', error);
             setErrorPrice(
                 error.response?.data?.message || 'Lỗi khi cập nhật giá'
             );

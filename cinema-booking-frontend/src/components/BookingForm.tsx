@@ -42,14 +42,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Enter Your Information</DialogTitle>
+            <DialogTitle>Nhập Thông Tin Của Bạn</DialogTitle>
             <form onSubmit={handleSubmit}>
                 <DialogContent>
                     <Box display="flex" flexDirection="column" gap={2}>
                         <TextField
                             required
                             fullWidth
-                            label="User ID"
+                            label="Mã người dùng"
                             name="userId"
                             value={formData.userId}
                             onChange={handleChange}
@@ -57,9 +57,9 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={onClose}>Hủy</Button>
                     <Button type="submit" variant="contained" color="primary">
-                        Confirm Booking
+                        Xác Nhận Đặt Vé
                     </Button>
                 </DialogActions>
             </form>

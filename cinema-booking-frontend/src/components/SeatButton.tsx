@@ -29,17 +29,17 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
     // Format hold expiration time for tooltip
     const getHoldTooltip = () => {
         if (seat.status === 'HOLD') {
-            const heldInfo = seat.heldByUserEmail ? `Held by: ${seat.heldByUserEmail}` : 'Seat is held';
+            const heldInfo = seat.heldByUserEmail ? `Đang giữ bởi: ${seat.heldByUserEmail}` : 'Ghế đang được giữ';
             if (seat.holdExpireTime) {
                 const expireDate = new Date(seat.holdExpireTime);
                 const timeRemaining = Math.max(0, (expireDate.getTime() - Date.now()) / 1000);
                 const minutes = Math.floor(timeRemaining / 60);
                 const seconds = Math.floor(timeRemaining % 60);
-                return `${heldInfo}\nExpires in: ${minutes}m ${seconds}s`;
+                return `${heldInfo}\nHết hạn sau: ${minutes}p ${seconds}g`;
             }
             return heldInfo;
         }
-        return seat.status === 'BOOKED' ? 'This seat is already booked' : '';
+        return seat.status === 'BOOKED' ? 'Ghế này đã được đặt' : '';
     };
 
     const seatButton = (

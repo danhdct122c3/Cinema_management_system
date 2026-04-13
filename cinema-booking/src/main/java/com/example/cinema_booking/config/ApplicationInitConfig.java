@@ -10,7 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 @Slf4j
@@ -20,13 +20,21 @@ public class ApplicationInitConfig {
     ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository)
     {
         return args -> {
-               if (userRepository.findByEmail("admin").isEmpty())
+               String adminEmail = "admin@gmail.com";
+
+               if (userRepository.findByEmail(adminEmail).isEmpty())
                {
-//                   var roles = new HashSet<com.example.cinema_booking.entity.Role>();
-//                   roles.add(Role.ADMIN.name());
+                   String adminRoleName = com.example.cinema_booking.enums.Role.ADMIN.name();
+
+                   Role adminRole = roleRepository.findById(adminRoleName)
+                           .orElseGet(() -> roleRepository.save(Role.builder()
+                                   .name(adminRoleName)
+                                   .description("Administrator role")
+                                   .build()));
+
                    User user = User.builder()
-                           .email("admin")
-//                           .roles(roles)
+                           .email(adminEmail)
+                           .roles(Set.of(adminRole))
                            // Trong thực tế, bạn nên mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu. Đây chỉ là ví dụ đơn giản.
                            .password("admin")
                            .build();

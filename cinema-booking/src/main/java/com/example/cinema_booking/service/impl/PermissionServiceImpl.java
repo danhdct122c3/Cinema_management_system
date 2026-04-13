@@ -24,7 +24,7 @@ public class PermissionServiceImpl implements PermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public PermissionResponse create(PermissionCreateRequest request) {
         if (request == null || request.getName() == null) {
@@ -39,7 +39,7 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.toResponse(permissionRepository.save(permission));
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+   @PreAuthorize("hasRole('ADMIN')")
     @Override
     public PermissionResponse update(String name, PermissionUpdateRequest request) {
         Permission permission = permissionRepository.findById(name)
@@ -49,7 +49,7 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.toResponse(permissionRepository.save(permission));
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void delete(String permissionId) {
         if (!permissionRepository.existsById(permissionId)) {
@@ -66,7 +66,7 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.toResponse(permission);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<PermissionResponse> getAll() {
         return permissionRepository.findAll().stream()

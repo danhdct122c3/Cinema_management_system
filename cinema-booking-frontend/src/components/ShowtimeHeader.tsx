@@ -42,7 +42,7 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
                 {/* Movie Title */}
                 <Grid item xs={12}>
                     <Typography variant="h4" fontWeight="bold">
-                        {showtime.movie?.title || 'Movie'}
+                        {showtime.movie?.title || 'Phim'}
                     </Typography>
                 </Grid>
 
@@ -69,7 +69,7 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <MeetingRoomIcon color="primary" />
                         <Typography variant="body2" color="textSecondary">
-                            Room {showtime.roomName || 'N/A'}
+                            Phòng {showtime.roomName || 'Không có'}
                         </Typography>
                     </Box>
                 </Grid>
@@ -78,7 +78,7 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <LocalActivityIcon color="primary" />
                         <Typography variant="body2" color="success.main" fontWeight="500">
-                            {availableSeatsCount} Seats Available
+                            {availableSeatsCount} ghế còn trống
                         </Typography>
                     </Box>
                 </Grid>
@@ -86,7 +86,7 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
                 {/* Status */}
                 <Grid item xs={12}>
                     <Chip
-                        label={showtime.status === 'ACTIVE' ? 'Active' : 'Cancelled'}
+                        label={showtime.status === 'ACTIVE' ? 'Đang mở bán' : 'Đã hủy'}
                         color={showtime.status === 'ACTIVE' ? 'success' : 'error'}
                         variant="outlined"
                     />

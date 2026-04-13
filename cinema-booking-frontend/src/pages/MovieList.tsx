@@ -50,7 +50,7 @@ export const MovieList: React.FC = () => {
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching movies:', error);
-                setError('Failed to load movies. Please try again later.');
+                setError('Không thể tải danh sách phim. Vui lòng thử lại sau.');
                 setLoading(false);
             }
         };

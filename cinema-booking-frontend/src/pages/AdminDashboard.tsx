@@ -242,7 +242,7 @@ export const AdminDashboard: React.FC = () => {
         <Box sx={{ pb: 2 }}>
             <Box sx={{ mb: 3 }}>
                 <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: 0.2 }}>
-                    Dashboard
+                    Bảng Điều Khiển
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                     Tổng quan hoạt động rạp phim theo thời gian thực

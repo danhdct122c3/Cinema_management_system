@@ -43,7 +43,7 @@ export const SeatSelection: React.FC = () => {
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching showtime:', err);
-                setError('Failed to load showtime information');
+                setError('Không thể tải thông tin suất chiếu');
                 setLoading(false);
             }
         };
@@ -78,7 +78,7 @@ export const SeatSelection: React.FC = () => {
 
     const handleConfirmBooking = () => {
         if (selectedSeats.length === 0) {
-            setError('Please select at least one seat');
+            setError('Vui lòng chọn ít nhất một ghế');
             return;
         }
 
@@ -119,10 +119,10 @@ export const SeatSelection: React.FC = () => {
                     onClick={() => navigate(-1)}
                     sx={{ mt: 2 }}
                 >
-                    Back
+                    Quay lại
                 </Button>
                 <Alert severity="error" sx={{ mt: 4 }}>
-                    {error || 'Showtime not found'}
+                    {error || 'Không tìm thấy suất chiếu'}
                 </Alert>
             </Container>
         );
@@ -137,7 +137,7 @@ export const SeatSelection: React.FC = () => {
                     onClick={() => navigate(-1)}
                     sx={{ mb: 3 }}
                 >
-                    Back
+                    Quay lại
                 </Button>
 
                 {/* Showtime Header */}
@@ -146,7 +146,7 @@ export const SeatSelection: React.FC = () => {
                 {/* Seat Selection Section */}
                 <Paper elevation={2} sx={{ p: 4, mt: 4, borderRadius: 2 }}>
                     <Typography variant="h5" fontWeight="bold" mb={3}>
-                        Select Your Seats
+                        Chọn Ghế Của Bạn
                     </Typography>
 
                     {showtimeId && (
@@ -175,7 +175,7 @@ export const SeatSelection: React.FC = () => {
                         <Grid container spacing={2} alignItems="center" justifyContent="space-between">
                             <Grid item xs={12} md={8}>
                                 <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                    Selected Seats ({selectedSeats.length})
+                                    Ghế Đã Chọn ({selectedSeats.length})
                                 </Typography>
                                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                     {selectedSeats.map(s => s.seatCode).join(', ')}
@@ -196,7 +196,7 @@ export const SeatSelection: React.FC = () => {
                                         },
                                     }}
                                 >
-                                    Continue to Booking
+                                    Tiếp Tục Đặt Vé
                                 </Button>
                             </Grid>
                         </Grid>
@@ -215,7 +215,7 @@ export const SeatSelection: React.FC = () => {
                         }}
                     >
                         <Typography variant="body1" color="text.secondary">
-                            Please select at least one seat to continue
+                            Vui lòng chọn ít nhất một ghế để tiếp tục
                         </Typography>
                     </Paper>
                 )}

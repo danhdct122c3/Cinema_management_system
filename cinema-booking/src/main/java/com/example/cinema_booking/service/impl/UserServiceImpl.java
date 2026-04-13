@@ -2,8 +2,8 @@ package com.example.cinema_booking.service.impl;
 
 import com.example.cinema_booking.dto.request.*;
 import com.example.cinema_booking.dto.response.UserResponse;
+import com.example.cinema_booking.entity.Role;
 import com.example.cinema_booking.entity.User;
-import com.example.cinema_booking.enums.Role;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.mapper.UserMapper;
@@ -36,10 +36,16 @@ public class UserServiceImpl  implements UserService {
 
         User user = userMapper.toUser(request);
 
-        HashSet<String> roles = new HashSet<>();
-        roles.add(Role.USER.name());
+        String roleName = com.example.cinema_booking.enums.Role.USER.name();
+        Role role = roleRepository.findById(roleName)
+                .orElseGet(() -> roleRepository.save(Role.builder()
+                        .name(roleName)
+                        .description("User role")
+                        .build()));
 
-//        user.setRoles(roles);
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(role);
+        user.setRoles(roles);
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
@@ -54,6 +60,7 @@ public class UserServiceImpl  implements UserService {
         return userMapper.toUserResponse(user);
     }
 
+    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
     @Override
     public UserResponse updateUser(UserUpdateRequest request, String userId) {
         User user = userRepository.findById(userId)

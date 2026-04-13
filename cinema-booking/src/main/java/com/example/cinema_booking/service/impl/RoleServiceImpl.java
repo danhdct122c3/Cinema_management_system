@@ -30,7 +30,7 @@ public class RoleServiceImpl implements RoleService {
     PermissionRepository permissionRepository;
 
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public RoleResponse create(RoleCreateRequest request) {
 
@@ -50,7 +50,7 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(roleRepository.save(role));
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public RoleResponse update(String name, RoleUpdateRequest request) {
         Role role = roleRepository.findById(name)
@@ -71,7 +71,7 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(roleRepository.save(role));
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void delete(String name) {
         if (!roleRepository.existsById(name)) {
@@ -80,7 +80,7 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.deleteById(name);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public RoleResponse getByName(String name) {
         Role role = roleRepository.findById(name)
@@ -88,7 +88,7 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(role);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<RoleResponse> getAll() {
         return roleRepository.findAll().stream()

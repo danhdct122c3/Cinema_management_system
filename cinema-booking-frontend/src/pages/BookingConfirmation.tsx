@@ -61,14 +61,14 @@ export const BookingConfirmation: React.FC = () => {
             try {
                 // Require user login so backend can read user_id from JWT
                 if (!isLoggedIn) {
-                    setError('Please log in to continue booking.');
+                    setError('Vui lòng đăng nhập để tiếp tục đặt vé.');
                     setLoading(false);
                     return;
                 }
 
                 // Validate inputs
                 if (!showtimeId) {
-                    setError('Missing showtime information');
+                    setError('Thiếu thông tin suất chiếu');
                     setLoading(false);
                     return;
                 }
@@ -85,13 +85,13 @@ export const BookingConfirmation: React.FC = () => {
                     setHoldStartTime(Date.now());
                     setLoading(false);
                 } else {
-                    setError(response.data.message || 'Failed to hold seats');
+                    setError(response.data.message || 'Giữ ghế không thành công');
                     setLoading(false);
                 }
             } catch (err: any) {
                 console.error('Error holding seats:', err);
 
-                const errorMessage = err.response?.data?.message || err.message || 'Failed to hold seats';
+                const errorMessage = err.response?.data?.message || err.message || 'Giữ ghế không thành công';
 
                 if (errorMessage.toLowerCase().includes('already held')) {
                     console.warn('Seat already held - redirecting to seat selection');
@@ -112,7 +112,7 @@ export const BookingConfirmation: React.FC = () => {
     // Handle hold expiration
     const handleHoldExpired = async () => {
         setHoldExpired(true);
-        setError('Your seat hold has expired. Please select seats again.');
+        setError('Hết thời gian giữ ghế. Vui lòng chọn ghế lại.');
 
         // Release the hold
         if (selectedSeatIds) {
@@ -134,7 +134,7 @@ export const BookingConfirmation: React.FC = () => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (holdResponse && !bookingSuccess) {
                 e.preventDefault();
-                e.returnValue = 'Your held seats will be released if you leave this page.';
+                e.returnValue = 'Ghế đang giữ sẽ được giải phóng nếu bạn rời khỏi trang này.';
                 return e.returnValue;
             }
         };
@@ -165,7 +165,7 @@ export const BookingConfirmation: React.FC = () => {
             setPaymentInProgress(true);
 
             if (!isLoggedIn) {
-                setError('Please log in to continue booking.');
+                setError('Vui lòng đăng nhập để tiếp tục đặt vé.');
                 setPaymentInProgress(false);
                 return;
             }
@@ -174,14 +174,14 @@ export const BookingConfirmation: React.FC = () => {
             if (selectedSeatIds && selectedSeatIds.length > 0) {
                 const isValid = await holdService.isHoldValid(selectedSeatIds[0]);
                 if (!isValid.data.result) {
-                    setError('Hold has expired. Please select seats again.');
+                    setError('Hết thời gian giữ ghế. Vui lòng chọn ghế lại.');
                     setHoldExpired(true);
                     return;
                 }
             }
 
             if (!showtimeId || !selectedSeatIds || selectedSeatIds.length === 0) {
-                setError('Missing booking information. Please try again.');
+                setError('Thiếu thông tin đặt vé. Vui lòng thử lại.');
                 setPaymentInProgress(false);
                 return;
             }
@@ -197,7 +197,7 @@ export const BookingConfirmation: React.FC = () => {
             setPaymentInProgress(false);
         } catch (err) {
             console.error('Error during payment:', err);
-            setError('Payment failed. Please try again.');
+            setError('Thanh toán thất bại. Vui lòng thử lại.');
             setPaymentInProgress(false);
         }
     };
@@ -229,7 +229,7 @@ export const BookingConfirmation: React.FC = () => {
             navigate(`/`);
         } catch (err) {
             console.error('Error releasing hold:', err);
-            setError('Failed to release hold. Please try again.');
+            setError('Không thể giải phóng giữ ghế. Vui lòng thử lại.');
         }
     };
 
@@ -273,13 +273,13 @@ export const BookingConfirmation: React.FC = () => {
                 <Box sx={{ textAlign: 'center' }}>
                     <ErrorIcon sx={{ fontSize: 80, color: 'warning.main', mb: 2 }} />
                     <Typography variant="h5" color="warning" gutterBottom>
-                        Seat No Longer Available
+                        Ghế Không Còn Trống
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-                        This seat has been held by another user. Please select different seats.
+                        Ghế này đã được người dùng khác giữ. Vui lòng chọn ghế khác.
                     </Typography>
                     <Typography variant="caption" sx={{ mt: 4, display: 'block', color: '#999' }}>
-                        Redirecting...
+                        Đang chuyển hướng...
                     </Typography>
                 </Box>
             </Container>
@@ -292,7 +292,7 @@ export const BookingConfirmation: React.FC = () => {
             <Container maxWidth="sm" sx={{ py: 4 }}>
                 <Paper sx={{ p: 4 }}>
                     <Alert severity="error">
-                        {error || 'Failed to hold seats. Please try again.'}
+                        {error || 'Giữ ghế không thành công. Vui lòng thử lại.'}
                     </Alert>
                     <Box sx={{ mt: 4 }}>
                         <Button
@@ -300,7 +300,7 @@ export const BookingConfirmation: React.FC = () => {
                             variant="contained"
                             onClick={handleBackClick}
                         >
-                            Back to Seat Selection
+                            Quay Lại Chọn Ghế
                         </Button>
                     </Box>
                 </Paper>
@@ -315,13 +315,13 @@ export const BookingConfirmation: React.FC = () => {
                     <Box sx={{ textAlign: 'center' }}>
                         <ErrorIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
                         <Typography variant="h5" color="error" gutterBottom>
-                            Hold Expired
+                            Hết Thời Gian Giữ Ghế
                         </Typography>
                         <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
                             {error}
                         </Typography>
                         <Typography variant="caption" sx={{ mt: 4, display: 'block', color: '#999' }}>
-                            Redirecting...
+                            Đang chuyển hướng...
                         </Typography>
                     </Box>
                     <Box sx={{ mt: 4 }}>
@@ -330,7 +330,7 @@ export const BookingConfirmation: React.FC = () => {
                             variant="contained"
                             onClick={() => navigate(`/`)}
                         >
-                            Back to Home
+                            Về Trang Chủ
                         </Button>
                     </Box>
                 </Paper>
@@ -345,10 +345,10 @@ export const BookingConfirmation: React.FC = () => {
                     <Box sx={{ textAlign: 'center' }}>
                         <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
                         <Typography variant="h5" color="success.main" gutterBottom>
-                            Booking Confirmed
+                            Đặt Vé Thành Công
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                            Your booking has been created successfully.
+                            Vé của bạn đã được tạo thành công.
                         </Typography>
                     </Box>
 
@@ -356,16 +356,16 @@ export const BookingConfirmation: React.FC = () => {
 
                     <Box sx={{ display: 'grid', gap: 1 }}>
                         <Typography variant="body2">
-                            <strong>Booking ID:</strong> {bookingResult.bookingId}
+                            <strong>Mã đặt vé:</strong> {bookingResult.bookingId}
                         </Typography>
                         <Typography variant="body2">
-                            <strong>Status:</strong> {bookingResult.status}
+                            <strong>Trạng thái:</strong> {bookingResult.status}
                         </Typography>
                         <Typography variant="body2">
-                            <strong>Total:</strong> ${bookingResult.totalPrice?.toFixed(2) || totalPrice.toFixed(2)}
+                            <strong>Tổng tiền:</strong> ${bookingResult.totalPrice?.toFixed(2) || totalPrice.toFixed(2)}
                         </Typography>
                         <Typography variant="body2">
-                            <strong>Seats:</strong> {bookingResult.seatCodes?.join(', ') || selectedSeats.map(s => s.seatCode).join(', ')}
+                            <strong>Ghế:</strong> {bookingResult.seatCodes?.join(', ') || selectedSeats.map(s => s.seatCode).join(', ')}
                         </Typography>
                     </Box>
 
@@ -375,14 +375,14 @@ export const BookingConfirmation: React.FC = () => {
                             variant="contained"
                             onClick={() => navigate('/booking-history')}
                         >
-                            View Booking History
+                            Xem Lịch Sử Đặt Vé
                         </Button>
                         <Button
                             fullWidth
                             variant="outlined"
                             onClick={() => navigate('/')}
                         >
-                            Back to Home
+                            Về Trang Chủ
                         </Button>
                     </Box>
                 </Paper>
@@ -395,7 +395,7 @@ export const BookingConfirmation: React.FC = () => {
             <Container maxWidth="sm" sx={{ py: 4 }}>
                 <Paper sx={{ p: 4 }}>
                     <Alert severity="error">
-                        {error || 'Failed to hold seats. Please try again.'}
+                        {error || 'Giữ ghế không thành công. Vui lòng thử lại.'}
                     </Alert>
                     <Box sx={{ mt: 4 }}>
                         <Button
@@ -403,7 +403,7 @@ export const BookingConfirmation: React.FC = () => {
                             variant="contained"
                             onClick={handleBackClick}
                         >
-                            Back to Seat Selection
+                            Quay Lại Chọn Ghế
                         </Button>
                     </Box>
                 </Paper>
@@ -420,7 +420,7 @@ export const BookingConfirmation: React.FC = () => {
                     onClick={handleBackClick}
                     sx={{ mb: 3 }}
                 >
-                    Back to Seat Selection
+                    Quay Lại Chọn Ghế
                 </Button>
 
                 {/* Hold Countdown Timer */}
@@ -447,23 +447,23 @@ export const BookingConfirmation: React.FC = () => {
                 <Card sx={{ mb: 3 }}>
                     <CardContent>
                         <Typography variant="h6" gutterBottom>
-                            {showtime?.movie?.title || 'Movie'}
+                            {showtime?.movie?.title || 'Phim'}
                         </Typography>
                         <Grid container spacing={2} sx={{ mt: 1 }}>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="caption" color="text.secondary">
-                                    Showtime
+                                    Suất chiếu
                                 </Typography>
                                 <Typography variant="body2">
-                                    {showtime ? new Date(showtime.startTime).toLocaleString() : 'N/A'}
+                                    {showtime ? new Date(showtime.startTime).toLocaleString() : 'Không có'}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="caption" color="text.secondary">
-                                    Room
+                                    Phòng chiếu
                                 </Typography>
                                 <Typography variant="body2">
-                                    {showtime?.room?.roomName || 'N/A'}
+                                    {showtime?.room?.roomName || 'Không có'}
                                 </Typography>
                             </Grid>
                         </Grid>
@@ -474,7 +474,7 @@ export const BookingConfirmation: React.FC = () => {
                 <Card sx={{ mb: 3 }}>
                     <CardContent>
                         <Typography variant="h6" gutterBottom>
-                            Selected Seats ({selectedSeats.length})
+                            Ghế Đã Chọn ({selectedSeats.length})
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
                             {selectedSeats.map(seat => (
@@ -492,7 +492,7 @@ export const BookingConfirmation: React.FC = () => {
                                         {seat.seatCode}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
-                                        ${seat.price.toFixed(2)} ({seat.seatType})
+                                        ${seat.price.toFixed(2)} ({seat.seatType === 'VIP' ? 'VIP' : 'Thường'})
                                     </Typography>
                                 </Box>
                             ))}
@@ -504,13 +504,13 @@ export const BookingConfirmation: React.FC = () => {
                 <Paper sx={{ p: 3, mb: 3, bgcolor: '#fff8f0', border: '2px solid #ff6b00' }}>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
-                            <Typography color="text.secondary">Subtotal ({selectedSeats.length} seats)</Typography>
+                            <Typography color="text.secondary">Tạm tính ({selectedSeats.length} ghế)</Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
                             <Typography>${totalPrice.toFixed(2)}</Typography>
                         </Grid>
                         <Grid item xs={6}>
-                            <Typography color="text.secondary">Service Fee</Typography>
+                            <Typography color="text.secondary">Phí dịch vụ</Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
                             <Typography>$0.00</Typography>
@@ -520,7 +520,7 @@ export const BookingConfirmation: React.FC = () => {
                         </Grid>
                         <Grid item xs={6}>
                             <Typography variant="h6" fontWeight="bold">
-                                Total
+                                Tổng cộng
                             </Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
@@ -544,7 +544,7 @@ export const BookingConfirmation: React.FC = () => {
                             '&:hover': { bgcolor: '#e55a00' },
                         }}
                     >
-                        {paymentInProgress ? <CircularProgress size={24} /> : 'Proceed to Payment'}
+                        {paymentInProgress ? <CircularProgress size={24} /> : 'Tiến Hành Thanh Toán'}
                     </Button>
                     <Button
                         fullWidth
@@ -553,14 +553,14 @@ export const BookingConfirmation: React.FC = () => {
                         onClick={handleBackClick}
                         disabled={holdExpired}
                     >
-                        Cancel & Release Hold
+                        Hủy Và Giải Phóng Ghế
                     </Button>
                 </Box>
 
                 {/* Info Box */}
                 <Paper sx={{ mt: 3, p: 2, bgcolor: '#e8f5e9', border: '1px solid #81c784' }}>
                     <Typography variant="caption" color="text.secondary">
-                        💡 <strong>Note:</strong> Your seats will be held for 5 minutes. After that, they will be released and available for other customers to book.
+                        💡 <strong>Lưu ý:</strong> Ghế của bạn sẽ được giữ trong 5 phút. Sau đó ghế sẽ được mở lại để người khác có thể đặt.
                     </Typography>
                 </Paper>
 
@@ -571,13 +571,13 @@ export const BookingConfirmation: React.FC = () => {
                     maxWidth="sm"
                     fullWidth
                 >
-                    <DialogTitle>Release Seats and Exit?</DialogTitle>
+                    <DialogTitle>Giải Phóng Ghế Và Thoát?</DialogTitle>
                     <DialogContent>
                         <Typography variant="body2" sx={{ mt: 2 }}>
-                            If you exit now, your held seats will be released and will become available for other customers to book.
+                            Nếu thoát lúc này, các ghế đang giữ sẽ được giải phóng để khách khác có thể đặt.
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 2, fontWeight: 'bold', color: 'warning.main' }}>
-                            ⚠️ You will need to select seats again if you want to continue booking.
+                            ⚠️ Bạn sẽ cần chọn lại ghế nếu muốn tiếp tục đặt vé.
                         </Typography>
                     </DialogContent>
                     <DialogActions>
@@ -585,14 +585,14 @@ export const BookingConfirmation: React.FC = () => {
                             onClick={handleCancelExit}
                             variant="outlined"
                         >
-                            Continue Booking
+                            Tiếp Tục Đặt Vé
                         </Button>
                         <Button
                             onClick={handleConfirmExit}
                             variant="contained"
                             color="error"
                         >
-                            Exit & Release Hold
+                            Thoát Và Giải Phóng Ghế
                         </Button>
                     </DialogActions>
                 </Dialog>

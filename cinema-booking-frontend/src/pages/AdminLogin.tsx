@@ -50,6 +50,8 @@ export const AdminLogin: React.FC = () => {
             if (axios.isAxiosError(err)) {
                 const msg = (err.response?.data as any)?.message || (err.response?.data as any)?.error;
                 setError(msg || 'Đăng nhập admin thất bại. Vui lòng thử lại.');
+            } else if (err instanceof Error && err.message) {
+                setError(err.message);
             } else {
                 setError('Đăng nhập admin thất bại. Vui lòng thử lại.');
             }
@@ -80,7 +82,7 @@ export const AdminLogin: React.FC = () => {
                     <Box sx={{ textAlign: 'center', mb: 4 }}>
                         <AdminPanelSettingsIcon sx={{ fontSize: 60, color: '#111827', mb: 1 }} />
                         <Typography variant="h4" component="h1" fontWeight={800} color="#111827" gutterBottom>
-                            Admin Login
+                            Đăng Nhập Quản Trị
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                             Khu vực quản trị hệ thống

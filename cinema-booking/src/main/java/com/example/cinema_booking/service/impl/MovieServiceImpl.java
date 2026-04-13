@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,8 +37,8 @@ public class MovieServiceImpl implements MovieService {
      MovieMapper movieMapper;
      CloudinaryService cloudinaryService;
 
-
-     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public MovieResponse createMovie(MovieCreateRequest request) {
 
         // Tìm hoặc tạo genres từ genreIds và genreNames
@@ -72,6 +73,7 @@ public class MovieServiceImpl implements MovieService {
         return movieMapper.toMovieResponse(movie);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public MovieResponse updateMovie(String id, MovieUpdateRequest request) {
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));
@@ -94,6 +96,7 @@ public class MovieServiceImpl implements MovieService {
         return movieMapper.toMovieResponse(updatedMovie);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void updateStatus(String id, String status) {
         Movie movie = movieRepository.findById(id)
@@ -102,6 +105,7 @@ public class MovieServiceImpl implements MovieService {
         movie.setStatus(MovieStatus.valueOf(status));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
      public void deleteMovie(String id) {
          Movie movie = movieRepository.findById(id)
                  .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));

@@ -21,7 +21,7 @@ interface MenuItemType {
 }
 
 const menuItems: MenuItemType[] = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
+    { text: 'Bảng Điều Khiển', icon: <DashboardIcon />, path: '/admin' },
     { text: 'Quản lý Phim', icon: <MovieIcon />, path: '/admin/movies' },
     { text: 'Phòng Chiếu', icon: <ChairIcon />, path: '/admin/rooms' },
     { text: 'Suất Chiếu', icon: <EventIcon />, path: '/admin/screenings' },
@@ -75,10 +75,10 @@ export const AdminLayout: React.FC = () => {
                 <AdminPanelSettingsIcon sx={{ fontSize: 40 }} />
                 <Box>
                     <Typography variant="h6" fontWeight={700}>
-                        Admin Panel
+                        Khu Vực Quản Trị
                     </Typography>
                     <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                        Cinema Management
+                        Quản Lý Rạp Chiếu Phim
                     </Typography>
                 </Box>
             </Box>

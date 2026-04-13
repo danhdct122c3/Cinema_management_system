@@ -20,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class SeatShowTimeServiceImpl  implements SeatShowTimeService {
     SeatShowTimeRepository seatShowTimeRepository;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void createSeatShowTime(ShowTime showTime, Room room){
 
@@ -81,6 +83,7 @@ public class SeatShowTimeServiceImpl  implements SeatShowTimeService {
                 .toList();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void updateSeatPrice(String showtimeId, SeatType type, Double price){
         List<SeatShowTime> seatShowTimes = seatShowTimeRepository.findByShowtimeId(showtimeId);

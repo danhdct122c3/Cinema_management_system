@@ -164,7 +164,7 @@ export const MovieDetail: React.FC = () => {
                                     />
                                     <Chip
                                         icon={<LocalFireDepartmentIcon />}
-                                        label={movie.status}
+                                        label={movie.status === 'NOW_SHOWING' ? 'Đang Chiếu' : 'Sắp Chiếu'}
                                         sx={{
                                             backgroundColor: movie.status === 'NOW_SHOWING' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 107, 0, 0.1)',
                                             color: movie.status === 'NOW_SHOWING' ? '#4CAF50' : '#ff6b00',
