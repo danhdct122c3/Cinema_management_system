@@ -80,7 +80,7 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.deleteById(name);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     @Override
     public RoleResponse getByName(String name) {
         Role role = roleRepository.findById(name)
@@ -88,7 +88,7 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(role);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     @Override
     public List<RoleResponse> getAll() {
         return roleRepository.findAll().stream()

@@ -26,12 +26,12 @@ public class RoleController {
                 .build();
     }
 
-//    @PutMapping("/{name}")
-//    APIResponse<RoleResponse> update(@PathVariable String name, @RequestBody RoleUpdateRequest request) {
-//        return APIResponse.<RoleResponse>builder()
-//                .result(roleService.update(name, request))
-//                .build();
-//    }
+    @PutMapping("/{name}")
+    APIResponse<RoleResponse> update(@PathVariable String name, @RequestBody RoleUpdateRequest request) {
+        return APIResponse.<RoleResponse>builder()
+                .result(roleService.update(name, request))
+                .build();
+    }
 
     @DeleteMapping("/{role}")
     APIResponse<Void> delete(@PathVariable String role) {

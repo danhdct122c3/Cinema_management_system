@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class GenreServiceImpl implements GenreService {
     GenreRepository genreRepository;
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')")
     @Override
     public Genre findOrCreateGenre(String genreId, String genreName) {
         // 1. Nếu có genreId, tìm và trả về
@@ -51,6 +52,7 @@ public class GenreServiceImpl implements GenreService {
     /**
      * Tìm hoặc tạo nhiều genre từ danh sách IDs và Names
      */
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     public Set<Genre> findOrCreateGenres(List<String> genreIds, List<String> genreNames) {
         Set<Genre> genres = new HashSet<>();
 
@@ -89,11 +91,12 @@ public class GenreServiceImpl implements GenreService {
         return genres;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     public List<Genre> findAllGenres() {
         return genreRepository.findAll();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     @Override
     public Genre createGenre(String genreName) {
         if (genreName == null || genreName.isBlank()) {

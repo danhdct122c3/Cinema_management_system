@@ -37,7 +37,7 @@ public class MovieServiceImpl implements MovieService {
      MovieMapper movieMapper;
      CloudinaryService cloudinaryService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     @Transactional
     public MovieResponse createMovie(MovieCreateRequest request) {
 
@@ -73,7 +73,7 @@ public class MovieServiceImpl implements MovieService {
         return movieMapper.toMovieResponse(movie);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     public MovieResponse updateMovie(String id, MovieUpdateRequest request) {
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));
@@ -96,7 +96,7 @@ public class MovieServiceImpl implements MovieService {
         return movieMapper.toMovieResponse(updatedMovie);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     @Transactional
     public void updateStatus(String id, String status) {
         Movie movie = movieRepository.findById(id)
@@ -105,12 +105,13 @@ public class MovieServiceImpl implements MovieService {
         movie.setStatus(MovieStatus.valueOf(status));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
      public void deleteMovie(String id) {
          Movie movie = movieRepository.findById(id)
                  .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));
          movieRepository.delete(movie);
      }
+
 
     public PageResponse<MovieResponse> getMovies(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);

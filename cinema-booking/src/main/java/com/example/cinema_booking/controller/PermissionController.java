@@ -26,13 +26,13 @@ public class PermissionController {
                 .build();
     }
 
-//    @PutMapping("/{name}")
-//    APIResponse<PermissionResponse> update(@PathVariable String name, @RequestBody PermissionUpdateRequest request) {
-//        return APIResponse.<PermissionResponse>builder()
-//                .result(permissionService.update(name, request))
-//                .build();
-//    }
-//
+    @PutMapping("/{name}")
+    APIResponse<PermissionResponse> update(@PathVariable String name, @RequestBody PermissionUpdateRequest request) {
+        return APIResponse.<PermissionResponse>builder()
+                .result(permissionService.update(name, request))
+                .build();
+    }
+
     @DeleteMapping("/{permissionId}")
     APIResponse<Void> delete(@PathVariable String permissionId) {
         permissionService.delete(permissionId);
