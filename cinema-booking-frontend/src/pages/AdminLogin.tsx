@@ -40,11 +40,7 @@ export const AdminLogin: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            const result = await loginAdmin(email, password);
-            if (!result.isAuthenticated) {
-                setError('Đăng nhập admin thất bại.');
-                return;
-            }
+            await loginAdmin(email, password);
             navigate('/admin');
         } catch (err: any) {
             if (axios.isAxiosError(err)) {

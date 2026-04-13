@@ -6,9 +6,11 @@ import {
 } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/home';
+export const AUTH_TOKEN_CLEARED_EVENT = 'app:auth-token-cleared';
 
 // ========== Token Storage ==========
 export const createTokenStorage = (tokenKey: string) => ({
+    key: tokenKey,
     get: (): string | null => localStorage.getItem(tokenKey),
     set: (token: string) => localStorage.setItem(tokenKey, token),
     clear: () => localStorage.removeItem(tokenKey),
@@ -20,6 +22,17 @@ export const  createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<ty
         baseURL: API_BASE_URL,
         headers: { 'Content-Type': 'application/json' },
     });
+
+    const clearTokenAndNotify = (reason: string) => {
+        tokenStorage.clear();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+                new CustomEvent(AUTH_TOKEN_CLEARED_EVENT, {
+                    detail: { tokenKey: tokenStorage.key, reason },
+                })
+            );
+        }
+    };
 
     // --- Auth helpers (401 -> refresh -> retry) ---
     let isRefreshing = false;
@@ -90,7 +103,7 @@ export const  createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<ty
                 try {
                     const currentToken = tokenStorage.get();
                     if (!currentToken) {
-                        tokenStorage.clear();
+                        clearTokenAndNotify('missing-token-before-refresh');
                         resolveRefreshQueue(null);
                         throw error;
                     }
@@ -98,7 +111,7 @@ export const  createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<ty
                     const refreshRes = await auth.refresh({ token: currentToken });
                     const newToken = refreshRes.data?.result?.token;
                     if (!newToken) {
-                        tokenStorage.clear();
+                        clearTokenAndNotify('empty-refresh-token');
                         resolveRefreshQueue(null);
                         throw error;
                     }
@@ -110,7 +123,7 @@ export const  createApiClient = ({ tokenStorage }: { tokenStorage: ReturnType<ty
                     (originalRequest.headers as any).Authorization = `Bearer ${newToken}`;
                     return instance(originalRequest);
                 } catch (e) {
-                    tokenStorage.clear();
+                    clearTokenAndNotify('refresh-failed');
                     resolveRefreshQueue(null);
                     throw e;
                 } finally {

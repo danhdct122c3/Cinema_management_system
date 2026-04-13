@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box, Snackbar, Alert } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import { MovieList } from './pages/MovieList';
 import { MovieDetail } from './pages/MovieDetail';
@@ -20,8 +20,12 @@ import { AdminMovies } from './pages/AdminMovies';
 import { AdminRooms } from './pages/AdminRooms';
 import { AdminScreenings } from './pages/AdminScreenings';
 import { AdminBookings } from './pages/AdminBookings';
+import { AdminUsers } from './pages/AdminUsers';
+import { AdminRoles } from './pages/AdminRoles';
+import { AdminPermissions } from './pages/AdminPermissions';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminAuthProvider } from './context/AdminAuthContext';
+import { AUTH_TOKEN_CLEARED_EVENT } from './services/api';
 
 const theme = createTheme({
     palette: {
@@ -85,6 +89,41 @@ const theme = createTheme({
 });
 
 function App() {
+    const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
+    const [sessionExpiredMessage, setSessionExpiredMessage] = useState('Bạn đã hết phiên đăng nhập. Vui lòng đăng nhập lại.');
+    const lastNoticeAtRef = useRef(0);
+
+    useEffect(() => {
+        const handleTokenCleared = (event: Event) => {
+            const customEvent = event as CustomEvent<{ tokenKey?: string; reason?: string }>;
+            const reason = customEvent.detail?.reason;
+            const refreshFailureReasons = ['refresh-failed', 'empty-refresh-token', 'missing-token-before-refresh'];
+
+            if (reason && !refreshFailureReasons.includes(reason)) {
+                return;
+            }
+
+            const now = Date.now();
+            if (now - lastNoticeAtRef.current < 1200) {
+                return;
+            }
+
+            lastNoticeAtRef.current = now;
+            const isAdminSession = customEvent.detail?.tokenKey === 'adminAccessToken';
+            setSessionExpiredMessage(
+                isAdminSession
+                    ? 'Bạn đã hết phiên đăng nhập quản trị. Vui lòng đăng nhập lại.'
+                    : 'Bạn đã hết phiên đăng nhập. Vui lòng đăng nhập lại.'
+            );
+            setSessionExpiredOpen(true);
+        };
+
+        window.addEventListener(AUTH_TOKEN_CLEARED_EVENT, handleTokenCleared);
+        return () => {
+            window.removeEventListener(AUTH_TOKEN_CLEARED_EVENT, handleTokenCleared);
+        };
+    }, []);
+
     return (
         <AuthProvider>
             <AdminAuthProvider>
@@ -108,6 +147,9 @@ function App() {
                                         <Route path="rooms" element={<AdminRooms />} />
                                         <Route path="screenings" element={<AdminScreenings />} />
                                         <Route path="bookings" element={<AdminBookings />} />
+                                        <Route path="users" element={<AdminUsers />} />
+                                        <Route path="roles" element={<AdminRoles />} />
+                                        <Route path="permissions" element={<AdminPermissions />} />
                                     </Route>
 
                                     {/* Main routes - with navigation */}
@@ -125,6 +167,20 @@ function App() {
                                         </Box>
                                     } />
                                 </Routes>
+                                <Snackbar
+                                    open={sessionExpiredOpen}
+                                    autoHideDuration={4500}
+                                    onClose={() => setSessionExpiredOpen(false)}
+                                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                                >
+                                    <Alert
+                                        onClose={() => setSessionExpiredOpen(false)}
+                                        severity="warning"
+                                        sx={{ width: '100%' }}
+                                    >
+                                        {sessionExpiredMessage}
+                                    </Alert>
+                                </Snackbar>
                             </Router>
                         </ThemeProvider>
                     </SearchProvider>

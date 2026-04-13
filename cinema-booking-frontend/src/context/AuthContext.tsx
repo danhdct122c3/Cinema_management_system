@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, tokenStorage } from '../services/api';
+import { AUTH_TOKEN_CLEARED_EVENT } from '../services/api';
 import { AuthenticationResult } from '../types';
 
 interface User {
@@ -34,6 +35,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setUser({ email: storedEmail, fullName: storedName || undefined });
             }
         }
+    }, []);
+
+    useEffect(() => {
+        const handleTokenCleared = (event: Event) => {
+            const customEvent = event as CustomEvent<{ tokenKey?: string }>;
+            if (customEvent.detail?.tokenKey !== tokenStorage.key) {
+                return;
+            }
+
+            setAccessToken(null);
+            setUser(null);
+            setIsLoggedIn(false);
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('isLoggedIn');
+        };
+
+        window.addEventListener(AUTH_TOKEN_CLEARED_EVENT, handleTokenCleared);
+        return () => {
+            window.removeEventListener(AUTH_TOKEN_CLEARED_EVENT, handleTokenCleared);
+        };
     }, []);
 
     const loginWithPassword = async (email: string, password: string) => {
