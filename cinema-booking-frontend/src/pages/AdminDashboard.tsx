@@ -10,17 +10,20 @@ import {
     ButtonGroup,
     Stack,
     Chip,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
 } from '@mui/material';
 import MovieIcon from '@mui/icons-material/Movie';
 import EventIcon from '@mui/icons-material/Event';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { adminBookingService, adminMovieService, adminShowtimeService } from '../services/adminApi';
 import { Booking, Movie, ShowTimeResponse } from '../types';
 
@@ -34,12 +37,89 @@ interface StatCard {
 
 type RevenueFilter = 'DAY' | 'WEEK' | 'MOVIE';
 
-interface RevenueRow {
-    dimension: string;
-    showtimeId: string;
-    ticketsSold: number;
+interface RevenueChartPoint {
+    label: string;
     revenue: number;
+    fullLabel?: string;
 }
+
+const DISPLAY_TIME_ZONE = 'Asia/Ho_Chi_Minh';
+
+const datePartFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: DISPLAY_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+});
+
+const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+});
+
+const getTimeZoneDateParts = (date: Date) => {
+    const parts = datePartFormatter.formatToParts(date);
+    const year = Number(parts.find((part) => part.type === 'year')?.value || 0);
+    const month = Number(parts.find((part) => part.type === 'month')?.value || 0);
+    const day = Number(parts.find((part) => part.type === 'day')?.value || 0);
+    return { year, month, day };
+};
+
+const toDateKey = ({ year, month, day }: { year: number; month: number; day: number }) =>
+    `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+const getIsoWeek = (year: number, month: number, day: number) => {
+    const utcDate = new Date(Date.UTC(year, month - 1, day));
+    const weekday = utcDate.getUTCDay() || 7;
+    utcDate.setUTCDate(utcDate.getUTCDate() + 4 - weekday);
+    const weekYear = utcDate.getUTCFullYear();
+    const yearStart = new Date(Date.UTC(weekYear, 0, 1));
+    const week = Math.ceil((((utcDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return { weekYear, week };
+};
+
+const createMonthDateKeysUntilToday = (year: number, month: number, currentDay: number) => {
+    const keys: string[] = [];
+    for (let day = 1; day <= currentDay; day += 1) {
+        keys.push(toDateKey({ year, month, day }));
+    }
+    return keys;
+};
+
+const truncateLabel = (value: string, maxLength = 18) =>
+    value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
+
+const RevenueTooltip: React.FC<{
+    active?: boolean;
+    payload?: Array<{ value?: number; payload?: RevenueChartPoint }>;
+    label?: string;
+}> = ({ active, payload, label }) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const revenue = payload[0]?.value || 0;
+    const point = payload[0]?.payload;
+    const displayLabel = point?.fullLabel || label || '';
+
+    return (
+        <Box
+            sx={{
+                px: 1.5,
+                py: 1,
+                borderRadius: 2,
+                border: '1px solid rgba(0,0,0,0.12)',
+                backgroundColor: '#fff',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
+            }}
+        >
+            <Typography variant="body2" fontWeight={700} sx={{ mb: 0.3 }}>
+                {displayLabel}
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#1b5e20', fontWeight: 700 }}>
+                Doanh thu: {currencyFormatter.format(revenue)}
+            </Typography>
+        </Box>
+    );
+};
 
 export const AdminDashboard: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
@@ -73,128 +153,96 @@ export const AdminDashboard: React.FC = () => {
         return 0;
     };
 
-    const isSameDay = (dateA: Date, dateB: Date) =>
-        dateA.getFullYear() === dateB.getFullYear()
-        && dateA.getMonth() === dateB.getMonth()
-        && dateA.getDate() === dateB.getDate();
-
-    const getWeekInfo = (date: Date) => {
-        const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const dayNum = utcDate.getUTCDay() || 7;
-        utcDate.setUTCDate(utcDate.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
-        const weekNo = Math.ceil((((utcDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-        return {
-            label: `Tuần ${weekNo}/${utcDate.getUTCFullYear()}`,
-            sortKey: utcDate.getUTCFullYear() * 100 + weekNo,
-        };
-    };
-
     const confirmedBookings = useMemo(
         () => bookings.filter((booking) => booking.status === 'CONFIRMED'),
         [bookings]
     );
 
     const today = new Date();
+    const todayTz = getTimeZoneDateParts(today);
+    const todayDateKey = toDateKey(todayTz);
+    const currentIsoWeek = getIsoWeek(todayTz.year, todayTz.month, todayTz.day);
+
     const todayShowtimes = showtimes.filter((showtime) => {
         const start = new Date(showtime.startTime);
-        return !Number.isNaN(start.getTime()) && isSameDay(start, today) && showtime.status === 'ACTIVE';
+        if (Number.isNaN(start.getTime()) || showtime.status !== 'ACTIVE') return false;
+        return toDateKey(getTimeZoneDateParts(start)) === todayDateKey;
     });
 
     const totalTickets = confirmedBookings.reduce((sum, booking) => sum + getTicketCount(booking), 0);
     const totalRevenue = confirmedBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
 
-    const revenueDataByFilter = useMemo(() => {
+    const revenueDataByFilter = useMemo<Record<RevenueFilter, RevenueChartPoint[]>>(() => {
         const movieMap = new Map(movies.map((movie) => [movie.id, movie.title]));
         const showtimeMovieTitleMap = new Map(
             showtimes.map((showtime) => [showtime.id, movieMap.get(showtime.movieId) || `Phim #${showtime.movieId}`])
         );
 
-        type Bucket = {
-            dimension: string;
-            showtimeId: string;
-            ticketsSold: number;
-            revenue: number;
-            sortKey: number;
-        };
+        const dayBuckets = new Map<string, number>();
+        const weekBuckets = new Map<number, number>();
+        const movieBuckets = new Map<string, number>();
 
-        const dayBuckets = new Map<string, Bucket>();
-        const weekBuckets = new Map<string, Bucket>();
-        const movieBuckets = new Map<string, Bucket>();
+        const monthDateKeys = createMonthDateKeysUntilToday(todayTz.year, todayTz.month, todayTz.day);
+        monthDateKeys.forEach((key) => dayBuckets.set(key, 0));
+
+        for (let week = 1; week <= currentIsoWeek.week; week += 1) {
+            weekBuckets.set(week, 0);
+        }
 
         confirmedBookings.forEach((booking) => {
             const bookingDate = new Date(booking.bookingTime);
             if (Number.isNaN(bookingDate.getTime())) return;
 
-            const ticketCount = getTicketCount(booking);
             const revenue = booking.totalPrice || 0;
-            const showTimeId = booking.showTimeId || 'N/A';
+            const bookingParts = getTimeZoneDateParts(bookingDate);
+            const bookingDateKey = toDateKey(bookingParts);
 
-            const dayLabel = bookingDate.toLocaleDateString('vi-VN');
-            const daySortKey = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), bookingDate.getDate()).getTime();
-            const dayKey = `${dayLabel}__${showTimeId}`;
-            const day = dayBuckets.get(dayKey) || {
-                dimension: dayLabel,
-                showtimeId: showTimeId,
-                ticketsSold: 0,
-                revenue: 0,
-                sortKey: daySortKey,
-            };
-            day.ticketsSold += ticketCount;
-            day.revenue += revenue;
-            dayBuckets.set(dayKey, day);
-
-            const weekInfo = getWeekInfo(bookingDate);
-            const weekKey = `${weekInfo.label}__${showTimeId}`;
-            const week = weekBuckets.get(weekKey) || {
-                dimension: weekInfo.label,
-                showtimeId: showTimeId,
-                ticketsSold: 0,
-                revenue: 0,
-                sortKey: weekInfo.sortKey,
-            };
-            week.ticketsSold += ticketCount;
-            week.revenue += revenue;
-            weekBuckets.set(weekKey, week);
-
-            const movieLabel = showtimeMovieTitleMap.get(showTimeId) || `Phim #${showTimeId}`;
-            const movieKey = `${movieLabel}__${showTimeId}`;
-            const movie = movieBuckets.get(movieKey) || {
-                dimension: movieLabel,
-                showtimeId: showTimeId,
-                ticketsSold: 0,
-                revenue: 0,
-                sortKey: 0,
-            };
-            movie.ticketsSold += ticketCount;
-            movie.revenue += revenue;
-            movieBuckets.set(movieKey, movie);
-        });
-
-        const toRows = (buckets: Map<string, Bucket>, sortByRevenue = false): RevenueRow[] => {
-            const rows: Array<RevenueRow & { sortKey: number }> = Array.from(buckets.values()).map((bucket) => ({
-                dimension: bucket.dimension,
-                showtimeId: bucket.showtimeId,
-                ticketsSold: bucket.ticketsSold,
-                revenue: bucket.revenue,
-                sortKey: bucket.sortKey,
-            }));
-
-            if (sortByRevenue) {
-                rows.sort((a, b) => b.revenue - a.revenue);
-            } else {
-                rows.sort((a, b) => b.sortKey - a.sortKey);
+            if (bookingParts.year === todayTz.year && bookingParts.month === todayTz.month && bookingDateKey <= todayDateKey) {
+                dayBuckets.set(bookingDateKey, (dayBuckets.get(bookingDateKey) || 0) + revenue);
             }
 
-            return rows.map(({ sortKey, ...row }) => row);
-        };
+            const bookingWeek = getIsoWeek(bookingParts.year, bookingParts.month, bookingParts.day);
+            if (bookingWeek.weekYear === todayTz.year && bookingWeek.week <= currentIsoWeek.week) {
+                weekBuckets.set(bookingWeek.week, (weekBuckets.get(bookingWeek.week) || 0) + revenue);
+            }
+
+            if (bookingParts.year === todayTz.year && bookingParts.month === todayTz.month) {
+                const showTimeId = booking.showTimeId || 'N/A';
+                const movieLabel = showtimeMovieTitleMap.get(showTimeId) || `Phim #${showTimeId}`;
+                movieBuckets.set(movieLabel, (movieBuckets.get(movieLabel) || 0) + revenue);
+            }
+        });
+
+        const dayData = Array.from(dayBuckets.entries()).map(([dateKey, revenue]) => {
+            const [, month, day] = dateKey.split('-');
+            return {
+                label: `${day}/${month}`,
+                revenue,
+                fullLabel: `${day}/${month}/${todayTz.year}`,
+            };
+        });
+
+        const weekData = Array.from(weekBuckets.entries()).map(([week, revenue]) => ({
+            label: `Tuần ${week}`,
+            revenue,
+            fullLabel: `Tuần ${week}`,
+        }));
+
+        const movieData = Array.from(movieBuckets.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([movieTitle, revenue]) => ({
+                label: truncateLabel(movieTitle, 20),
+                fullLabel: movieTitle,
+                revenue,
+            }));
 
         return {
-            DAY: toRows(dayBuckets),
-            WEEK: toRows(weekBuckets),
-            MOVIE: toRows(movieBuckets, true),
+            DAY: dayData,
+            WEEK: weekData,
+            MOVIE: movieData,
         };
-    }, [confirmedBookings, movies, showtimes]);
+    }, [confirmedBookings, currentIsoWeek.week, movies, showtimes, todayDateKey, todayTz.day, todayTz.month, todayTz.year]);
 
     const formatCurrency = (value: number) =>
         value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
@@ -230,7 +278,7 @@ export const AdminDashboard: React.FC = () => {
         },
     ];
 
-    const revenueRows = revenueDataByFilter[revenueFilter];
+    const revenueChartData = revenueDataByFilter[revenueFilter];
 
     const revenueDimensionLabel: Record<RevenueFilter, string> = {
         DAY: 'Ngày',
@@ -243,9 +291,6 @@ export const AdminDashboard: React.FC = () => {
             <Box sx={{ mb: 3 }}>
                 <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: 0.2 }}>
                     Bảng Điều Khiển
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    Tổng quan hoạt động rạp phim theo thời gian thực
                 </Typography>
             </Box>
 
@@ -315,10 +360,7 @@ export const AdminDashboard: React.FC = () => {
                         >
                             <Box>
                                 <Typography variant="h6" fontWeight={700}>
-                                    Doanh Thu
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    Theo dõi doanh thu theo ngày, tuần hoặc phim
+                                    Thống kê doanh thu
                                 </Typography>
                             </Box>
                             <Chip
@@ -375,55 +417,44 @@ export const AdminDashboard: React.FC = () => {
                             </ButtonGroup>
                         </Box>
 
-                        <TableContainer sx={{ maxHeight: 330, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 3 }}>
-                            <Table size="small" stickyHeader sx={{ tableLayout: 'fixed' }}>
-                                <TableHead>
-                                    <TableRow sx={{ '& .MuiTableCell-root': { backgroundColor: '#f7f8fa' } }}>
-                                        <TableCell sx={{ width: '30%', fontWeight: 800, fontSize: '0.92rem' }}>{revenueDimensionLabel[revenueFilter]}</TableCell>
-                                        <TableCell sx={{ width: '38%', fontWeight: 800, fontSize: '0.92rem' }}>Mã suất chiếu</TableCell>
-                                        <TableCell sx={{ width: '14%', fontWeight: 800, fontSize: '0.92rem' }} align="right">Vé đã bán</TableCell>
-                                        <TableCell sx={{ width: '18%', fontWeight: 800, fontSize: '0.92rem' }} align="right">Doanh thu</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {revenueRows.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={4} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                                                Chưa có dữ liệu từ database
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                    {revenueRows.map((row) => (
-                                        <TableRow
-                                            key={`${revenueFilter}-${row.dimension}-${row.showtimeId}`}
-                                            hover
-                                            sx={{
-                                                '&:nth-of-type(even)': { backgroundColor: 'rgba(0,0,0,0.01)' },
-                                            }}
-                                        >
-                                            <TableCell
-                                                sx={{
-                                                    width: '30%',
-                                                    fontWeight: 600,
-                                                    fontSize: '0.95rem',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                }}
-                                                title={row.dimension}
-                                            >
-                                                {row.dimension}
-                                            </TableCell>
-                                            <TableCell sx={{ width: '38%', fontSize: '0.95rem', fontFamily: 'monospace' }}>{row.showtimeId}</TableCell>
-                                            <TableCell align="right" sx={{ width: '14%', fontSize: '0.95rem' }}>{row.ticketsSold}</TableCell>
-                                            <TableCell align="right" sx={{ width: '18%', fontWeight: 700, color: '#1b5e20', fontSize: '0.95rem' }}>
-                                                {formatCurrency(row.revenue)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                        <Box sx={{ height: 360, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 3, p: { xs: 1, md: 2 } }}>
+                            {revenueChartData.length === 0 ? (
+                                <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Chưa có dữ liệu doanh thu để hiển thị biểu đồ
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={revenueChartData}
+                                        margin={{ top: 10, right: 16, left: 8, bottom: revenueFilter === 'MOVIE' ? 56 : 30 }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e9edf3" />
+                                        <XAxis
+                                            dataKey="label"
+                                            tick={{ fontSize: 12, fill: '#334155' }}
+                                            interval={0}
+                                            angle={revenueFilter === 'MOVIE' ? -20 : 0}
+                                            textAnchor={revenueFilter === 'MOVIE' ? 'end' : 'middle'}
+                                            height={revenueFilter === 'MOVIE' ? 62 : 36}
+                                        />
+                                        <YAxis
+                                            tick={{ fontSize: 12, fill: '#334155' }}
+                                            tickFormatter={(value: number | string) => currencyFormatter.format(Number(value)).replace(' ₫', '')}
+                                            width={92}
+                                        />
+                                        <Tooltip content={<RevenueTooltip />} cursor={{ fill: 'rgba(255, 107, 0, 0.08)' }} />
+                                        <Bar
+                                            dataKey="revenue"
+                                            fill="#ff6b00"
+                                            radius={[6, 6, 0, 0]}
+                                            maxBarSize={56}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            )}
+                        </Box>
                     </Paper>
                 </Grid>
 
