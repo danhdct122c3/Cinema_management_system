@@ -194,22 +194,7 @@ export const AdminLayout: React.FC = () => {
                 </Collapse>
             </List>
             <Divider />
-            <List sx={{ px: 2, py: 2 }}>
-                <ListItemButton
-                    onClick={() => navigate('/')}
-                    sx={{
-                        borderRadius: 2,
-                        '&:hover': {
-                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                        },
-                    }}
-                >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
-                        <HomeIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Về Trang Chủ" />
-                </ListItemButton>
-            </List>
+        
         </Box>
     );
 
