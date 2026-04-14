@@ -33,5 +33,32 @@ cloudinary:
   api-key: "821557315416333"
   api-secret: "Ns8TJjf8KhgGaUZ_v_pcML6V_HM"
 
+vnpay:
+  pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+#  return-url: ${VNPAY_RETURN_URL:https://scapulohumeral-unostentatiously-hortensia.ngrok-free.dev/home/api/v1/payment/vnpay-return}
+  return-url: ${VNPAY_RETURN_URL:http://localhost:8080/home/api/v1/payment/vnpay-return}
+  tmn-code: ${VNPAY_TMN_CODE:KN858AP1}
+  secret-key: ${VNPAY_SECRET_KEY:CJYRC7PLY272S2YXNJZXODBKEYI2ZO3F}
+  api-url: ${VNPAY_API_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
+  version: ${VNPAY_VERSION:2.1.0}
+  command: ${VNPAY_COMMAND:pay}
+  order-type: ${VNPAY_ORDER_TYPE:other}
+  frontend-return-url: ${VNPAY_FRONTEND_RETURN_URL:http://localhost:3000/booking-history}
+
+
+#vnpay:
+#  tmn-code: "HCVE5UQF"
+#  return-url: ${VNPAY_RETURN_URL:https://your-public-domain/home/api/v1/payment/vnpay-return}
+#  url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+#  return-url: "http://localhost:8080/home/payments/vnpay-return"
+#  #  return-url: "http://localhost:8080/home/api/v1/payments/vnpay-return"
+#
+#  api-url: "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"
+#  version: "2.1.0"
+#  command: "pay"
+#  order-type: "other"
+
 user:
   id: "032a980-18f1-446e-9217-41501ced0c28"
+
+

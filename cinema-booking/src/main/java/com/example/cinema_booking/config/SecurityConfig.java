@@ -41,6 +41,10 @@ public class SecurityConfig {
             "/auth/logout",
             "/auth/refresh",
             "/genres",
+                "/movies/**",
+                "/showtimes",
+                "/cinemas",
+                "/seats",
             "/**"
     };
 

@@ -109,17 +109,9 @@ public class BookingServiceImpl implements BookingService {
                     .seat(seatShowTime.getSeat())
                     .build();
 
-            seatShowTime = SeatShowTime.builder()
-                    .id(seatShowTime.getId())
-                    .showtime(seatShowTime.getShowtime())
-                    .seat(seatShowTime.getSeat())
-                    .status(SeatStatus.HOLD)
-                    .price(seatShowTime.getPrice())
-                    .holdStartTime(null)
-                    .holdExpireTime(null)
-                    .heldByUser(null)
-                    .build();
-
+            // Keep hold metadata intact until payment callback confirms the booking.
+            // Clearing holdExpireTime/heldByUser here causes payment confirmation to fail.
+            seatShowTime.setStatus(SeatStatus.HOLD);
             seatShowTimeRepository.save(seatShowTime);
             bookingSeatRepository.save(bookingSeat);
             savedBooking.getBookingSeats().add(bookingSeat);

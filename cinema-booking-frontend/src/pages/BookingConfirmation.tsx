@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Container,
     Typography,
@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
-import { holdService, bookingService } from '../services/api';
+import { holdService, bookingService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import HoldCountdown from '../components/HoldCountdown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -35,7 +35,6 @@ export const BookingConfirmation: React.FC = () => {
     const selectedSeatIds = location.state?.selectedSeatIds as string[];
     const totalPrice = location.state?.totalPrice as number;
     const showtimeId = location.state?.showtimeId as string;
-    const movieId = location.state?.movieId as string;
     const showtime = location.state?.showtime as ShowTimeDetail;
 
     // Component state
@@ -49,6 +48,17 @@ export const BookingConfirmation: React.FC = () => {
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [bookingResult, setBookingResult] = useState<Booking | null>(null);
     const [exitConfirmDialogOpen, setExitConfirmDialogOpen] = useState(false);
+    const redirectingToPaymentRef = useRef(false);
+    const bookingSuccessRef = useRef(false);
+    const paymentInProgressRef = useRef(false);
+
+    useEffect(() => {
+        bookingSuccessRef.current = bookingSuccess;
+    }, [bookingSuccess]);
+
+    useEffect(() => {
+        paymentInProgressRef.current = paymentInProgress;
+    }, [paymentInProgress]);
 
     // Initialize and hold seats
     useEffect(() => {
@@ -110,7 +120,7 @@ export const BookingConfirmation: React.FC = () => {
     }, [selectedSeatIds, showtimeId, holdResponse, isLoggedIn]);
 
     // Handle hold expiration
-    const handleHoldExpired = async () => {
+    const handleHoldExpired = useCallback(async () => {
         setHoldExpired(true);
         setError('Hết thời gian giữ ghế. Vui lòng chọn ghế lại.');
 
@@ -127,12 +137,12 @@ export const BookingConfirmation: React.FC = () => {
         setTimeout(() => {
             navigate(`/`);
         }, 3000);
-    };
+    }, [navigate, selectedSeatIds]);
 
     // Warn if user tries to close tab/refresh while holding seats
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (holdResponse && !bookingSuccess) {
+            if (holdResponse && !bookingSuccess && !paymentInProgress && !redirectingToPaymentRef.current) {
                 e.preventDefault();
                 e.returnValue = 'Ghế đang giữ sẽ được giải phóng nếu bạn rời khỏi trang này.';
                 return e.returnValue;
@@ -143,7 +153,7 @@ export const BookingConfirmation: React.FC = () => {
         
         // Handle browser back button
         const handlePopState = (e: PopStateEvent) => {
-            if (holdResponse && !bookingSuccess) {
+            if (holdResponse && !bookingSuccess && !paymentInProgress && !redirectingToPaymentRef.current) {
                 e.preventDefault();
                 setExitConfirmDialogOpen(true);
                 window.history.pushState(null, '', window.location.href);
@@ -157,32 +167,26 @@ export const BookingConfirmation: React.FC = () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [holdResponse, bookingSuccess]);
+    }, [holdResponse, bookingSuccess, paymentInProgress]);
 
     // Handle payment
     const handlePayment = async () => {
         try {
             setPaymentInProgress(true);
+            paymentInProgressRef.current = true;
+            setError('');
 
             if (!isLoggedIn) {
                 setError('Vui lòng đăng nhập để tiếp tục đặt vé.');
                 setPaymentInProgress(false);
+                paymentInProgressRef.current = false;
                 return;
-            }
-
-            // Validate hold is still valid
-            if (selectedSeatIds && selectedSeatIds.length > 0) {
-                const isValid = await holdService.isHoldValid(selectedSeatIds[0]);
-                if (!isValid.data.result) {
-                    setError('Hết thời gian giữ ghế. Vui lòng chọn ghế lại.');
-                    setHoldExpired(true);
-                    return;
-                }
             }
 
             if (!showtimeId || !selectedSeatIds || selectedSeatIds.length === 0) {
                 setError('Thiếu thông tin đặt vé. Vui lòng thử lại.');
                 setPaymentInProgress(false);
+                paymentInProgressRef.current = false;
                 return;
             }
 
@@ -192,27 +196,53 @@ export const BookingConfirmation: React.FC = () => {
                 seatShowTimeIds: selectedSeatIds,
             } as any);
 
-            setBookingResult(bookingResponse.data.result);
+            const createdBooking = bookingResponse.data.result;
+            if (!createdBooking?.bookingId) {
+                throw new Error('Không tạo được booking để thanh toán.');
+            }
+
+            setBookingResult(createdBooking);
+
+            const paymentResponse = await paymentService.createPayment(createdBooking.bookingId);
+            const paymentUrl = paymentResponse.data?.result?.url;
+
+            if (!paymentUrl) {
+                throw new Error('Không lấy được link thanh toán VNPay.');
+            }
+
             setBookingSuccess(true);
-            setPaymentInProgress(false);
+            bookingSuccessRef.current = true;
+            redirectingToPaymentRef.current = true;
+            window.location.href = paymentUrl;
         } catch (err) {
+            setBookingSuccess(false);
+            bookingSuccessRef.current = false;
+            redirectingToPaymentRef.current = false;
             console.error('Error during payment:', err);
-            setError('Thanh toán thất bại. Vui lòng thử lại.');
+
+            const message = (err as any)?.response?.data?.message || (err as any)?.message || '';
+            if (message.toLowerCase().includes('thời gian giữ ghế') || message.toLowerCase().includes('hold')) {
+                setHoldExpired(true);
+                setError('Hết thời gian giữ ghế. Vui lòng chọn ghế lại.');
+            } else {
+                setError('Thanh toán thất bại. Vui lòng thử lại.');
+            }
             setPaymentInProgress(false);
+            paymentInProgressRef.current = false;
         }
     };
 
     // Cleanup: Auto-release hold when user leaves without confirming payment
     useEffect(() => {
         return () => {
-            // Only auto-release if payment wasn't successful
-            if (!bookingSuccess && selectedSeatIds && selectedSeatIds.length > 0) {
+            // Only auto-release when page is actually left (unmount), not on every state change.
+            if (!bookingSuccessRef.current && !paymentInProgressRef.current && !redirectingToPaymentRef.current && selectedSeatIds && selectedSeatIds.length > 0) {
                 holdService.releaseHold(selectedSeatIds).catch(err => 
                     console.error('Error releasing hold on unmount:', err)
                 );
             }
         };
-    }, [selectedSeatIds, bookingSuccess]);
+    }, [selectedSeatIds]);
 
     // Handle back button - show confirmation dialog
     const handleBackClick = () => {
@@ -551,7 +581,7 @@ export const BookingConfirmation: React.FC = () => {
                         variant="outlined"
                         size="large"
                         onClick={handleBackClick}
-                        disabled={holdExpired}
+                        disabled={holdExpired || paymentInProgress}
                     >
                         Hủy Và Giải Phóng Ghế
                     </Button>

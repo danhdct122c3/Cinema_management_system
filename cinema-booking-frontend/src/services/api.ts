@@ -239,6 +239,19 @@ export const bookingService = {
     confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<void>>> => axiosInstance.patch<APIResponse<void>>(`/bookings/${id}/confirm`)
 };
 
+export interface PaymentGatewayResponse {
+    status: string;
+    message: string;
+    url: string;
+}
+
+export const paymentService = {
+    createPayment: (bookingId: string): Promise<AxiosResponse<APIResponse<PaymentGatewayResponse>>> =>
+        axiosInstance.get<APIResponse<PaymentGatewayResponse>>('/api/v1/payment/create_payment', {
+            params: { bookingId }
+        })
+};
+
 export const holdService = {
     holdSeats: (request: HoldSeatRequest): Promise<AxiosResponse<APIResponse<HoldSeatResponse>>> =>
         axiosInstance.post<APIResponse<HoldSeatResponse>>('/seat-holds/reserve', request),
