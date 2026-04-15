@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Box,
     Typography,
+    Button,
     Table,
     TableBody,
     TableCell,
@@ -12,17 +13,15 @@ import {
     Chip,
     TextField,
     MenuItem,
-    IconButton,
     Tooltip,
 } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { adminBookingService } from '../services/adminApi';
-import { Booking } from '../types';
+import { adminBookingService, adminShowtimeService } from '../services/adminApi';
+import { Booking, ShowTimeResponse } from '../types';
 
 export const AdminBookings: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [showtimeMap, setShowtimeMap] = useState<Record<string, ShowTimeResponse>>({});
+    const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
@@ -34,14 +33,43 @@ export const AdminBookings: React.FC = () => {
     const fetchBookings = async () => {
         try {
             setLoading(true);
-            const response = await adminBookingService.getAllBooking();
-            setBookings(response.data.result);
+            const [bookingResponse, showtimeResponse] = await Promise.all([
+                adminBookingService.getAllBooking(),
+                adminShowtimeService.getAllShowtimes(),
+            ]);
+
+            setBookings(bookingResponse.data.result);
+
+            const nextShowtimeMap = showtimeResponse.data.result.reduce<Record<string, ShowTimeResponse>>(
+                (acc, showtime) => {
+                    acc[showtime.id] = showtime;
+                    return acc;
+                },
+                {}
+            );
+            setShowtimeMap(nextShowtimeMap);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             setBookings([]);
+            setShowtimeMap({});
         } finally {
             setLoading(false);
         }
+    };
+
+    const getShowtimeLabel = (showTimeId: string) => {
+        const showtime = showtimeMap[showTimeId];
+        if (!showtime?.startTime) return `Suất #${showTimeId}`;
+
+        const formattedTime = new Date(showtime.startTime).toLocaleString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+
+        return formattedTime;
     };
 
     const getStatusColor = (status: string) => {
@@ -94,14 +122,32 @@ export const AdminBookings: React.FC = () => {
         }
     };
 
-    const filteredBookings = bookings.filter((booking) => {
-        const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
-        const matchesSearch =
-            searchQuery === '' ||
-            booking.userId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.bookingId.includes(searchQuery);
-        return matchesStatus && matchesSearch;
-    });
+    const filteredBookings = bookings
+        .filter((booking) => {
+            const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
+            const matchesSearch =
+                searchQuery === '' ||
+                booking.userId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                booking.bookingId.includes(searchQuery);
+            return matchesStatus && matchesSearch;
+        })
+        .sort((a, b) => {
+            const timeA = new Date(a.bookingTime).getTime();
+            const timeB = new Date(b.bookingTime).getTime();
+            return timeB - timeA;
+        });
+
+    const truncateId = (value: string, start = 8, end = 6) => {
+        if (value.length <= start + end + 3) return value;
+        return `${value.slice(0, start)}...${value.slice(-end)}`;
+    };
+
+    const toggleRowExpanded = (bookingId: string) => {
+        setExpandedRows((prev) => ({
+            ...prev,
+            [bookingId]: !prev[bookingId],
+        }));
+    };
 
     return (
         <Box>
@@ -149,15 +195,13 @@ export const AdminBookings: React.FC = () => {
                             <TableCell sx={{ fontWeight: 700 }}>Suất Chiếu</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Số Ghế</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Thời Gian Đặt</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 700 }}>
-                                Thao Tác
-                            </TableCell>
+                            <TableCell sx={{ fontWeight: 700 }}>Trạng thái</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredBookings.map((booking) => {
                             const statusStyle = getStatusColor(booking.status);
+                            const isExpanded = !!expandedRows[booking.bookingId];
                             return (
                                 <TableRow
                                     key={booking.bookingId}
@@ -168,19 +212,21 @@ export const AdminBookings: React.FC = () => {
                                     }}
                                 >
                                     <TableCell>
-                                        <Typography fontWeight={600}>#{booking.bookingId}</Typography>
+                                        <Tooltip title={booking.bookingId} arrow>
+                                            <Typography fontWeight={600}>
+                                                #{isExpanded ? booking.bookingId : truncateId(booking.bookingId)}
+                                            </Typography>
+                                        </Tooltip>
                                     </TableCell>
-                                    <TableCell>{booking.userId}</TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={`Suất #${booking.showTimeId}`}
-                                            size="small"
-                                            sx={{
-                                                backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                                                color: '#2196f3',
-                                                fontWeight: 600,
-                                            }}
-                                        />
+                                        <Tooltip title={booking.userId} arrow>
+                                            <Typography>
+                                                {isExpanded ? booking.userId : truncateId(booking.userId)}
+                                            </Typography>
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell>
+                                            {getShowtimeLabel(booking.showTimeId)}
                                     </TableCell>
                                     <TableCell>{booking.seatCodes?.join(', ') || 'N/A'}</TableCell>
                                     <TableCell>
@@ -203,37 +249,7 @@ export const AdminBookings: React.FC = () => {
                                             }}
                                         />
                                     </TableCell>
-                                    <TableCell align="center">
-                                        <Tooltip title="Xem Chi Tiết">
-                                            <IconButton size="small" sx={{ color: '#2196f3' }}>
-                                                <VisibilityIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                        {booking.status === 'PENDING' && (
-                                            <>
-                                                <Tooltip title="Xác Nhận">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleConfirmBooking(booking.bookingId)}
-                                                        sx={{ color: '#4caf50' }}
-                                                        disabled={loading}
-                                                    >
-                                                        <CheckCircleIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Hủy Đặt Vé">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleCancelBooking(booking.bookingId)}
-                                                        sx={{ color: '#f44336' }}
-                                                        disabled={loading}
-                                                    >
-                                                        <CancelIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </>
-                                        )}
-                                    </TableCell>
+
                                 </TableRow>
                             );
                         })}
