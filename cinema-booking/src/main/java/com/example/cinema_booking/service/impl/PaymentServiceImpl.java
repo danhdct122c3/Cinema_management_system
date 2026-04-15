@@ -1,6 +1,8 @@
 package com.example.cinema_booking.service.impl;
 
 import com.example.cinema_booking.config.VNPayConfig;
+import com.example.cinema_booking.dto.request.BookingRequest;
+import com.example.cinema_booking.dto.response.BookingResponse;
 import com.example.cinema_booking.dto.response.PaymentResponse;
 import com.example.cinema_booking.entity.Booking;
 import com.example.cinema_booking.entity.Payment;
@@ -12,6 +14,7 @@ import com.example.cinema_booking.repository.BookingRepository;
 import com.example.cinema_booking.repository.PaymentRepository;
 import com.example.cinema_booking.service.BookingService;
 import com.example.cinema_booking.service.PaymentService;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.RequiredArgsConstructor;
@@ -31,28 +34,37 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentServiceImpl implements PaymentService {
 
+    static final int PAYMENT_TIMEOUT_MINUTES = 5;
+
     BookingRepository bookingRepository;
     VNPayConfig vnPayConfig;
     PaymentRepository paymentRepository;
     BookingService bookingService;
 
     @Override
-    public PaymentResponse createPayment(String bookingId, String ipAddress) throws UnsupportedEncodingException {
+    @Transactional(rollbackOn = Exception.class)
+    public PaymentResponse createCheckoutPayment(BookingRequest request, String ipAddress) throws UnsupportedEncodingException {
+        BookingResponse bookingResponse = bookingService.createBooking(request);
+        return createPaymentByBookingId(bookingResponse.getBookingId(), ipAddress);
+    }
+
+    private PaymentResponse createPaymentByBookingId(String bookingId, String ipAddress) throws UnsupportedEncodingException {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
 
-        if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new AppException(ErrorCode.BOOKING_NOT_PENDING);
-        }
+        String vnp_TxnRef = "BK" + System.currentTimeMillis();
+        String vnp_OrderInfo = "BOOKING_" + booking.getId();
 
         long bookingAmount = booking.getTotal_price() != null ? booking.getTotal_price() : 0L;
         if (bookingAmount <= 0) {
             throw new AppException(ErrorCode.INVALID_REQUEST);
         }
-        String vnp_TxnRef = "BK" + System.currentTimeMillis();
-        String vnp_OrderInfo = "BOOKING_" + booking.getId();
 
         long vnp_Amount = bookingAmount * 100;
+
+        if (paymentRepository.existsByBooking_IdAndStatus(booking.getId(), PaymentStatus.PENDING)) {
+            throw new AppException(ErrorCode.PAYMENT_ALREADY_EXISTS);
+        }
 
         Payment payment = Payment.builder()
                 .amount(bookingAmount)
@@ -183,13 +195,37 @@ public class PaymentServiceImpl implements PaymentService {
 
         Booking booking = payment.getBooking();
 
+        if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            return PaymentProcessResult.success("Payment already confirmed.", booking.getId());
+        }
+
+        if (payment.getStatus() == PaymentStatus.FAILED) {
+            cancelPendingBookingQuietly(booking);
+            return PaymentProcessResult.fail("Payment already finalized.", booking.getId());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime paymentDeadline = booking.getBookingTime() != null
+                ? booking.getBookingTime().plusMinutes(PAYMENT_TIMEOUT_MINUTES)
+                : now.minusMinutes(1);
+
+        if (now.isAfter(paymentDeadline)) {
+            cancelPendingBookingQuietly(booking);
+            markPaymentFailed(payment, "TIMEOUT", now);
+            return PaymentProcessResult.fail("Payment session expired.", booking.getId());
+        }
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            markPaymentFailed(payment, "BOOKING_NOT_PENDING", now);
+            return PaymentProcessResult.fail("Booking is no longer pending.", booking.getId());
+        }
+
         long paidAmount = parseLongSafe(vnpParams.get("vnp_Amount"));
         long expectedAmount = (payment.getAmount() != null ? payment.getAmount() : 0L) * 100;
         if (paidAmount <= 0 || paidAmount != expectedAmount) {
-            payment.setStatus(PaymentStatus.FAILED);
-            payment.setResponseCode(vnpParams.getOrDefault("vnp_ResponseCode", ""));
             payment.setGatewayTxnNo(vnpParams.get("vnp_TransactionNo"));
-            paymentRepository.save(payment);
+            markPaymentFailed(payment, vnpParams.getOrDefault("vnp_ResponseCode", "AMOUNT_MISMATCH"), now);
+            cancelPendingBookingQuietly(booking);
             return PaymentProcessResult.fail("Amount mismatch", booking.getId());
         }
 
@@ -201,13 +237,13 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setGatewayTxnNo(vnpParams.get("vnp_TransactionNo"));
 
         if (!paymentSuccess) {
-            payment.setStatus(PaymentStatus.FAILED);
-            paymentRepository.save(payment);
+            markPaymentFailed(payment, responseCode, now);
+            cancelPendingBookingQuietly(booking);
             return PaymentProcessResult.fail("Payment failed.", booking.getId());
         }
 
         payment.setStatus(PaymentStatus.SUCCESS);
-        payment.setPaymentTime(LocalDateTime.now());
+        payment.setPaymentTime(now);
         paymentRepository.save(payment);
 
         try {
@@ -219,6 +255,29 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return PaymentProcessResult.success("Payment success. Booking confirmed.", booking.getId());
+    }
+
+    private void markPaymentFailed(Payment payment, String responseCode, LocalDateTime paymentTime) {
+        payment.setStatus(PaymentStatus.FAILED);
+        payment.setResponseCode(responseCode);
+        payment.setPaymentTime(paymentTime);
+        paymentRepository.save(payment);
+    }
+
+    private void cancelPendingBookingQuietly(Booking booking) {
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            return;
+        }
+
+        try {
+            bookingService.cancelBooking(booking.getId());
+        } catch (AppException ex) {
+            if (ex.getErrorCode() != ErrorCode.BOOKING_ALREADY_CANCELLED
+                    && ex.getErrorCode() != ErrorCode.BOOKING_ALREADY_CONFIRMED
+                    && ex.getErrorCode() != ErrorCode.BOOKING_NOT_FOUND) {
+                throw ex;
+            }
+        }
     }
 
     private long parseLongSafe(String value) {

@@ -3,18 +3,17 @@ package com.example.cinema_booking.controller;
 
 import com.example.cinema_booking.config.VNPayConfig;
 import com.example.cinema_booking.dto.request.APIResponse;
+import com.example.cinema_booking.dto.request.BookingRequest;
 import com.example.cinema_booking.dto.response.PaymentResponse;
 import com.example.cinema_booking.service.PaymentService;
+import com.example.cinema_booking.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -27,13 +26,14 @@ import java.util.*;
 public class PaymentController {
     PaymentService paymentService;
 
-    @GetMapping("/create_payment")
-    public APIResponse<PaymentResponse> createPayment(@RequestParam String bookingId, HttpServletRequest request)
+    @PostMapping("/checkout")
+    public APIResponse<PaymentResponse> checkout(@RequestBody BookingRequest request, HttpServletRequest httpServletRequest)
             throws UnsupportedEncodingException {
-        String ipAddress = VNPayConfig.getIpAddress(request);
+        request.setUserId(SecurityUtils.getCurrentUserId());
+        String ipAddress = VNPayConfig.getIpAddress(httpServletRequest);
 
         return APIResponse.<PaymentResponse>builder()
-                .result(paymentService.createPayment(bookingId, ipAddress))
+                .result(paymentService.createCheckoutPayment(request, ipAddress))
                 .build();
     }
 

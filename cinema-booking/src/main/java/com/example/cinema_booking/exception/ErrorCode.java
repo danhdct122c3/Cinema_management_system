@@ -43,7 +43,9 @@ public enum ErrorCode {
     BOOKING_ALREADY_CONFIRMED(1030, "Đặt vé đã được xác nhận", HttpStatus.BAD_REQUEST),
     BOOKING_NOT_PENDING(1031, "Đặt vé không ở trạng thái chờ", HttpStatus.BAD_REQUEST),
     SHOWTIME_ALREADY_PASSED(1032, "Suất chiếu đã diễn ra", HttpStatus.BAD_REQUEST),
-    SHOWTIME_HAS_BOOKINGS(1033, "Không thể xóa hoặc cập nhật suất chiếu đã có đặt vé", HttpStatus.BAD_REQUEST);
+    SHOWTIME_HAS_BOOKINGS(1033, "Không thể xóa hoặc cập nhật suất chiếu đã có đặt vé", HttpStatus.BAD_REQUEST),
+    PAYMENT_ALREADY_EXISTS(1034, "Đã tồn tại thanh toán cho đặt vé này", HttpStatus.BAD_REQUEST),
+    ;
 
 
 

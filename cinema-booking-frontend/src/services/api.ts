@@ -246,10 +246,10 @@ export interface PaymentGatewayResponse {
 }
 
 export const paymentService = {
-    createPayment: (bookingId: string): Promise<AxiosResponse<APIResponse<PaymentGatewayResponse>>> =>
-        axiosInstance.get<APIResponse<PaymentGatewayResponse>>('/api/v1/payment/create_payment', {
-            params: { bookingId }
-        })
+    checkoutPayment: (
+        data: Pick<BookingRequest, 'showTimeId' | 'seatShowTimeIds'>
+    ): Promise<AxiosResponse<APIResponse<PaymentGatewayResponse>>> =>
+        axiosInstance.post<APIResponse<PaymentGatewayResponse>>('/api/v1/payment/checkout', data)
 };
 
 export const holdService = {

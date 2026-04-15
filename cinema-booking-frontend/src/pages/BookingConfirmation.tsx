@@ -17,8 +17,8 @@ import {
     DialogActions,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse, Booking } from '../types';
-import { holdService, bookingService, paymentService } from '../services/api';
+import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse } from '../types';
+import { holdService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import HoldCountdown from '../components/HoldCountdown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -46,7 +46,6 @@ export const BookingConfirmation: React.FC = () => {
     const [paymentInProgress, setPaymentInProgress] = useState(false);
     const [seatAlreadyHeld, setSeatAlreadyHeld] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
-    const [bookingResult, setBookingResult] = useState<Booking | null>(null);
     const [exitConfirmDialogOpen, setExitConfirmDialogOpen] = useState(false);
     const redirectingToPaymentRef = useRef(false);
     const bookingSuccessRef = useRef(false);
@@ -190,20 +189,11 @@ export const BookingConfirmation: React.FC = () => {
                 return;
             }
 
-            // Create booking using user token (backend reads user_id from JWT)
-            const bookingResponse = await bookingService.createBooking({
+            const paymentResponse = await paymentService.checkoutPayment({
                 showTimeId: showtimeId,
                 seatShowTimeIds: selectedSeatIds,
-            } as any);
+            });
 
-            const createdBooking = bookingResponse.data.result;
-            if (!createdBooking?.bookingId) {
-                throw new Error('Không tạo được booking để thanh toán.');
-            }
-
-            setBookingResult(createdBooking);
-
-            const paymentResponse = await paymentService.createPayment(createdBooking.bookingId);
             const paymentUrl = paymentResponse.data?.result?.url;
 
             if (!paymentUrl) {
@@ -359,58 +349,6 @@ export const BookingConfirmation: React.FC = () => {
                             fullWidth
                             variant="contained"
                             onClick={() => navigate(`/`)}
-                        >
-                            Về Trang Chủ
-                        </Button>
-                    </Box>
-                </Paper>
-            </Container>
-        );
-    }
-
-    if (bookingSuccess && bookingResult) {
-        return (
-            <Container maxWidth="sm" sx={{ py: 6 }}>
-                <Paper sx={{ p: 4 }}>
-                    <Box sx={{ textAlign: 'center' }}>
-                        <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
-                        <Typography variant="h5" color="success.main" gutterBottom>
-                            Đặt Vé Thành Công
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                            Vé của bạn đã được tạo thành công.
-                        </Typography>
-                    </Box>
-
-                    <Divider sx={{ mb: 3 }} />
-
-                    <Box sx={{ display: 'grid', gap: 1 }}>
-                        <Typography variant="body2">
-                            <strong>Mã đặt vé:</strong> {bookingResult.bookingId}
-                        </Typography>
-                        <Typography variant="body2">
-                            <strong>Trạng thái:</strong> {bookingResult.status}
-                        </Typography>
-                        <Typography variant="body2">
-                            <strong>Tổng tiền:</strong> ${bookingResult.totalPrice?.toFixed(2) || totalPrice.toFixed(2)}
-                        </Typography>
-                        <Typography variant="body2">
-                            <strong>Ghế:</strong> {bookingResult.seatCodes?.join(', ') || selectedSeats.map(s => s.seatCode).join(', ')}
-                        </Typography>
-                    </Box>
-
-                    <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            onClick={() => navigate('/booking-history')}
-                        >
-                            Xem Lịch Sử Đặt Vé
-                        </Button>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => navigate('/')}
                         >
                             Về Trang Chủ
                         </Button>

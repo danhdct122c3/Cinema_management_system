@@ -16,6 +16,8 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, String> {
     List<Booking> findByUserOrderByBookingTimeDesc(User user);
 
+  List<Booking> findByStatusAndBookingTimeBefore(BookingStatus status, LocalDateTime cutoff);
+
     @Query("""
             SELECT DISTINCT b
             FROM Booking b
