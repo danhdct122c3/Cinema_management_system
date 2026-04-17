@@ -5,7 +5,6 @@ import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,14 +19,14 @@ import static com.example.cinema_booking.exception.ErrorCode.UNCATEGORIZED_EXCEP
 public class GlobalExceptionHandler {
     private static final String MIN_ATTRIBUTE = "min";
 
-    @ExceptionHandler(value= Exception.class)
-    ResponseEntity<APIResponse> runtimeExcecptionHandler(Exception e){
+    @ExceptionHandler(value = Exception.class)
+    ResponseEntity<APIResponse> runtimeExceptionHandler(Exception e) {
         log.error("Uncategorized exception occurred", e);
         APIResponse apiResponse = APIResponse.builder()
                 .code(UNCATEGORIZED_EXCEPTION.getCode())
-                .message(e.getMessage() != null ? e.getMessage() : ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
+                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
                 .build();
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.status(UNCATEGORIZED_EXCEPTION.getStatusCode()).body(apiResponse);
     }
 
     @ExceptionHandler(value = AppException.class)
@@ -69,20 +68,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<APIResponse> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
-        String enumKey = e.getFieldError().getDefaultMessage();
+        var firstError = e.getBindingResult().getAllErrors().stream().findFirst().orElse(null);
+        String enumKey = firstError != null && firstError.getDefaultMessage() != null
+                ? firstError.getDefaultMessage()
+                : ErrorCode.INVALID_REQUEST.name();
 
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
         Map<String, Object> attributes = null;
         try {
             errorCode = ErrorCode.valueOf(enumKey);
 
-                    var constrainViolation =
-                    e.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
-
-                    attributes= constrainViolation.getConstraintDescriptor().getAttributes();
-                    log.info(attributes.toString());
+            if (firstError != null) {
+                var constrainViolation = firstError.unwrap(ConstraintViolation.class);
+                attributes = constrainViolation.getConstraintDescriptor().getAttributes();
+            }
         } catch (IllegalArgumentException ie) {
             log.error("Invalid enum key: {}", enumKey, ie);
+        } catch (Exception ex) {
+            // Keep default error code when constraint metadata is unavailable.
+            log.debug("Unable to extract constraint attributes for validation error key: {}", enumKey, ex);
         }
 
         APIResponse apiResponse = APIResponse.builder()
@@ -99,6 +103,5 @@ public class GlobalExceptionHandler {
 
         return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
     }
-
 
 }

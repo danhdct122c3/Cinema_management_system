@@ -6,6 +6,7 @@ import com.example.cinema_booking.dto.response.AuthenticationResponse;
 import com.example.cinema_booking.dto.response.IntrospectResponse;
 import com.example.cinema_booking.service.AuthenticateService;
 import com.nimbusds.jose.JOSEException;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +26,7 @@ public class AuthenticationController {
     AuthenticateService authenticateService;
 
     @PostMapping("/login")
-    APIResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+    APIResponse<AuthenticationResponse> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         var authResponse = authenticateService.authenticate(request);
 
 
@@ -35,7 +36,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/introspect")
-    APIResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) throws JOSEException, ParseException {
+    APIResponse<IntrospectResponse> authenticate(@Valid @RequestBody IntrospectRequest request) throws JOSEException, ParseException {
         var authResponse =authenticateService.introspect(request);
 
 
@@ -45,7 +46,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    APIResponse<AuthenticationResponse> refresh(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+    APIResponse<AuthenticationResponse> refresh(@Valid @RequestBody RefreshRequest request) throws ParseException, JOSEException {
         var authResponse = authenticateService.refreshToken(request);
 
         return APIResponse.<AuthenticationResponse>builder()
@@ -54,7 +55,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    APIResponse<Void> logout(@RequestBody LogoutRequest request) throws JOSEException, ParseException {
+    APIResponse<Void> logout(@Valid @RequestBody LogoutRequest request) throws JOSEException, ParseException {
         authenticateService.logout(request);
         return APIResponse.<Void>builder()
                 .build();

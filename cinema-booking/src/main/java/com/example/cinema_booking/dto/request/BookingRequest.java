@@ -1,5 +1,8 @@
 package com.example.cinema_booking.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Null;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,8 +18,13 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingRequest {
+    @Null(message = "INVALID_REQUEST")
     String userId;
+
+    @NotBlank(message = "NOT_NULL")
     String showTimeId;
-    List<String> seatShowTimeIds;
+
+    @NotEmpty(message = "INVALID_REQUEST")
+    List<@NotBlank(message = "NOT_NULL") String> seatShowTimeIds;
 }
 

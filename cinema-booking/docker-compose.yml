@@ -1,5 +1,5 @@
+version: '3.9'
 services:
-  mysql:
     image: mysql:8.0.40
     container_name: cinema_mysql
     restart: unless-stopped
@@ -7,16 +7,16 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: cinema_db
       MYSQL_USER: cinema_user
-      MYSQL_PASSWORD: cinema_password
-      MYSQL_INITDB_SKIP_TZINFO: "yes"
     ports:
+      MYSQL_INITDB_SKIP_TZINFO: "yes"
+      - "3306:3306"
       - "3307:3306"
-    volumes:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - cinema_network
     healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       start_period: 30s
       interval: 10s
@@ -27,50 +27,36 @@ services:
       - --collation-server=utf8mb4_unicode_ci
       - --default-storage-engine=InnoDB
       - --max_connections=1000
-
-  app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    container_name: cinema_app
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      retries: 10
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db
       SPRING_DATASOURCE_USERNAME: cinema_user
       SPRING_DATASOURCE_PASSWORD: cinema_password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      JAVA_TOOL_OPTIONS: "-Xmx512m -Xms256m"
     depends_on:
       mysql:
+    restart: unless-stopped
         condition: service_healthy
+      - cinema_network
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    image: adminer
+    container_name: cinema_adminer
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JAVA_TOOL_OPTIONS: "-Xmx512m -Xms256m"
+    ports:
+      - "8081:8080"
     networks:
       - cinema_network
+    depends_on:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health || exit 1"]
       start_period: 40s
       interval: 10s
       timeout: 5s
       retries: 5
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db
 
-  adminer:
     image: adminer:latest
-    container_name: cinema_adminer
-    restart: unless-stopped
-    ports:
-      - "8081:8080"
-    networks:
-      - cinema_network
-    depends_on:
-      - mysql
-    environment:
-      ADMINER_DEFAULT_SERVER: mysql
-
-volumes:
   mysql_data:
-    driver: local
-
-networks:
+    restart: unless-stopped
   cinema_network:
     driver: bridge

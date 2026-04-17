@@ -5,6 +5,7 @@ import com.example.cinema_booking.dto.request.BookingRequest;
 import com.example.cinema_booking.dto.response.BookingResponse;
 import com.example.cinema_booking.service.BookingService;
 import com.example.cinema_booking.utils.SecurityUtils;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,7 +21,7 @@ public class BookingController {
     BookingService bookingService;
 
     @PostMapping
-    public APIResponse<BookingResponse> createBooking(@RequestBody BookingRequest request) {
+    public APIResponse<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
         // Force userId from authenticated JWT (prevents spoofing)
         request.setUserId(SecurityUtils.getCurrentUserId());
 

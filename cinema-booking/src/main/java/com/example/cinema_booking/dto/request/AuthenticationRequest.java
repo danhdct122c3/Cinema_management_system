@@ -1,5 +1,6 @@
 package com.example.cinema_booking.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,7 +13,10 @@ import lombok.experimental.FieldDefaults;
 
 public class AuthenticationRequest {
 
+    @NotBlank(message = "NOT_NULL")
     String email;
+
+    @NotBlank(message = "NOT_NULL")
     String password;
 
 }

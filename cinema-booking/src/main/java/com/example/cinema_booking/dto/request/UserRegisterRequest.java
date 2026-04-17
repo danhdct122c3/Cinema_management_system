@@ -1,5 +1,7 @@
 package com.example.cinema_booking.dto.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -9,8 +11,16 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor //tạo constructor có tham số
 @FieldDefaults(level = AccessLevel.PRIVATE) //gán AccessLevel.PRIVATE cho tất cả các field
 public class UserRegisterRequest {
+
+    @NotBlank(message = "NOT_NULL")
     String name;
+
+    @Email
     String email;
+
+    @NotBlank(message = "NOT_NULL")
     String password;
+
+    @NotBlank(message = "NOT_NULL")
     String phone;
 }

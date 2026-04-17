@@ -6,6 +6,7 @@ import com.example.cinema_booking.dto.request.HoldSeatRequest;
 import com.example.cinema_booking.dto.response.HoldSeatResponse;
 import com.example.cinema_booking.service.SeatHoldService;
 import com.example.cinema_booking.utils.SecurityUtils;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,21 +27,14 @@ public class SeatHoldController {
      * POST /home/seat-holds/reserve
      */
     @PostMapping("/reserve")
-    public APIResponse<HoldSeatResponse> holdSeats(@RequestBody HoldSeatRequest request) {
-        try {
-            // Force userId from authenticated JWT (prevents spoofing & removes hardcode)
-            request.setUserId(SecurityUtils.getCurrentUserId());
+    public APIResponse<HoldSeatResponse> holdSeats(@Valid @RequestBody HoldSeatRequest request) {
+        // Force userId from authenticated JWT (prevents spoofing & removes hardcode)
+        request.setUserId(SecurityUtils.getCurrentUserId());
 
-            HoldSeatResponse response = seatHoldService.createHoldSeat(request);
-            return APIResponse.<HoldSeatResponse>builder()
-                    .result(response)
-                    .build();
-        } catch (Exception e) {
-            return APIResponse.<HoldSeatResponse>builder()
-                    .code(999)
-                    .message("Không thể giữ ghế: " + e.getMessage())
-                    .build();
-        }
+        HoldSeatResponse response = seatHoldService.createHoldSeat(request);
+        return APIResponse.<HoldSeatResponse>builder()
+                .result(response)
+                .build();
     }
 
     /**
@@ -49,18 +43,11 @@ public class SeatHoldController {
      */
     @PostMapping("/release")
     public APIResponse<String> releaseHold(@RequestBody List<String> seatShowTimeIds) {
-        try {
-            seatHoldService.releaseHoldSeat(seatShowTimeIds);
-            return APIResponse.<String>builder()
-                    .result("OK")
-                    .message("Ghế đã được giải phóng")
-                    .build();
-        } catch (Exception e) {
-            return APIResponse.<String>builder()
-                    .code(999)
-                    .message(e.getMessage())
-                    .build();
-        }
+        seatHoldService.releaseHoldSeat(seatShowTimeIds);
+        return APIResponse.<String>builder()
+                .result("OK")
+                .message("Ghế đã được giải phóng")
+                .build();
     }
 
     /**

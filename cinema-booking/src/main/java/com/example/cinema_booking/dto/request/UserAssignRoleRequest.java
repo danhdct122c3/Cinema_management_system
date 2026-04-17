@@ -1,6 +1,7 @@
 package com.example.cinema_booking.dto.request;
 
 import com.example.cinema_booking.enums.Role;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,5 +14,7 @@ import lombok.experimental.FieldDefaults;
 
 public class UserAssignRoleRequest {
     String id;
+
+    @NotBlank(message = "NOT_NULL")
     Role role;
 }

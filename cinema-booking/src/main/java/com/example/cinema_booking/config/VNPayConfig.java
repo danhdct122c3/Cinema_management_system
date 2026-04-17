@@ -9,7 +9,6 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -47,14 +46,12 @@ public class VNPayConfig {
         String digest = null;
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(message.getBytes("UTF-8"));
+            byte[] hash = md.digest(message.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(2 * hash.length);
             for (byte b : hash) {
                 sb.append(String.format("%02x", b & 0xff));
             }
             digest = sb.toString();
-        } catch (UnsupportedEncodingException ex) {
-            digest = "";
         } catch (NoSuchAlgorithmException ex) {
             digest = "";
         }
@@ -65,14 +62,12 @@ public class VNPayConfig {
         String digest = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(message.getBytes("UTF-8"));
+            byte[] hash = md.digest(message.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(2 * hash.length);
             for (byte b : hash) {
                 sb.append(String.format("%02x", b & 0xff));
             }
             digest = sb.toString();
-        } catch (UnsupportedEncodingException ex) {
-            digest = "";
         } catch (NoSuchAlgorithmException ex) {
             digest = "";
         }
@@ -119,26 +114,29 @@ public class VNPayConfig {
             return sb.toString();
 
         } catch (Exception ex) {
-            return "";
+            throw new IllegalStateException("Cannot generate HMAC SHA512 signature", ex);
         }
     }
 
     public static String getIpAddress(HttpServletRequest request) {
-        String ipAdress;
-        try {
-            ipAdress = request.getHeader("X-FORWARDED-FOR");
-            if (ipAdress == null || ipAdress.isBlank()) {
-                ipAdress = request.getRemoteAddr();
-            }
-            if (ipAdress != null && ipAdress.contains(",")) {
-                ipAdress = ipAdress.split(",")[0].trim();
-            }
-            if ("0:0:0:0:0:0:0:1".equals(ipAdress) || "::1".equals(ipAdress)) {
-                ipAdress = "127.0.0.1";
-            }
-        } catch (Exception e) {
-            ipAdress = "Invalid IP:" + e.getMessage();
+        if (request == null) {
+            return "127.0.0.1";
         }
+
+        String ipAdress = request.getHeader("X-FORWARDED-FOR");
+        if (ipAdress == null || ipAdress.isBlank()) {
+            ipAdress = request.getRemoteAddr();
+        }
+        if (ipAdress != null && ipAdress.contains(",")) {
+            ipAdress = ipAdress.split(",")[0].trim();
+        }
+        if ("0:0:0:0:0:0:0:1".equals(ipAdress) || "::1".equals(ipAdress)) {
+            ipAdress = "127.0.0.1";
+        }
+        if (ipAdress == null || ipAdress.isBlank()) {
+            ipAdress = "127.0.0.1";
+        }
+
         return ipAdress;
     }
 

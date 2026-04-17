@@ -1,6 +1,7 @@
 package com.example.cinema_booking.dto.request;
 
 
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,7 +15,10 @@ import java.util.List;
 
 public class UserUpdateRequest {
     String name;
+
     String password;
+
+    @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "PHONENUMBER_INVALID")
     String phone;
     List<String> roles;
 }

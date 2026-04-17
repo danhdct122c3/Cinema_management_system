@@ -25,6 +25,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -83,17 +85,20 @@ public class AuthenticationServiceImpl implements AuthenticateService {
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        if (request == null || request.getEmail() == null || request.getPassword() == null) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (request == null
+                || isBlank(request.getEmail())
+                || isBlank(request.getPassword())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
         }
 
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
 
-        // Khua Điền hash mật khaâẩu phần này nha con  + salt.
-        if (user.getPassword() == null || !user.getPassword().equals(request.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+
+        if (user.getPassword() == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         var token = generateToken(user);
@@ -227,6 +232,10 @@ public class AuthenticationServiceImpl implements AuthenticateService {
         }
 
         return stringJoiner.toString();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
 

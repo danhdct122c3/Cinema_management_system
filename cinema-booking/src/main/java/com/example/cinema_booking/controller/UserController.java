@@ -7,6 +7,7 @@ import com.example.cinema_booking.dto.request.UserRegisterRequest;
 import com.example.cinema_booking.dto.request.UserUpdateRequest;
 import com.example.cinema_booking.dto.response.UserResponse;
 import com.example.cinema_booking.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +26,7 @@ public class UserController {
     TestUserConfig testUserConfig;
 
     @PostMapping
-    APIResponse<UserResponse> registerUser(@RequestBody UserRegisterRequest request){
+    APIResponse<UserResponse> registerUser(@RequestBody  @Valid UserRegisterRequest request){
         log.info("registerUser");
 
 
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    APIResponse<UserResponse> updateUser(@RequestBody UserUpdateRequest request, @PathVariable("userId") String userId){
+    APIResponse<UserResponse> updateUser(@RequestBody @Valid UserUpdateRequest request, @PathVariable("userId") String userId){
         log.info("updateUser");
 
         return APIResponse.<UserResponse>builder()

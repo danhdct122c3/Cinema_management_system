@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -43,12 +42,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public PaymentResponse createCheckoutPayment(BookingRequest request, String ipAddress) throws UnsupportedEncodingException {
+    public PaymentResponse createCheckoutPayment(BookingRequest request, String ipAddress) {
         BookingResponse bookingResponse = bookingService.createBooking(request);
         return createPaymentByBookingId(bookingResponse.getBookingId(), ipAddress);
     }
 
-    private PaymentResponse createPaymentByBookingId(String bookingId, String ipAddress) throws UnsupportedEncodingException {
+    private PaymentResponse createPaymentByBookingId(String bookingId, String ipAddress) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
 
@@ -109,11 +108,11 @@ public class PaymentServiceImpl implements PaymentService {
                 //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
-                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
                 //Build query
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString()));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8));
                 query.append('=');
-                query.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
                 if (itr.hasNext()) {
                     query.append('&');
                     hashData.append('&');
