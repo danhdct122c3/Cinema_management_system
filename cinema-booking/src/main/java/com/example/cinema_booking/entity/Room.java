@@ -23,13 +23,5 @@ public class Room {
     Integer totalRows;
     Integer totalColumns;
 
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-//    @Builder.Default
-//    List<Seat> seats = new ArrayList<>();
 
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-//    @Builder.Default
-//    List<ShowTime> showTimes = new ArrayList<>();
 }

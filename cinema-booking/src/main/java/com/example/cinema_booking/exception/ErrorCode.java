@@ -46,6 +46,7 @@ public enum ErrorCode {
     SHOWTIME_END_BEFORE_START(1405, "Thời gian kết thúc suất chiếu phải sau thời gian bắt đầu", HttpStatus.BAD_REQUEST),
     SHOWTIME_OVERLAP(1406, "Suất chiếu bị trùng với suất chiếu hiện có", HttpStatus.BAD_REQUEST),
     SHOWTIME_HAS_BOOKINGS(1407, "Không thể xóa hoặc cập nhật suất chiếu đã có đặt vé", HttpStatus.BAD_REQUEST),
+    MOVIE_ENDED(1408,"Phim đã  ngừng chiếu" ,  HttpStatus.BAD_REQUEST),
 
     // 15xx - Seat and hold
     SEAT_ALREADY_EXIST(1501, "Ghế đã tồn tại", HttpStatus.BAD_REQUEST),
@@ -62,7 +63,7 @@ public enum ErrorCode {
     BOOKING_ALREADY_CANCELLED(1602, "Đặt vé đã bị hủy", HttpStatus.BAD_REQUEST),
     BOOKING_ALREADY_CONFIRMED(1603, "Đặt vé đã được xác nhận", HttpStatus.BAD_REQUEST),
     BOOKING_NOT_PENDING(1604, "Đặt vé không ở trạng thái chờ", HttpStatus.BAD_REQUEST),
-    PAYMENT_ALREADY_EXISTS(1605, "Đã tồn tại thanh toán cho đặt vé này", HttpStatus.BAD_REQUEST);
+    PAYMENT_ALREADY_EXISTS(1605, "Đã tồn tại thanh toán cho đặt vé này", HttpStatus.BAD_REQUEST),;
 
 
 

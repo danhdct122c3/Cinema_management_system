@@ -60,8 +60,5 @@ public class Movie {
     @Column(name = "trailer_url")
     private String trailerUrl;  // Match database column name exactly
 
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-//    @Builder.Default
-//    private List<ShowTime> showTimes = new ArrayList<>();
+
 }

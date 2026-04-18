@@ -38,12 +38,6 @@ public class ShowTime {
     @Enumerated(EnumType.STRING)
     ShowTimeStatus status;
 
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "showTime", cascade = CascadeType.ALL)
-//    @Builder.Default
-//    List<Booking> bookings = new ArrayList<>();
-//
-//    @Version
-//    Long version;
+
 
 }

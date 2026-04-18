@@ -7,6 +7,7 @@ import com.example.cinema_booking.dto.response.PageResponse;
 import com.example.cinema_booking.entity.Genre;
 import com.example.cinema_booking.entity.Movie;
 import com.example.cinema_booking.enums.MovieStatus;
+import com.example.cinema_booking.enums.ShowTimeStatus;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.mapper.MovieMapper;
@@ -25,6 +26,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -129,12 +131,17 @@ public class MovieServiceImpl implements MovieService {
     public List<MovieResponse> getMovieByStatus(String status) {
         MovieStatus movieStatus;
         try {
-            movieStatus = MovieStatus.valueOf(status);
+            movieStatus = MovieStatus.valueOf(status.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new AppException(ErrorCode.INVALID_MOVIE_STATUS);
         }
 
-        List<Movie> movies = movieRepository.findByStatus(movieStatus);
+        List<Movie> movies = movieRepository.findByStatusWithFutureShowTimes(
+                movieStatus,
+                LocalDateTime.now(),
+                ShowTimeStatus.ACTIVE
+        );
+
         return movies.stream()
                 .map(movieMapper::toMovieResponse)
                 .toList();
@@ -150,37 +157,5 @@ public class MovieServiceImpl implements MovieService {
     }
 
 
-//
-//    @Async
-//    @Transactional
-//    public CompletableFuture<MovieResponseDTO> updateMovie(Long id, MovieRequestDTO movieRequest) {
-//        Movie movie = movieRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Movie not found with id: " + id));
-//
-//        movie.setTitle(movieRequest.getTitle());
-//        movie.setGenre(movieRequest.getGenre());
-//        movie.setDescription(movieRequest.getDescription());
-//        movie.setTicketPrice(movieRequest.getTicketPrice());
-//
-//        Movie updatedMovie = movieRepository.save(movie);
-//        return CompletableFuture.completedFuture(convertToDTO(updatedMovie));
-//    }
-//
-//    @Async
-//    @Transactional
-//    public CompletableFuture<Void> deleteMovie(Long id) {
-//        movieRepository.deleteById(id);
-//        return CompletableFuture.completedFuture(null);
-//    }
-//
-//    private MovieResponseDTO convertToDTO(Movie movie) {
-//        return MovieResponseDTO.builder()
-//                .id(movie.getId())
-//                .title(movie.getTitle())
-//                .genre(movie.getGenre())
-//                .description(movie.getDescription())
-//                .ticketPrice(movie.getTicketPrice())
-//                .imageUrl(movie.getImage_url())  // ADD imageUrl here!
-//                .build();
-//    }
+
 }

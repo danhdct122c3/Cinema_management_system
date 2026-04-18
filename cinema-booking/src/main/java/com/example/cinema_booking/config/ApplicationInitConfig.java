@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Set;
 
@@ -19,6 +21,9 @@ public class ApplicationInitConfig {
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository)
     {
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+
         return args -> {
                String adminEmail = "admin@gmail.com";
 
@@ -35,8 +40,7 @@ public class ApplicationInitConfig {
                    User user = User.builder()
                            .email(adminEmail)
                            .roles(Set.of(adminRole))
-                           // Trong thực tế, bạn nên mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu. Đây chỉ là ví dụ đơn giản.
-                           .password("admin")
+                           .password(passwordEncoder.encode("admin"))
                            .build();
 
                    userRepository.save(user);

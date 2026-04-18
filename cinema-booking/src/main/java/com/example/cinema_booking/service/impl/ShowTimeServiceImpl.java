@@ -5,6 +5,7 @@ import com.example.cinema_booking.dto.response.ShowTimeResponse;
 import com.example.cinema_booking.entity.Movie;
 import com.example.cinema_booking.entity.Room;
 import com.example.cinema_booking.entity.ShowTime;
+import com.example.cinema_booking.enums.MovieStatus;
 import com.example.cinema_booking.enums.ShowTimeStatus;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
@@ -47,6 +48,10 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
     public ShowTimeResponse createScreening(ShowTimeCreateRequest request) {
         Movie movie = movieRepository.findById(request.getMovieId())
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));
+
+        if(movie.getStatus().equals(MovieStatus.ENDED)) {
+            throw new AppException(ErrorCode.MOVIE_ENDED);
+        }
 
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXIST));
