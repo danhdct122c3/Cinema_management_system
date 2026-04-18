@@ -11,6 +11,7 @@ import {
     CardContent,
     Grid,
     Chip,
+    Pagination,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Booking } from '../types';
@@ -34,6 +35,8 @@ export const BookingHistory: React.FC = () => {
     const [showtimeInfoById, setShowtimeInfoById] = useState<Record<string, ShowtimeDisplayInfo>>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
+    const [page, setPage] = useState(1);
+    const pageSize = 5;
 
     const enrichRoomsFromShowtimes = async (bookingList: BookingView[]) => {
         const uniqueShowtimeIds = Array.from(
@@ -169,6 +172,19 @@ export const BookingHistory: React.FC = () => {
         }
     };
 
+    const sortedBookings = [...bookings].sort((a, b) => {
+        const timeA = new Date(a.bookingTime).getTime();
+        const timeB = new Date(b.bookingTime).getTime();
+        return timeB - timeA;
+    });
+
+    const totalPages = Math.max(1, Math.ceil(sortedBookings.length / pageSize));
+    const paginatedBookings = sortedBookings.slice((page - 1) * pageSize, page * pageSize);
+
+    useEffect(() => {
+        setPage(1);
+    }, [bookings.length]);
+
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 800, mb: 3 }}>
@@ -221,7 +237,7 @@ export const BookingHistory: React.FC = () => {
             )}
 
             <Grid container spacing={3}>
-                {bookings.map((booking) => (
+                {paginatedBookings.map((booking) => (
                     <Grid item xs={12} key={booking.bookingId}>
                         <Card
                             elevation={0}
@@ -274,6 +290,18 @@ export const BookingHistory: React.FC = () => {
                     </Grid>
                 ))}
             </Grid>
+
+            {sortedBookings.length > pageSize && (
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                    <Pagination
+                        page={page}
+                        count={totalPages}
+                        onChange={(_, value) => setPage(value)}
+                        color="primary"
+                        shape="rounded"
+                    />
+                </Box>
+            )}
 
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
                 <Button

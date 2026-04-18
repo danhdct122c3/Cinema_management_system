@@ -13,6 +13,7 @@ import {
     TextField,
     MenuItem,
     Tooltip,
+    TablePagination,
 } from '@mui/material';
 import { adminBookingService, adminShowtimeService, adminUserService } from '../services/adminApi';
 import { Booking, ShowTimeResponse } from '../types';
@@ -25,6 +26,8 @@ export const AdminBookings: React.FC = () => {
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     useEffect(() => {
         fetchBookings();
@@ -151,6 +154,11 @@ export const AdminBookings: React.FC = () => {
             return timeB - timeA;
         });
 
+    const paginatedBookings = filteredBookings.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+    );
+
     const truncateId = (value: string, start = 8, end = 6) => {
         if (value.length <= start + end + 3) return value;
         return `${value.slice(0, start)}...${value.slice(-end)}`;
@@ -162,6 +170,17 @@ export const AdminBookings: React.FC = () => {
             [bookingId]: !prev[bookingId],
         }));
     };
+
+    useEffect(() => {
+        setPage(0);
+    }, [filterStatus, searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        const maxPage = Math.max(0, Math.ceil(filteredBookings.length / rowsPerPage) - 1);
+        if (page > maxPage) {
+            setPage(maxPage);
+        }
+    }, [filteredBookings.length, rowsPerPage, page]);
 
     return (
         <Box>
@@ -214,7 +233,7 @@ export const AdminBookings: React.FC = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredBookings.map((booking) => {
+                        {paginatedBookings.map((booking) => {
                             const statusStyle = getStatusColor(booking.status);
                             const isExpanded = !!expandedRows[booking.bookingId];
                             const displayUserEmail = userEmailMap[booking.userId] || booking.userId;
@@ -275,6 +294,22 @@ export const AdminBookings: React.FC = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {filteredBookings.length > 0 && (
+                <TablePagination
+                    component="div"
+                    count={filteredBookings.length}
+                    page={page}
+                    onPageChange={(_, newPage) => setPage(newPage)}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                    }}
+                    rowsPerPageOptions={[5, 10, 20]}
+                    labelRowsPerPage="Số dòng mỗi trang"
+                />
+            )}
 
             {filteredBookings.length === 0 && (
                 <Box

@@ -20,6 +20,7 @@ import {
     Select,
     MenuItem,
     ListItemText,
+    TablePagination,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -51,6 +52,8 @@ export const AdminMovies: React.FC = () => {
     const [openGenreDialog, setOpenGenreDialog] = useState(false);
     const [newGenreName, setNewGenreName] = useState('');
     const [creatingGenre, setCreatingGenre] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -300,6 +303,15 @@ export const AdminMovies: React.FC = () => {
         }
     };
 
+    const paginatedMovies = movies.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+    useEffect(() => {
+        const maxPage = Math.max(0, Math.ceil(movies.length / rowsPerPage) - 1);
+        if (page > maxPage) {
+            setPage(maxPage);
+        }
+    }, [movies.length, rowsPerPage, page]);
+
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -350,7 +362,7 @@ export const AdminMovies: React.FC = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {movies.map((movie) => (
+                        {paginatedMovies.map((movie) => (
                             <TableRow
                                 key={movie.id}
                                 sx={{
@@ -420,6 +432,22 @@ export const AdminMovies: React.FC = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {movies.length > 0 && (
+                <TablePagination
+                    component="div"
+                    count={movies.length}
+                    page={page}
+                    onPageChange={(_, newPage) => setPage(newPage)}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                    }}
+                    rowsPerPageOptions={[5, 10, 20]}
+                    labelRowsPerPage="Số dòng mỗi trang"
+                />
+            )}
 
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
