@@ -10,6 +10,7 @@ import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.repository.SeatShowTimeRepository;
 import com.example.cinema_booking.repository.UserRepository;
 import com.example.cinema_booking.service.SeatHoldService;
+import com.example.cinema_booking.utils.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class SeatHoldServiceImpl implements SeatHoldService {
     @Override
     public HoldSeatResponse createHoldSeat(HoldSeatRequest request) {
         if(request.getSeatShowTimeIds() ==null || request.getSeatShowTimeIds().isEmpty()){
-            throw new AppException(ErrorCode.INVALID_SEAT_ID);
+            throw new AppException(ErrorCode.INVALID_SEAT_IDS);
         }
 
         log.info("Hold request received - Seat IDs: {}, User ID: {}", request.getSeatShowTimeIds(), request.getUserId());
@@ -57,6 +58,10 @@ public class SeatHoldServiceImpl implements SeatHoldService {
         List<SeatShowTime> seatsToHold= seatsToCheck.stream()
                 .filter(s -> request.getSeatShowTimeIds().contains(s.getId()))
                 .toList();
+
+        if (seatsToHold.size() != request.getSeatShowTimeIds().size()) {
+            throw new AppException(ErrorCode.INVALID_SEAT_IDS);
+        }
 
         log.info("Filtered to {} seats to hold", seatsToHold.size());
 
@@ -103,6 +108,10 @@ public class SeatHoldServiceImpl implements SeatHoldService {
                 .filter(s -> request.getSeatShowTimeIds().contains(s.getId()))
                 .toList();
 
+        if (seatsToHold.size() != request.getSeatShowTimeIds().size()) {
+            throw new AppException(ErrorCode.INVALID_SEAT_IDS);
+        }
+
         seatsToHold.forEach(seat -> {
             if (!seat.getStatus().equals(SeatStatus.AVAILABLE)) {
                 String seatCode = seat.getSeat().getSeatRow() + seat.getSeat().getSeatNumber();
@@ -147,10 +156,22 @@ public class SeatHoldServiceImpl implements SeatHoldService {
     @Override
     @Transactional
     public void releaseHoldSeat(List<String> seatShowTimeIds) {
+        if (seatShowTimeIds == null || seatShowTimeIds.isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_SEAT_IDS);
+        }
+
+        String currentUserId = SecurityUtils.getCurrentUserId();
         List<SeatShowTime> seats = seatShowTimeRepository.findAllById(seatShowTimeIds);
+
+        if (seats.size() != seatShowTimeIds.size()) {
+            throw new AppException(ErrorCode.INVALID_SEAT_IDS);
+        }
 
         seats.forEach(seat -> {
             if (seat.getStatus().equals(SeatStatus.HOLD)) {
+                if (seat.getHeldByUser() == null || !seat.getHeldByUser().getId().equals(currentUserId)) {
+                    throw new AppException(ErrorCode.SEAT_HOLD_USER_MISMATCH);
+                }
                 seat.setStatus(SeatStatus.AVAILABLE);
                 seat.setHoldStartTime(null);
                 seat.setHoldExpireTime(null);

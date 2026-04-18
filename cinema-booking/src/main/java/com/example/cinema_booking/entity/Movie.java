@@ -41,6 +41,12 @@ public class Movie {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    private String director;
+
+    @Column(columnDefinition = "TEXT")
+    private String actors;
+
     private Integer duration;
 
     private LocalDate releaseDate;
@@ -55,10 +61,10 @@ public class Movie {
     private LocalDateTime updatedAt;
 
     @Column(name = "image_url")
-    private String imageUrl;  // Match database column name exactly
+    private String imageUrl;
 
     @Column(name = "trailer_url")
-    private String trailerUrl;  // Match database column name exactly
+    private String trailerUrl;  
 
 
 }

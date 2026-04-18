@@ -4,9 +4,9 @@ package com.example.cinema_booking.controller;
 import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.SeatTypeUpdateRequest;
 import com.example.cinema_booking.dto.response.SeatShowTimeResponse;
-import com.example.cinema_booking.entity.SeatShowTime;
 import com.example.cinema_booking.enums.SeatType;
 import com.example.cinema_booking.service.SeatShowTimeService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -32,7 +32,7 @@ public class SeatShowTimeController {
     @PatchMapping("/{showTimeId}")
     public APIResponse<Void> updateSeatPriceByShowTimeId(
             @PathVariable String showTimeId,
-            @RequestBody SeatTypeUpdateRequest request){
+            @Valid @RequestBody SeatTypeUpdateRequest request){
 
         SeatType seatType = SeatType.valueOf(request.getSeatType().toUpperCase());
 

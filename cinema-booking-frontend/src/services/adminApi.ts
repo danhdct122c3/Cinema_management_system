@@ -67,7 +67,9 @@ export const adminPermissionService = {
 export interface MovieCreateRequest {
     title: string;
     description: string;
-    duration: string;
+    director?: string;
+    actors?: string;
+    duration: number;
     genreIds?: string[];          // Danh sách ID thể loại
     genreNames?: string[];        // Danh sách tên thể loại
     releaseDate: string;

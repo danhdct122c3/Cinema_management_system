@@ -19,6 +19,10 @@ public class MovieUpdateRequest {
 
     private String description;
 
+    private String director;
+
+    private String actors;
+
     private Integer duration;
     private String status;
     private LocalDate releaseDate;

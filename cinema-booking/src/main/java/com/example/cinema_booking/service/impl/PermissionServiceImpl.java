@@ -27,12 +27,12 @@ public class PermissionServiceImpl implements PermissionService {
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public PermissionResponse create(PermissionCreateRequest request) {
-        if (request == null || request.getName() == null) {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        if (request == null || request.getName() == null || request.getName().isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
         }
 
         if (permissionRepository.existsById(request.getName())) {
-            throw new AppException(ErrorCode.USER_EXISTED);
+            throw new AppException(ErrorCode.INVALID_REQUEST);
         }
 
         Permission permission = permissionMapper.toEntity(request);
@@ -42,8 +42,12 @@ public class PermissionServiceImpl implements PermissionService {
    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public PermissionResponse update(String name, PermissionUpdateRequest request) {
+        if (name == null || name.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
         Permission permission = permissionRepository.findById(name)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
 
         permissionMapper.updateEntity(request, permission);
         return permissionMapper.toResponse(permissionRepository.save(permission));
@@ -52,8 +56,12 @@ public class PermissionServiceImpl implements PermissionService {
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void delete(String permissionId) {
+        if (permissionId == null || permissionId.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
         if (!permissionRepository.existsById(permissionId)) {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+            throw new AppException(ErrorCode.PERMISSION_NOT_EXISTED);
         }
         permissionRepository.deleteById(permissionId);
     }
@@ -61,8 +69,12 @@ public class PermissionServiceImpl implements PermissionService {
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     @Override
     public PermissionResponse getByName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
         Permission permission = permissionRepository.findById(name)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
         return permissionMapper.toResponse(permission);
     }
 

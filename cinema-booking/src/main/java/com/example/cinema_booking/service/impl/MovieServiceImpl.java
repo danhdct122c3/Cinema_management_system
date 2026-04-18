@@ -50,8 +50,8 @@ public class MovieServiceImpl implements MovieService {
         movie.setGenres(genres);
 
          // 🔥 xử lý status
-         if (request.getStatus() != null) {
-             movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+         if (request.getStatus() != null && !request.getStatus().isBlank()) {
+             movie.setStatus(parseMovieStatus(request.getStatus()));
          } else {
              movie.setStatus(MovieStatus.COMING_SOON); // default
          }
@@ -90,8 +90,8 @@ public class MovieServiceImpl implements MovieService {
         }
 
         // xử lý status (enum)
-        if (request.getStatus() != null) {
-            movie.setStatus(MovieStatus.valueOf(request.getStatus()));
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            movie.setStatus(parseMovieStatus(request.getStatus()));
         }
 
         Movie updatedMovie = movieRepository.save(movie);
@@ -104,7 +104,7 @@ public class MovieServiceImpl implements MovieService {
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_EXIST));
 
-        movie.setStatus(MovieStatus.valueOf(status));
+        movie.setStatus(parseMovieStatus(status));
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
@@ -129,12 +129,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     public List<MovieResponse> getMovieByStatus(String status) {
-        MovieStatus movieStatus;
-        try {
-            movieStatus = MovieStatus.valueOf(status.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new AppException(ErrorCode.INVALID_MOVIE_STATUS);
-        }
+        MovieStatus movieStatus = parseMovieStatus(status);
 
         List<Movie> movies = movieRepository.findByStatusWithFutureShowTimes(
                 movieStatus,
@@ -146,6 +141,19 @@ public class MovieServiceImpl implements MovieService {
                 .map(movieMapper::toMovieResponse)
                 .toList();
     }
+
+    private MovieStatus parseMovieStatus(String rawStatus) {
+        if (rawStatus == null || rawStatus.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_MOVIE_STATUS);
+        }
+
+        try {
+            return MovieStatus.valueOf(rawStatus.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AppException(ErrorCode.INVALID_MOVIE_STATUS);
+        }
+    }
+
     public List<MovieResponse> searchMovies(String keyword) {
         List<Movie> movies = movieRepository.findByTitleContainingIgnoreCase(keyword);
         return movieMapper.toMovieResponseList(movies);

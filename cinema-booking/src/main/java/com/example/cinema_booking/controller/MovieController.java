@@ -5,6 +5,7 @@ import com.example.cinema_booking.dto.request.MovieCreateRequest;
 import com.example.cinema_booking.dto.request.MovieUpdateRequest;
 import com.example.cinema_booking.dto.response.MovieResponse;
 import com.example.cinema_booking.dto.response.PageResponse;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class MovieController {
 
 
     @PostMapping
-    public APIResponse<MovieResponse> createMovie(@RequestBody MovieCreateRequest request){
+        public APIResponse<MovieResponse> createMovie(@Valid @RequestBody MovieCreateRequest request){
         log.info("createMovie");
 
         return APIResponse.<MovieResponse>builder()
@@ -48,7 +49,7 @@ public class MovieController {
                 .build();
     }
     @PutMapping("/{id}")
-    public APIResponse<MovieResponse> updateMovie(@PathVariable String id, @RequestBody MovieUpdateRequest request){
+        public APIResponse<MovieResponse> updateMovie(@PathVariable String id, @Valid @RequestBody MovieUpdateRequest request){
         return APIResponse.<MovieResponse>builder()
                 .result(movieService.updateMovie(id, request))
                 .build();

@@ -59,6 +59,8 @@ export interface Movie {
     id: string;
     title: string;
     description: string;
+    director?: string;
+    actors?: string;
     duration: string;
     imageUrl: string;
     trailerUrl: string;

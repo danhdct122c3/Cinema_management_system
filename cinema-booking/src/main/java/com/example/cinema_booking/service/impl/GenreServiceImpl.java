@@ -91,7 +91,6 @@ public class GenreServiceImpl implements GenreService {
         return genres;
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMIN_MOVIE')" )
     public List<Genre> findAllGenres() {
         return genreRepository.findAll();
     }

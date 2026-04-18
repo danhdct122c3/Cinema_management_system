@@ -1,6 +1,8 @@
 package com.example.cinema_booking.dto.request;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -14,19 +16,29 @@ public class MovieCreateRequest {
 
     @NotBlank(message = "NOT_NULL")
     private String title;
+
     private String description;
-    @NotBlank(message = "NOT_NULL")
+
+    private String director;
+
+    private String actors;
+
+    @NotNull(message = "NOT_NULL")
+    @Min(value = 1, message = "INVALID_REQUEST")
     private Integer duration;
+
     @NotBlank(message = "NOT_NULL")
     private String status;
-    @NotBlank(message = "NOT_NULL")
+
+    @NotNull(message = "NOT_NULL")
     private LocalDate releaseDate;
-    @NotBlank(message = "NOT_NULL")
-    private List<String> genreIds;        // Danh sách ID thể loại (có sẵn)
-    @NotBlank(message = "NOT_NULL")
-    private List<String> genreNames;      // Danh sách tên thể loại (tạo mới nếu chưa có)
+
+    private List<@NotBlank(message = "NOT_NULL") String> genreIds;        // Danh sách ID thể loại (có sẵn)
+    private List<@NotBlank(message = "NOT_NULL") String> genreNames;      // Danh sách tên thể loại (tạo mới nếu chưa có)
+
     @NotBlank(message = "NOT_NULL")
     private String imageUrl;              // URL của ảnh đại diện
+
     @NotBlank(message = "NOT_NULL")
     private String trailerUrl;            // URL của trailer
 }

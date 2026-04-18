@@ -37,6 +37,8 @@ export const AdminMovies: React.FC = () => {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
+        director: '',
+        actors: '',
         duration: '',
         genreIds: [] as string[],  // Change to array for multiple genres
         releaseDate: '',
@@ -84,7 +86,9 @@ export const AdminMovies: React.FC = () => {
             setFormData({
                 title: movie.title,
                 description: movie.description,
-                duration: movie.duration,
+                director: movie.director || '',
+                actors: movie.actors || '',
+                duration: String(movie.duration ?? ''),
                 genreIds: movie.genreIds || [], // Use array directly
                 releaseDate: movie.releaseDate,
                 imageUrl: movie.imageUrl,
@@ -96,6 +100,8 @@ export const AdminMovies: React.FC = () => {
             setFormData({
                 title: '',
                 description: '',
+                director: '',
+                actors: '',
                 duration: '',
                 genreIds: [], // Initialize as empty array
                 releaseDate: '',
@@ -237,12 +243,20 @@ export const AdminMovies: React.FC = () => {
 
     const handleSubmit = async () => {
         try {
+            const durationValue = Number(formData.duration);
+            if (!Number.isInteger(durationValue) || durationValue <= 0) {
+                alert('Thời lượng phải là số nguyên dương.');
+                return;
+            }
+
             if (editingMovie) {
                 // Update movie
                 await adminMovieService.updateMovie(editingMovie.id, {
                     title: formData.title,
                     description: formData.description,
-                    duration: formData.duration,
+                    director: formData.director,
+                    actors: formData.actors,
+                    duration: durationValue,
                     genreIds: formData.genreIds,
                     genreNames: [],
                     releaseDate: formData.releaseDate,
@@ -255,7 +269,9 @@ export const AdminMovies: React.FC = () => {
                 await adminMovieService.createMovie({
                     title: formData.title,
                     description: formData.description,
-                    duration: formData.duration,
+                    director: formData.director,
+                    actors: formData.actors,
+                    duration: durationValue,
                     genreIds: formData.genreIds,
                     genreNames: [],
                     releaseDate: formData.releaseDate,
@@ -429,13 +445,31 @@ export const AdminMovies: React.FC = () => {
                             rows={4}
                             required
                         />
+                        <TextField
+                            fullWidth
+                            label="Đạo Diễn"
+                            name="director"
+                            value={formData.director}
+                            onChange={handleInputChange}
+                            placeholder="Ví dụ: Victor Vũ"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Diễn Viên"
+                            name="actors"
+                            value={formData.actors}
+                            onChange={handleInputChange}
+                            placeholder="Ví dụ: A, B, C"
+                        />
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField
                                 fullWidth
                                 label="Thời Lượng"
                                 name="duration"
+                                type="number"
                                 value={formData.duration}
                                 onChange={handleInputChange}
+                                inputProps={{ min: 1, step: 1 }}
                                 required
                             />
                             <Box sx={{ flex: 1 }}>

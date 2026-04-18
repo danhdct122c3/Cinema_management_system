@@ -129,6 +129,7 @@ export const BookingConfirmation: React.FC = () => {
                 await holdService.releaseHold(selectedSeatIds);
             } catch (err) {
                 console.error('Error releasing hold:', err);
+                setError('Hết thời gian giữ ghế. Không thể giải phóng ghế ngay lập tức, hệ thống sẽ tự nhả sau tối đa 5 phút.');
             }
         }
 
@@ -228,7 +229,7 @@ export const BookingConfirmation: React.FC = () => {
             // Only auto-release when page is actually left (unmount), not on every state change.
             if (!bookingSuccessRef.current && !paymentInProgressRef.current && !redirectingToPaymentRef.current && selectedSeatIds && selectedSeatIds.length > 0) {
                 holdService.releaseHold(selectedSeatIds).catch(err => 
-                    console.error('Error releasing hold on unmount:', err)
+                    console.warn('Release hold on unmount failed, booking timeout task will auto-cancel pending state:', err)
                 );
             }
         };
@@ -249,7 +250,7 @@ export const BookingConfirmation: React.FC = () => {
             navigate(`/`);
         } catch (err) {
             console.error('Error releasing hold:', err);
-            setError('Không thể giải phóng giữ ghế. Vui lòng thử lại.');
+            setError('Không thể giải phóng giữ ghế ngay lúc này. Bạn có thể thử lại, hoặc chờ hệ thống tự nhả sau tối đa 5 phút.');
         }
     };
 

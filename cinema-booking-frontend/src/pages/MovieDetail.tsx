@@ -205,6 +205,20 @@ export const MovieDetail: React.FC = () => {
                             {/* Movie Info */}
                             <Box sx={{ mb: 3 }}>
                                 <Typography variant="subtitle2" sx={{ color: '#666', mb: 1 }}>
+                                    Đạo diễn:
+                                </Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
+                                    {movie.director || 'Đang cập nhật'}
+                                </Typography>
+
+                                <Typography variant="subtitle2" sx={{ color: '#666', mb: 1 }}>
+                                    Diễn viên:
+                                </Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
+                                    {movie.actors || 'Đang cập nhật'}
+                                </Typography>
+
+                                <Typography variant="subtitle2" sx={{ color: '#666', mb: 1 }}>
                                     Thể loại:
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
