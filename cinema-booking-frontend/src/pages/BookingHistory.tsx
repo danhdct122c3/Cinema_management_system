@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     Container,
     Typography,
     Box,
     Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
     CircularProgress,
     Snackbar,
     Alert,
@@ -14,6 +17,7 @@ import {
     Pagination,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { Booking } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { bookingService, showtimeService } from '../services/api';
@@ -23,6 +27,7 @@ interface BookingView extends Booking {
 }
 
 interface ShowtimeDisplayInfo {
+    movieName: string;
     roomName: string;
     displayTime: string;
 }
@@ -37,6 +42,7 @@ export const BookingHistory: React.FC = () => {
     const [error, setError] = useState<string>('');
     const [page, setPage] = useState(1);
     const pageSize = 5;
+    const [selectedQrBooking, setSelectedQrBooking] = useState<BookingView | null>(null);
 
     const enrichRoomsFromShowtimes = async (bookingList: BookingView[]) => {
         const uniqueShowtimeIds = Array.from(
@@ -56,9 +62,10 @@ export const BookingHistory: React.FC = () => {
         responses.forEach((result, index) => {
             const showtimeId = uniqueShowtimeIds[index];
             if (result.status === 'fulfilled') {
-                const detail = result.value.data?.result;
+                const detail = result.value.data?.result as any;
                 const startTime = detail?.startTime ? new Date(detail.startTime) : null;
                 const endTime = detail?.endTime ? new Date(detail.endTime) : null;
+                const movieName = detail?.movieTitle || detail?.movie?.title || detail?.title || 'Không có';
                 const displayTime = startTime && !Number.isNaN(startTime.getTime())
                     ? `${startTime.toLocaleDateString('vi-VN')} ${startTime.toLocaleTimeString('vi-VN', {
                         hour: '2-digit',
@@ -69,11 +76,13 @@ export const BookingHistory: React.FC = () => {
                     : 'N/A';
 
                 mapping[showtimeId] = {
+                    movieName,
                     roomName: detail?.roomName || 'Không có',
                     displayTime,
                 };
             } else {
                 mapping[showtimeId] = {
+                    movieName: 'Không có',
                     roomName: 'Không có',
                     displayTime: 'Không có',
                 };
@@ -97,6 +106,30 @@ export const BookingHistory: React.FC = () => {
             return '';
         }
     };
+
+    const fetchBookings = useCallback(async (targetUserId: string) => {
+        // Legacy fallback when BE still supports /bookings/user/{userId}
+        if (!targetUserId) {
+            setError('Không tìm thấy userId hợp lệ.');
+            return;
+        }
+        try {
+            setLoading(true);
+            setError('');
+            const response = await bookingService.getBookingsByUser(targetUserId);
+            const result = (response.data?.result || []) as BookingView[];
+            setBookings(result);
+            await enrichRoomsFromShowtimes(result);
+            if (result.length === 0) {
+                setError('Không có booking nào cho tài khoản hiện tại.');
+            }
+        } catch (error: any) {
+            console.error('Error fetching bookings:', error);
+            setError(error.response?.data?.message || 'Không thể tải danh sách booking. Vui lòng thử lại.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         const loadBookingsForCurrentUser = async () => {
@@ -133,31 +166,7 @@ export const BookingHistory: React.FC = () => {
         };
 
         loadBookingsForCurrentUser();
-    }, [isLoggedIn]);
-
-    const fetchBookings = async (targetUserId: string) => {
-        // Legacy fallback when BE still supports /bookings/user/{userId}
-        if (!targetUserId) {
-            setError('Không tìm thấy userId hợp lệ.');
-            return;
-        }
-        try {
-            setLoading(true);
-            setError('');
-            const response = await bookingService.getBookingsByUser(targetUserId);
-            const result = (response.data?.result || []) as BookingView[];
-            setBookings(result);
-            await enrichRoomsFromShowtimes(result);
-            if (result.length === 0) {
-                setError('Không có booking nào cho tài khoản hiện tại.');
-            }
-        } catch (error: any) {
-            console.error('Error fetching bookings:', error);
-            setError(error.response?.data?.message || 'Không thể tải danh sách booking. Vui lòng thử lại.');
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [fetchBookings, isLoggedIn]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -170,6 +179,10 @@ export const BookingHistory: React.FC = () => {
             default:
                 return 'default';
         }
+    };
+
+    const getQrPayloadValue = (booking: BookingView) => {
+        return booking.qrToken || '';
     };
 
     const sortedBookings = [...bookings].sort((a, b) => {
@@ -256,7 +269,7 @@ export const BookingHistory: React.FC = () => {
                                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
                                         Đơn Đặt Vé #{booking.bookingId}
                                     </Typography>
-                                   
+
                                     <Chip
                                         label={booking.status}
                                         color={getStatusColor(booking.status) as any}
@@ -265,6 +278,9 @@ export const BookingHistory: React.FC = () => {
                                 </Box>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
+                                        <Typography>
+                                            <strong>Phim:</strong> {showtimeInfoById[booking.showTimeId]?.movieName || 'Không có'}
+                                        </Typography>
                                         <Typography>
                                             <strong>Suất chiếu:</strong> {showtimeInfoById[booking.showTimeId]?.displayTime || 'Không có'}
                                         </Typography>
@@ -285,6 +301,19 @@ export const BookingHistory: React.FC = () => {
                                         
                                     </Grid>
                                 </Grid>
+
+                                {booking.status === 'CONFIRMED' && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={() => setSelectedQrBooking(booking)}
+                                            disabled={!booking.qrToken}
+                                            sx={{ borderRadius: 2, fontWeight: 700 }}
+                                        >
+                                            {booking.qrToken ? 'Xem QR' : 'QR chưa sẵn sàng'}
+                                        </Button>
+                                    </Box>
+                                )}
                             </CardContent>
                         </Card>
                     </Grid>
@@ -323,6 +352,43 @@ export const BookingHistory: React.FC = () => {
                     {error}
                 </Alert>
             </Snackbar>
+
+            <Dialog
+                open={!!selectedQrBooking}
+                onClose={() => setSelectedQrBooking(null)}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle sx={{ fontWeight: 700 }}>
+                    QR Đơn #{selectedQrBooking?.bookingId}
+                </DialogTitle>
+                <DialogContent>
+                    {selectedQrBooking?.qrToken ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+                            <QRCodeSVG
+                                value={getQrPayloadValue(selectedQrBooking)}
+                                size={260}
+                                bgColor="#ffffff"
+                                fgColor="#111111"
+                                level="M"
+                                includeMargin
+                            />
+                        </Box>
+                    ) : (
+                        <Alert severity="warning" sx={{ mb: 1 }}>
+                            QR token chưa có từ backend cho đơn này.
+                        </Alert>
+                    )}
+                    <Typography variant="body2" color="text.secondary" align="center">
+                        Bạn có thể đưa mã này cho nhân viên quét tại quầy.
+                    </Typography>
+                </DialogContent>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 3, pb: 2 }}>
+                    <Button onClick={() => setSelectedQrBooking(null)} variant="contained">
+                        Đóng
+                    </Button>
+                </Box>
+            </Dialog>
         </Container>
     );
 };

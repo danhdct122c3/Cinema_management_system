@@ -11,10 +11,15 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
     List<Booking> findByUserOrderByBookingTimeDesc(User user);
+
+    Optional<Booking> findByQrToken(String qrToken);
+
+    boolean existsByQrToken(String qrToken);
 
   List<Booking> findByStatusAndBookingTimeBefore(BookingStatus status, LocalDateTime cutoff);
 

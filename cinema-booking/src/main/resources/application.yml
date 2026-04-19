@@ -7,7 +7,7 @@ spring:
     url: "jdbc:mysql://localhost:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh"
     driverClassName: "com.mysql.cj.jdbc.Driver"
     username: root
-    password: root
+    password:
   #    driver-class-name: "com.mysql.cj.jdbc.Driver"
   jpa:
     hibernate:
@@ -27,6 +27,9 @@ jwt:
   signerKey: "vZAWIS53RKXfbNNKEuzpJdS/+/qxK22dSEw5qEMQsHDJwdp7hEmw4BGO9i691dB/"
   valid-duration: 1800 # inseconds
   refreshable-duration: 5400 # inseconds
+
+qr:
+  scan-early-minutes: 30
 
 cloudinary:
   cloud-name: "dod2sfnsr"
