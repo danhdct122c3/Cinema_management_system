@@ -37,20 +37,13 @@ Lệnh này sẽ:
 - Build và khởi động backend Spring Boot
 - Build và khởi động frontend React
 - Khởi động MySQL database
-- Khởi động Adminer (công cụ quản lý database)
 
 ### 4. Truy cập các services
 
 Sau khi tất cả các services đã khởi động thành công, bạn có thể truy cập:
 
 - **Frontend**: http://localhost
-- **Backend API**: http://localhost:8080/api
-- **Adminer (Database Management)**: http://localhost:8081
-  - System: MySQL
-  - Server: mysql
-  - Username: cinema_user
-  - Password: cinema_password
-  - Database: cinema_db
+- **Backend API**: http://localhost:8080/home
 
 ## Cấu trúc Project
 
@@ -99,7 +92,7 @@ docker-compose up -d
 ## Xử lý sự cố
 
 1. **Lỗi port đã được sử dụng**
-   - Kiểm tra và dừng các services đang sử dụng ports 80, 8080, 3306, hoặc 8081
+   - Kiểm tra và dừng các services đang sử dụng ports 80, 8080, hoặc 3307
    - Hoặc thay đổi ports trong file docker-compose.yml
 
 2. **Frontend không kết nối được với Backend**

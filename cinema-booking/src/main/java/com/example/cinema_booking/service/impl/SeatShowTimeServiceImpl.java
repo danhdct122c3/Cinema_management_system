@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -84,6 +85,7 @@ public class SeatShowTimeServiceImpl  implements SeatShowTimeService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "seat-availability", key = "#showtimeId")
     @Transactional
     public void updateSeatPrice(String showtimeId, SeatType type, Double price){
         List<SeatShowTime> seatShowTimes = seatShowTimeRepository.findByShowtimeId(showtimeId);

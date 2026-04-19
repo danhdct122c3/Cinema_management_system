@@ -34,7 +34,7 @@ export const SeatSelection: React.FC = () => {
                 if (!showtimeId) return;
 
                 const [showtimeRes, seatsRes] = await Promise.all([
-                    showtimeService.getShowtimeById(showtimeId),
+                    showtimeService.getShowtimeByIdForUser(showtimeId),
                     showtimeService.getSeatsByShowtime(showtimeId),
                 ]);
 

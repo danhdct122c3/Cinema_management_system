@@ -109,18 +109,22 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
     }
 
     public ShowTimeResponse getShowTimeById(String id) {
+        ShowTime showTime = showTimeRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_EXIST));
+        return showTimeMapper.toShowTimeResponse(showTime);
+    }
 
+    public ShowTimeResponse getShowTimeByIdForUser(String id) {
         LocalDateTime now = LocalDateTime.now();
 
         ShowTime showTime = showTimeRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.SHOWTIME_NOT_EXIST));
-        // return showTimeMapper.toShowTimeResponse(showTime);
-        if(showTime.getStartTime().isAfter(now)){
-            return showTimeMapper.toShowTimeResponse(showTime);
-        }
-        return null;
-                
 
+        if (!showTime.getStartTime().isAfter(now)) {
+            throw new AppException(ErrorCode.SHOWTIME_ALREADY_PASSED);
+        }
+
+        return showTimeMapper.toShowTimeResponse(showTime);
     }
 
     public List<ShowTimeResponse> getAllShowTimes() {
@@ -212,38 +216,5 @@ public class ShowTimeServiceImpl  implements ShowTimeService {
 
         return showTimeMapper.toShowTimeResponse(updatedShowTime);
     }
-//
-//    @Async
-//    @Transactional(readOnly = true)
-//    public CompletableFuture<ScreeningResponseDTO> getScreeningById(String id) {
-//        ShowTime showTime = screeningRepository.findByIdWithDetails(id)
-//                .orElseThrow(() -> new RuntimeException("ShowTime not found"));
-//        return CompletableFuture.completedFuture(ScreeningResponseDTO.fromEntity(showTime));
-//    }
-//
-//    @Async
-//    @Transactional(readOnly = true)
-//    public CompletableFuture<List<SeatResponseDTO>> getSeatsByRoom(String roomId) {
-//        Room room = roomRepository.findById(roomId)
-//                .orElseThrow(() -> new RuntimeException("Room not found"));
-//
-//        List<SeatResponseDTO> seats = room.getSeats().stream()
-//                .map(SeatResponseDTO::fromEntity)
-//                .collect(Collectors.toList());
-//
-//        return CompletableFuture.completedFuture(seats);
-//    }
-//
-//    @Async
-//    @Transactional(readOnly = true)
-//    public CompletableFuture<List<ScreeningResponseDTO>> getScreeningsByMovie(Long movieId) {
-//        Movie movie = movieRepository.findById(movieId)
-//                .orElseThrow(() -> new RuntimeException("Movie not found"));
-//
-//        List<ScreeningResponseDTO> screenings = movie.getShowTimes().stream()
-//                .map(ScreeningResponseDTO::fromEntity)
-//                .collect(Collectors.toList());
-//
-//        return CompletableFuture.completedFuture(screenings);
-//    }
+
 }
