@@ -111,6 +111,8 @@ export const adminBookingService = {
         adminAxios.post<APIResponse<boolean>>(`/bookings/screenings/${screeningId}/seats/${seatId}/release`),
     confirmBooking: (id: string): Promise<AxiosResponse<APIResponse<Booking>>> => adminAxios.post<APIResponse<Booking>>(`/bookings/${id}/confirm`),
     getAllBooking: (): Promise<AxiosResponse<APIResponse<Booking[]>>> => adminAxios.get<APIResponse<Booking[]>>('/bookings/admin'),
+    scanQr: (token: string): Promise<AxiosResponse<APIResponse<void>>> =>
+        adminAxios.post<APIResponse<void>>('/bookings/scanQr', { token }),
 };
 
 export const adminRoomService = {

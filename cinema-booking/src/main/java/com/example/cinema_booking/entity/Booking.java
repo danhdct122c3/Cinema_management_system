@@ -1,6 +1,7 @@
 package com.example.cinema_booking.entity;
 
 import com.example.cinema_booking.enums.BookingStatus;
+import com.example.cinema_booking.enums.QrStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -47,4 +48,12 @@ public class Booking {
     @Version
     Long version;
 
+    @Column(columnDefinition = "TEXT")
+    String qrToken;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    QrStatus qrStatus;
+
+    Integer qrExpired; // Số phút hiệu lực QR code
 }

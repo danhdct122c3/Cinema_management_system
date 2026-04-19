@@ -22,6 +22,9 @@ public class BookingResponse {
     LocalDateTime bookingTime;
     String status;
     Long totalPrice;
+    String qrToken;
+    String qrStatus;
+    Integer qrExpired;
     List<String> seatShowTimeIds;
     List<String> seatCodes;
 }

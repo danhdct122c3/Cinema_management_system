@@ -24,6 +24,7 @@ public enum ErrorCode {
     USERNAME_INVALID(1103, "Tên đăng nhập phải có ít nhất {min} ký tự", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1104, "Mật khẩu phải có ít nhất {min} ký tự", HttpStatus.BAD_REQUEST),
     INVALID_DOB(1105, "Tuổi của bạn phải ít nhất {min}", HttpStatus.NOT_FOUND),
+    USER_EMAIL_EXISTED(1106, "Email đã tồn tại trong hệ thống", HttpStatus.BAD_REQUEST),
 
     // 12xx - Role and permission
     INVALID_ROLE(1201, "Vai trò không hợp lệ", HttpStatus.BAD_REQUEST),
@@ -63,7 +64,12 @@ public enum ErrorCode {
     BOOKING_ALREADY_CANCELLED(1602, "Đặt vé đã bị hủy", HttpStatus.BAD_REQUEST),
     BOOKING_ALREADY_CONFIRMED(1603, "Đặt vé đã được xác nhận", HttpStatus.BAD_REQUEST),
     BOOKING_NOT_PENDING(1604, "Đặt vé không ở trạng thái chờ", HttpStatus.BAD_REQUEST),
-    PAYMENT_ALREADY_EXISTS(1605, "Đã tồn tại thanh toán cho đặt vé này", HttpStatus.BAD_REQUEST),;
+    PAYMENT_ALREADY_EXISTS(1605, "Đã tồn tại thanh toán cho đặt vé này", HttpStatus.BAD_REQUEST),
+    QR_TOKEN_INVALID(1606, "QR không hợp lệ", HttpStatus.BAD_REQUEST),
+    QR_TOKEN_EXPIRED(1607, "QR đã hết hạn", HttpStatus.BAD_REQUEST),
+    QR_USED(1608, "QR đã được sử dụng", HttpStatus.BAD_REQUEST),
+    BOOKING_INVALID_FOR_SCAN(1609, "Đặt vé không hợp lệ để quét", HttpStatus.BAD_REQUEST),
+    ;
 
 
 

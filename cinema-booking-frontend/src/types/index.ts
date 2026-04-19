@@ -94,6 +94,9 @@ export interface Booking {
     showTimeId: string;
     bookingTime: string;
     status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+    qrToken?: string;
+    qrStatus?: 'NOT_CREATED' | 'ACTIVE' | 'USED' | 'INVALID';
+    qrExpired?: number;
     totalPrice: number;
     seatShowTimeIds: string[];
     seatCodes: string[];

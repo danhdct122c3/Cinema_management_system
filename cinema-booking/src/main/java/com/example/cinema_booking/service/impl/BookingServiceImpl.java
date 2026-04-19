@@ -1,18 +1,15 @@
 package com.example.cinema_booking.service.impl;
 
 import com.example.cinema_booking.dto.request.BookingRequest;
-import com.example.cinema_booking.dto.request.RevenueStatisticsRequest;
 import com.example.cinema_booking.dto.response.BookingResponse;
-import com.example.cinema_booking.dto.response.RevenueStatisticsItemResponse;
-import com.example.cinema_booking.dto.response.RevenueStatisticsResponse;
 import com.example.cinema_booking.entity.Booking;
 import com.example.cinema_booking.entity.BookingSeat;
 import com.example.cinema_booking.entity.SeatShowTime;
 import com.example.cinema_booking.entity.ShowTime;
 import com.example.cinema_booking.entity.User;
 import com.example.cinema_booking.enums.BookingStatus;
+import com.example.cinema_booking.enums.QrStatus;
 import com.example.cinema_booking.enums.SeatStatus;
-import com.example.cinema_booking.enums.StatisticGroupBy;
 import com.example.cinema_booking.exception.AppException;
 import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.repository.BookingRepository;
@@ -22,21 +19,17 @@ import com.example.cinema_booking.repository.ShowTimeRepository;
 import com.example.cinema_booking.repository.UserRepository;
 import com.example.cinema_booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.*;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.time.temporal.WeekFields;
+import java.security.SecureRandom;
 
 @Service
 @Slf4j
@@ -47,6 +40,16 @@ public class BookingServiceImpl implements BookingService {
     private final SeatShowTimeRepository seatShowTimeRepository;
     private final UserRepository userRepository;
     private final BookingSeatRepository bookingSeatRepository;
+
+
+    @NonFinal
+    @Value("${qr.scan-early-minutes:30}")
+    protected int QR_SCAN_EARLY_MINUTES;
+
+    private static final String TICKET_CODE_PREFIX = "TCK_";
+    private static final int TICKET_CODE_LENGTH = 20;
+    private static final String TICKET_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Override
     @Transactional
@@ -96,6 +99,7 @@ public class BookingServiceImpl implements BookingService {
                 .showTime(showTime)
                 .bookingTime(LocalDateTime.now())
                 .status(BookingStatus.PENDING)
+                .qrStatus(QrStatus.NOT_CREATED)
                 .total_price(totalPrice)
                 .bookingSeats(new ArrayList<>())
                 .payments(new ArrayList<>())
@@ -156,6 +160,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
+        booking.setQrStatus(QrStatus.INVALID);
         bookingRepository.save(booking);
     }
 
@@ -215,6 +220,11 @@ public class BookingServiceImpl implements BookingService {
         seatShowTimeRepository.saveAll(seatShowTimes);
 
         booking.setStatus(BookingStatus.CONFIRMED);
+        // Lưu số phút hiệu lực QR code (duration của phim)
+        int durationMinutes = booking.getShowTime().getMovie().getDuration();
+        booking.setQrExpired(durationMinutes);
+        booking.setQrStatus(QrStatus.ACTIVE);
+        booking.setQrToken(generateShortTicketCode());
         bookingRepository.save(booking);
     }
 
@@ -248,9 +258,9 @@ public class BookingServiceImpl implements BookingService {
         List<SeatShowTime> seatShowTimes = seatIds.isEmpty()
                 ? List.of()
                 : seatShowTimeRepository.findByShowtimeIdAndSeatIdIn(
-                        booking.getShowTime().getId(),
-                        seatIds
-                );
+                booking.getShowTime().getId(),
+                seatIds
+        );
         return toResponse(booking, seatShowTimes);
     }
 
@@ -271,8 +281,67 @@ public class BookingServiceImpl implements BookingService {
                 .bookingTime(booking.getBookingTime())
                 .status(booking.getStatus().name())
                 .totalPrice(booking.getTotal_price())
+                .qrToken(booking.getQrToken())
+                .qrStatus(booking.getQrStatus() != null ? booking.getQrStatus().name() : null)
+                .qrExpired(booking.getQrExpired())
                 .seatShowTimeIds(seatShowTimeIds)
                 .seatCodes(seatCodes)
                 .build();
     }
+
+    private String generateShortTicketCode() {
+        for (int attempt = 0; attempt < 5; attempt++) {
+            StringBuilder code = new StringBuilder(TICKET_CODE_PREFIX);
+            for (int i = 0; i < TICKET_CODE_LENGTH; i++) {
+                code.append(TICKET_ALPHABET.charAt(SECURE_RANDOM.nextInt(TICKET_ALPHABET.length())));
+            }
+            String ticketCode = code.toString();
+            if (!bookingRepository.existsByQrToken(ticketCode)) {
+                return ticketCode;
+            }
+        }
+        throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @Transactional
+    public Void scanQr(String token) {
+        if (token == null || token.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Booking booking = bookingRepository.findByQrToken(token)
+                .orElseThrow(() -> new AppException(ErrorCode.QR_TOKEN_INVALID));
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new AppException(ErrorCode.BOOKING_INVALID_FOR_SCAN);
+        }
+
+        if (booking.getQrStatus() != QrStatus.ACTIVE) {
+            throw new AppException(ErrorCode.QR_USED);
+        }
+
+        LocalDateTime startTime = booking.getShowTime().getStartTime();
+        int validMinutes = booking.getQrExpired() != null
+                ? booking.getQrExpired()
+                : booking.getShowTime().getMovie().getDuration();
+        LocalDateTime scanStartTime = startTime.minusMinutes(QR_SCAN_EARLY_MINUTES);
+        LocalDateTime expireTime = startTime.plusMinutes(validMinutes);
+        LocalDateTime now = LocalDateTime.now();
+
+//        if (now.isBefore(scanStartTime)) {
+//            throw new AppException(ErrorCode.BOOKING_INVALID_FOR_SCAN);
+//        }
+//        if (now.isAfter(expireTime)) {
+//            throw new AppException(ErrorCode.QR_TOKEN_EXPIRED);
+//        }
+
+        // update
+        booking.setQrStatus(QrStatus.USED);
+        bookingRepository.save(booking);
+
+        return null;
+    }
+
 }
