@@ -21,7 +21,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import MovieIcon from '@mui/icons-material/Movie';
 import HistoryIcon from '@mui/icons-material/History';
-import HomeIcon from '@mui/icons-material/Home';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -47,6 +46,7 @@ export const Navigation: React.FC = () => {
 
     // States
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [movieMenuAnchorEl, setMovieMenuAnchorEl] = useState<null | HTMLElement>(null);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [searchInput, setSearchInput] = useState('');
@@ -73,7 +73,7 @@ export const Navigation: React.FC = () => {
         } else {
             setSelectedGenre(genreId, selectedGenre?.name || null);
         }
-        navigate('/');
+        navigate('/movies');
         if (isMobile) {
             setMobileDrawerOpen(false);
         }
@@ -81,18 +81,13 @@ export const Navigation: React.FC = () => {
 
     const handleSearchSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        if (searchInput.trim()) {
-            setSearchKeyword(searchInput.trim());
-            setSelectedGenre(null, null);
-            navigate('/');
-        }
+        const keyword = searchInput.trim();
+        setSearchKeyword(keyword.length > 0 ? keyword : null);
+        navigate('/movies');
     };
 
     const handleLogoClick = () => {
-        setSelectedGenre(null, null);
-        setSearchKeyword(null);
-        setSearchInput('');
-        navigate('/');
+        window.location.href = '/';
     };
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -101,6 +96,26 @@ export const Navigation: React.FC = () => {
 
     const handleMenuClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleMovieMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setMovieMenuAnchorEl(event.currentTarget);
+    };
+
+    const handleMovieMenuClose = () => {
+        setMovieMenuAnchorEl(null);
+    };
+
+    const handleOpenMoviesPage = (status?: 'NOW_SHOWING' | 'COMING_SOON') => {
+        if (status) {
+            navigate(`/movies?status=${status}`);
+        } else {
+            navigate('/movies');
+        }
+        handleMovieMenuClose();
+        if (isMobile) {
+            setMobileDrawerOpen(false);
+        }
     };
 
     const handleLogout = async () => {
@@ -124,41 +139,44 @@ export const Navigation: React.FC = () => {
         color: active ? 'primary.main' : 'text.primary',
         whiteSpace: 'nowrap',
         borderRadius: 999,
+        height: 44,
         px: 2,
         fontWeight: active ? 700 : 600,
-        backgroundColor: active ? alpha('#E50914', 0.1) : 'transparent',
+        backgroundColor: active ? alpha('#E50914', 0.08) : 'transparent',
         transition: 'all 0.25s ease',
         '&:hover': {
             color: 'primary.main',
-            backgroundColor: alpha('#E50914', 0.12),
-            transform: 'translateY(-1px)',
+            backgroundColor: alpha('#E50914', 0.06),
         },
     });
 
     return (
         <>
             <AppBar position="sticky" elevation={0} sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(12px)',
-                borderBottom: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                borderBottom: '1px solid #D1D5DB',
             }}>
                 <Container maxWidth="lg">
                     <Toolbar sx={{
-                        justifyContent: 'space-between',
-                        py: 1,
-                        flexWrap: 'wrap',
-                        gap: 1,
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr auto', md: '260px minmax(0, 1fr) 260px' },
+                        alignItems: 'center',
+                        py: { xs: 1, md: 1.3 },
+                        minHeight: { xs: 'auto', md: 78 },
+                        gap: { xs: 1, md: 2 },
                     }}>
                         {/* Logo */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }} onClick={handleLogoClick}>
-                            <MovieIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: 'primary.main' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', minWidth: { md: 260 }, width: { md: '100%' } }} onClick={handleLogoClick}>
+                            <MovieIcon sx={{ fontSize: { xs: 27, sm: 30 }, color: 'primary.main' }} />
                             <Typography
                                 variant="h5"
                                 sx={{
-                                    fontWeight: 700,
+                                    fontWeight: 800,
                                     color: 'primary.main',
-                                    letterSpacing: '0.5px',
+                                    letterSpacing: '0.3px',
                                     display: { xs: 'none', sm: 'block' },
+                                    lineHeight: 1.1,
+                                    fontSize: { sm: '1.7rem', md: '1.85rem' },
                                 }}
                             >
                                 Cinema Booking
@@ -168,106 +186,137 @@ export const Navigation: React.FC = () => {
                         {/* Desktop Navigation */}
                         <Box sx={{
                             display: { xs: 'none', md: 'flex' },
-                            gap: 2,
                             alignItems: 'center',
-                            flex: 1,
                             justifyContent: 'center',
+                            px: 1.5,
+                            width: '100%',
                         }}>
-                            <Button
-                                sx={navButtonSx(isActivePath('/'))}
-                                startIcon={<HomeIcon />}
-                                onClick={() => navigate('/')}
-                            >
-                                Trang Chủ
-                            </Button>
-                            <Button
-                                sx={navButtonSx(isActivePath('/booking-history'))}
-                                startIcon={<HistoryIcon />}
-                                onClick={() => navigate('/booking-history')}
-                            >
-                                Lịch Sử Đặt Vé
-                            </Button>
-
-                            {/* Genre Filter */}
-                            <FormControl sx={{ minWidth: 140 }} size="small">
-                                <Select
-                                    value={selectedGenreId || ''}
-                                    onChange={handleGenreChange}
-                                    displayEmpty
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                                borderColor: '#D1D5DB',
-                                            },
-                                            '&:hover fieldset': {
-                                                borderColor: 'primary.main',
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                                borderColor: 'primary.main',
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="">Tất cả thể loại</MenuItem>
-                                    {genres.map((genre) => (
-                                        <MenuItem key={genre.id} value={genre.id}>
-                                            {genre.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-
-                            {/* Search Box */}
                             <Box
-                                component="form"
-                                onSubmit={handleSearchSubmit}
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    backgroundColor: '#F9FAFB',
-                                    borderRadius: 99,
-                                    border: '1px solid #E5E7EB',
-                                    px: 1.5,
-                                    py: 0.5,
-                                    '&:hover': {
-                                        borderColor: 'primary.main',
-                                        backgroundColor: alpha('#E50914', 0.04),
-                                    },
-                                    '&:focus-within': {
-                                        borderColor: 'primary.main',
-                                        backgroundColor: alpha('#E50914', 0.03),
-                                    },
-                                    width: 200,
+                                    gap: 0.5,
+                                    borderRadius: 0,
+                                    border: 'none',
+                                    px: 0,
+                                    py: 0,
+                                    width: 'min(100%, 700px)',
+                                    minHeight: 46,
+                                    backgroundColor: 'transparent',
                                 }}
                             >
-                                <InputBase
-                                    placeholder="Tìm phim..."
-                                    value={searchInput}
-                                    onChange={(e) => setSearchInput(e.target.value)}
-                                    sx={{
-                                        flex: 1,
-                                        fontSize: '0.875rem',
-                                        '& input': {
-                                            padding: 0,
-                                        },
-                                        '& input::placeholder': {
-                                            opacity: 0.7,
-                                        },
-                                    }}
-                                />
-                                <IconButton
-                                    type="submit"
-                                    size="small"
-                                    sx={{
-                                        color: 'primary.main',
-                                        p: 0.5,
-                                        '&:hover': {
-                                            backgroundColor: alpha('#E50914', 0.1),
-                                        },
+                                <Button
+                                    sx={navButtonSx(isActivePath('/movies'))}
+                                    startIcon={<MovieIcon />}
+                                    onMouseEnter={handleMovieMenuOpen}
+                                    onClick={() => handleOpenMoviesPage()}
+                                >
+                                    Phim
+                                </Button>
+                                <Menu
+                                    anchorEl={movieMenuAnchorEl}
+                                    open={Boolean(movieMenuAnchorEl)}
+                                    onClose={handleMovieMenuClose}
+                                    MenuListProps={{
+                                        onMouseLeave: handleMovieMenuClose,
                                     }}
                                 >
-                                    <SearchIcon fontSize="small" />
-                                </IconButton>
+                                    <MenuItem onClick={() => handleOpenMoviesPage('NOW_SHOWING')}>
+                                        Phim đang chiếu
+                                    </MenuItem>
+                                    <MenuItem onClick={() => handleOpenMoviesPage('COMING_SOON')}>
+                                        Phim sắp chiếu
+                                    </MenuItem>
+                                </Menu>
+
+                                {/* Genre Filter */}
+                                <FormControl sx={{ minWidth: 170 }} size="small">
+                                    <Select
+                                        value={selectedGenreId || ''}
+                                        onChange={handleGenreChange}
+                                        displayEmpty
+                                        sx={{
+                                            height: 44,
+                                            backgroundColor: 'transparent',
+                                            borderRadius: 999,
+                                            '& .MuiSelect-select': {
+                                                px: 2,
+                                            },
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                border: 'none',
+                                            },
+                                            '&:hover': {
+                                                backgroundColor: alpha('#E50914', 0.04),
+                                            },
+                                            '&.Mui-focused': {
+                                                backgroundColor: alpha('#E50914', 0.04),
+                                            },
+                                        }}
+                                    >
+                                        <MenuItem value="">Tất cả thể loại</MenuItem>
+                                        {genres.map((genre) => (
+                                            <MenuItem key={genre.id} value={genre.id}>
+                                                {genre.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+
+                                {/* Search Box */}
+                                <Box
+                                    component="form"
+                                    onSubmit={handleSearchSubmit}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        height: 44,
+                                        backgroundColor: 'transparent',
+                                        borderRadius: 999,
+                                        border: '1px solid transparent',
+                                        px: 1.4,
+                                        ml: 0,
+                                        minWidth: 250,
+                                        maxWidth: 320,
+                                        '&:hover': {
+                                            backgroundColor: alpha('#E50914', 0.02),
+                                        },
+                                        '&:focus-within': {
+                                            borderColor: 'transparent',
+                                            backgroundColor: alpha('#E50914', 0.03),
+                                        },
+                                        width: '100%',
+                                    }}
+                                >
+                                    <InputBase
+                                        placeholder="Tìm phim..."
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
+                                        sx={{
+                                            flex: 1,
+                                            fontSize: '0.875rem',
+                                            mr: 0.5,
+                                            '& input': {
+                                                padding: 0,
+                                            },
+                                            '& input::placeholder': {
+                                                opacity: 0.7,
+                                            },
+                                        }}
+                                    />
+                                    <IconButton
+                                        type="submit"
+                                        size="small"
+                                        sx={{
+                                            color: 'primary.main',
+                                            p: 0.5,
+                                            '&:hover': {
+                                                backgroundColor: 'transparent',
+                                            },
+                                        }}
+                                    >
+                                        <SearchIcon fontSize="small" />
+                                    </IconButton>
+                                </Box>
                             </Box>
                         </Box>
 
@@ -276,10 +325,13 @@ export const Navigation: React.FC = () => {
                             display: { xs: 'none', md: 'flex' },
                             gap: 1,
                             alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            minWidth: 260,
+                            width: '100%',
                         }}>
                             {authLoggedIn ? (
                                 <>
-                                    <IconButton onClick={handleMenuOpen}>
+                                    <IconButton onClick={handleMenuOpen} sx={{ border: '1px solid #E5E7EB', p: 0.5 }}>
                                         <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
                                             {getUserInitial()}
                                         </Avatar>
@@ -300,10 +352,20 @@ export const Navigation: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    <Button variant="outlined" startIcon={<LoginIcon />} onClick={() => navigate('/login')}>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<LoginIcon />}
+                                        onClick={() => navigate('/login')}
+                                        sx={{ borderRadius: 999, height: 40, px: 2 }}
+                                    >
                                         Đăng Nhập
                                     </Button>
-                                    <Button variant="contained" startIcon={<PersonAddIcon />} onClick={() => navigate('/register')}>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<PersonAddIcon />}
+                                        onClick={() => navigate('/register')}
+                                        sx={{ borderRadius: 999, height: 40, px: 2 }}
+                                    >
                                         Đăng Ký
                                     </Button>
                                 </>
@@ -349,13 +411,13 @@ export const Navigation: React.FC = () => {
                     </FormControl>
 
                     {/* Navigation Items */}
-                    <MenuItem onClick={() => { navigate('/'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
-                        <HomeIcon sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography>Trang Chủ</Typography>
+                    <MenuItem onClick={() => handleOpenMoviesPage('NOW_SHOWING')} sx={{ mb: 1, borderRadius: 1 }}>
+                        <MovieIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography>Phim Đang Chiếu</Typography>
                     </MenuItem>
-                    <MenuItem onClick={() => { navigate('/booking-history'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
-                        <HistoryIcon sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography>Lịch Sử Đặt Vé</Typography>
+                    <MenuItem onClick={() => handleOpenMoviesPage('COMING_SOON')} sx={{ mb: 1, borderRadius: 1 }}>
+                        <MovieIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography>Phim Sắp Chiếu</Typography>
                     </MenuItem>
 
                     <Box sx={{ borderTop: '1px solid rgba(0, 0, 0, 0.12)', my: 2 }} />

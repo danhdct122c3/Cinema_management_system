@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, Box, Snackbar, Alert } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import { MovieList } from './pages/MovieList';
+import { MoviesCatalog } from './pages/MoviesCatalog';
 import { MovieDetail } from './pages/MovieDetail';
 import { ScreeningList } from './pages/ScreeningList';
 import { SeatSelection } from './pages/SeatSelection';
@@ -233,6 +234,7 @@ function App() {
                                             <Navigation />
                                             <Routes>
                                                 <Route path="/" element={<MovieList />} />
+                                                <Route path="/movies" element={<MoviesCatalog />} />
                                                 <Route path="/movie/:id" element={<MovieDetail />} />
                                                 <Route path="/movie/:movieId/showtimes" element={<ScreeningList />} />
                                                 <Route path="/movie/:movieId/showtime/:showtimeId/seats" element={<SeatSelection />} />
