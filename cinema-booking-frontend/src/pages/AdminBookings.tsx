@@ -249,11 +249,6 @@ export const AdminBookings: React.FC = () => {
         return showtimeMap[showTimeId]?.roomName || 'N/A';
     };
 
-    const getMovieLabel = (showTimeId: string) => {
-        const showtime = showtimeMap[showTimeId] as any;
-        return showtime?.movieTitle || showtime?.movie?.title || showtime?.title || showtime?.movieName || 'N/A';
-    };
-
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'CONFIRMED':
@@ -415,7 +410,6 @@ export const AdminBookings: React.FC = () => {
                                             {getShowtimeLabel(booking.showTimeId)}
                                     </TableCell>
                                     <TableCell>{getRoomLabel(booking.showTimeId)}</TableCell>
-                                    <TableCell>{getMovieLabel(booking.showTimeId)}</TableCell>
                                     <TableCell>{booking.seatCodes?.join(', ') || 'N/A'}</TableCell>
                                     <TableCell>
                                         {new Date(booking.bookingTime).toLocaleString('vi-VN', {

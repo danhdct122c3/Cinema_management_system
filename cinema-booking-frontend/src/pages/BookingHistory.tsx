@@ -27,7 +27,6 @@ interface BookingView extends Booking {
 }
 
 interface ShowtimeDisplayInfo {
-    movieName: string;
     roomName: string;
     displayTime: string;
 }
@@ -62,10 +61,9 @@ export const BookingHistory: React.FC = () => {
         responses.forEach((result, index) => {
             const showtimeId = uniqueShowtimeIds[index];
             if (result.status === 'fulfilled') {
-                const detail = result.value.data?.result as any;
+                const detail = result.value.data?.result;
                 const startTime = detail?.startTime ? new Date(detail.startTime) : null;
                 const endTime = detail?.endTime ? new Date(detail.endTime) : null;
-                const movieName = detail?.movieTitle || detail?.movie?.title || detail?.title || 'Không có';
                 const displayTime = startTime && !Number.isNaN(startTime.getTime())
                     ? `${startTime.toLocaleDateString('vi-VN')} ${startTime.toLocaleTimeString('vi-VN', {
                         hour: '2-digit',
@@ -76,13 +74,11 @@ export const BookingHistory: React.FC = () => {
                     : 'N/A';
 
                 mapping[showtimeId] = {
-                    movieName,
                     roomName: detail?.roomName || 'Không có',
                     displayTime,
                 };
             } else {
                 mapping[showtimeId] = {
-                    movieName: 'Không có',
                     roomName: 'Không có',
                     displayTime: 'Không có',
                 };
@@ -278,9 +274,6 @@ export const BookingHistory: React.FC = () => {
                                 </Box>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
-                                        <Typography>
-                                            <strong>Phim:</strong> {showtimeInfoById[booking.showTimeId]?.movieName || 'Không có'}
-                                        </Typography>
                                         <Typography>
                                             <strong>Suất chiếu:</strong> {showtimeInfoById[booking.showTimeId]?.displayTime || 'Không có'}
                                         </Typography>
