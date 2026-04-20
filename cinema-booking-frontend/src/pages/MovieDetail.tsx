@@ -10,11 +10,15 @@ import {
     Paper,
     CircularProgress,
     Divider,
+    Dialog,
+    DialogContent,
+    IconButton,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CloseIcon from '@mui/icons-material/Close';
 import { movieService } from '../services/api';
 import { Movie } from '../types';
 
@@ -24,6 +28,7 @@ export const MovieDetail: React.FC = () => {
     const [movie, setMovie] = useState<Movie | null>(null);
     const [loading, setLoading] = useState(true);
     const [rating] = useState((Math.random() * 2.5 + 7).toFixed(1));
+    const [trailerOpen, setTrailerOpen] = useState(false);
 
     useEffect(() => {
         const fetchMovieDetail = async () => {
@@ -65,6 +70,38 @@ export const MovieDetail: React.FC = () => {
         if (genre.includes('thriller')) return 'T16';
         return 'T13';
     };
+
+    const getTrailerEmbedUrl = (trailerUrl: string | undefined) => {
+        if (!trailerUrl) return null;
+
+        try {
+            const parsed = new URL(trailerUrl);
+            const host = parsed.hostname.replace('www.', '');
+            let videoId = '';
+
+            if (host === 'youtu.be') {
+                videoId = parsed.pathname.replace('/', '');
+            } else if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'music.youtube.com') {
+                if (parsed.pathname === '/watch') {
+                    videoId = parsed.searchParams.get('v') || '';
+                } else if (parsed.pathname.startsWith('/shorts/')) {
+                    videoId = parsed.pathname.split('/')[2] || '';
+                } else if (parsed.pathname.startsWith('/embed/')) {
+                    videoId = parsed.pathname.split('/')[2] || '';
+                }
+            }
+
+            if (videoId) {
+                return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+            }
+
+            return trailerUrl;
+        } catch {
+            return trailerUrl;
+        }
+    };
+
+    const trailerEmbedUrl = getTrailerEmbedUrl(movie.trailerUrl);
 
     return (
         <Box className="page-shell" sx={{ backgroundColor: '#F3F4F6', minHeight: '100vh', py: 4 }}>
@@ -267,7 +304,7 @@ export const MovieDetail: React.FC = () => {
                                                 backgroundColor: 'rgba(229, 9, 20, 0.08)',
                                             },
                                         }}
-                                        onClick={() => window.open(movie.trailerUrl, '_blank')}
+                                        onClick={() => setTrailerOpen(true)}
                                     >
                                         Xem Trailer
                                     </Button>
@@ -301,6 +338,46 @@ export const MovieDetail: React.FC = () => {
                         {movie.description}
                     </Typography>
                 </Paper>
+
+                <Dialog
+                    open={trailerOpen}
+                    onClose={() => setTrailerOpen(false)}
+                    maxWidth="md"
+                    fullWidth
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5, borderBottom: '1px solid #E5E7EB' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            Trailer
+                        </Typography>
+                        <IconButton onClick={() => setTrailerOpen(false)} size="small">
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                    <DialogContent sx={{ p: 0, backgroundColor: '#000' }}>
+                        {trailerEmbedUrl ? (
+                            <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' }}>
+                                <Box
+                                    component="iframe"
+                                    src={trailerOpen ? trailerEmbedUrl : undefined}
+                                    title={`${movie.title} trailer`}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    sx={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        border: 0,
+                                    }}
+                                />
+                            </Box>
+                        ) : (
+                            <Box sx={{ p: 3, backgroundColor: '#fff' }}>
+                                <Typography>Khong the phat trailer tu duong dan nay.</Typography>
+                            </Box>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </Container>
         </Box>
     );
