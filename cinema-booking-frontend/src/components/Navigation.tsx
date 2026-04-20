@@ -137,14 +137,14 @@ export const Navigation: React.FC = () => {
 
     return (
         <>
-            <AppBar position="sticky" elevation={0} sx={{ 
+            <AppBar position="sticky" elevation={0} sx={{
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(12px)',
                 borderBottom: '1px solid #E5E7EB',
             }}>
                 <Container maxWidth="lg">
-                    <Toolbar sx={{ 
-                        justifyContent: 'space-between', 
+                    <Toolbar sx={{
+                        justifyContent: 'space-between',
                         py: 1,
                         flexWrap: 'wrap',
                         gap: 1,
@@ -164,11 +164,11 @@ export const Navigation: React.FC = () => {
                                 Cinema Booking
                             </Typography>
                         </Box>
-                        
+
                         {/* Desktop Navigation */}
-                        <Box sx={{ 
+                        <Box sx={{
                             display: { xs: 'none', md: 'flex' },
-                            gap: 2, 
+                            gap: 2,
                             alignItems: 'center',
                             flex: 1,
                             justifyContent: 'center',
@@ -272,7 +272,7 @@ export const Navigation: React.FC = () => {
                         </Box>
 
                         {/* Desktop Auth Button */}
-                        <Box sx={{ 
+                        <Box sx={{
                             display: { xs: 'none', md: 'flex' },
                             gap: 1,
                             alignItems: 'center',

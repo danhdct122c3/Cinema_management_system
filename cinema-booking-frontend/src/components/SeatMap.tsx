@@ -49,16 +49,16 @@ export const SeatMap: React.FC<SeatMapProps> = ({
         return () => clearInterval(pollInterval);
     }, [showtimeId, refreshTrigger]);
 
-    // Group seats by row
-    const seatsByRow = useMemo(() => {
-        return seats.reduce((acc, seat) => {
+    const getSeatsByRow = (seatList: SeatShowTimeResponse[]) => {
+        return seatList.reduce((acc, seat) => {
             const row = seat.seatCode.charAt(0);
             if (!acc[row]) acc[row] = [];
             acc[row].push(seat);
             return acc;
         }, {} as Record<string, SeatShowTimeResponse[]>);
-    }, [seats]);
+    };
 
+    const seatsByRow = useMemo(() => getSeatsByRow(seats), [seats]);
     const rows = useMemo(() => Object.keys(seatsByRow).sort(), [seatsByRow]);
 
     const handleSeatClick = (seat: SeatShowTimeResponse) => {
@@ -129,7 +129,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({
                                     const currentUserEmail = localStorage.getItem('userEmail');
                                     const isUsersSeat = seat.status === 'HOLD' && currentUserEmail && seat.heldByUserEmail === currentUserEmail;
                                     const isDisabledSeat = seat.status !== 'AVAILABLE' && !isUsersSeat && !selectedSeats.some(s => s.id === seat.id);
-                                    
+
                                     return (
                                         <SeatButton
                                             key={seat.id}

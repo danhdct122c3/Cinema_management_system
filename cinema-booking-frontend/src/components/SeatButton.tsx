@@ -15,12 +15,35 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
     isDisabled,
     onClick,
 }) => {
+    const isVipSeat = seat.seatType === 'VIP';
+    const isHoldSeat = seat.status === 'HOLD';
+    const isBookedSeat = seat.status === 'BOOKED';
+    const isAvailableSeat = seat.status === 'AVAILABLE';
+
     const getBackgroundColor = () => {
-        if (isSelected) return '#E50914';
-        if (seat.status === 'AVAILABLE') return '#E2E8F0';
-        if (seat.status === 'HOLD') return '#F59E0B';
-        if (seat.status === 'BOOKED') return '#9CA3AF';
-        return '#E2E8F0';
+        if (isSelected) return '#DC2626';
+        if (isAvailableSeat) return isVipSeat ? '#F59E0B' : '#1D4ED8';
+        if (isHoldSeat) return '#7C3AED';
+        if (isBookedSeat) return '#475569';
+        return isVipSeat ? '#F59E0B' : '#1D4ED8';
+    };
+
+    const getBorderColor = () => {
+        if (isSelected) return '#7F1D1D';
+        if (isAvailableSeat) return isVipSeat ? '#92400E' : '#1E3A8A';
+        if (isHoldSeat) return '#4C1D95';
+        if (isBookedSeat) return '#1F2937';
+        return '#334155';
+    };
+
+    const getPrimaryTextColor = () => {
+        if (isSelected || isHoldSeat || isBookedSeat || !isVipSeat) return '#F8FAFC';
+        return '#111827';
+    };
+
+    const getMetaTextColor = () => {
+        if (isSelected || isHoldSeat || isBookedSeat || !isVipSeat) return '#E2E8F0';
+        return '#111827';
     };
 
     // Format hold expiration time for tooltip
@@ -43,14 +66,14 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
         <Box
             onClick={!isDisabled ? onClick : undefined}
             sx={{
-                width: 50,
-                height: 50,
+                width: 54,
+                height: 54,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: getBackgroundColor(),
-                border: isSelected ? '2px solid #BE123C' : '1px solid #CBD5E1',
+                border: `2px solid ${getBorderColor()}`,
                 borderRadius: 1.5,
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled && !isSelected ? 0.6 : 1,
@@ -58,7 +81,7 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
                 userSelect: 'none',
                 '&:hover': !isDisabled ? {
                     transform: 'scale(1.05)',
-                    boxShadow: isSelected ? '0 0 0 4px rgba(229, 9, 20, 0.15)' : '0 8px 16px -10px rgba(15, 23, 42, 0.6)',
+                    boxShadow: isSelected ? '0 0 0 4px rgba(220, 38, 38, 0.22)' : '0 10px 20px -10px rgba(2, 6, 23, 0.85)',
                     filter: 'brightness(1.02)',
                 } : {},
                 '&:active': !isDisabled ? {
@@ -66,16 +89,22 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
                 } : {},
             }}
         >
-            <Typography 
-                variant="caption" 
+            <Typography
+                variant="caption"
                 fontWeight="bold"
-                sx={{ color: isSelected ? '#fff' : '#1F2937' }}
+                sx={{ color: getPrimaryTextColor() }}
             >
                 {seat.seatCode}
             </Typography>
             <Typography
                 variant="caption"
-                sx={{ color: isSelected ? '#fff' : '#475569', fontSize: '10px' }}
+                sx={{ color: getMetaTextColor(), fontSize: '9px', fontWeight: 700, lineHeight: 1.1 }}
+            >
+                {isVipSeat ? 'VIP' : 'THUONG'}
+            </Typography>
+            <Typography
+                variant="caption"
+                sx={{ color: getMetaTextColor(), fontSize: '9px', lineHeight: 1.1 }}
             >
                 {(seat.price / 1000).toFixed(0)}k
             </Typography>

@@ -25,7 +25,8 @@ import { AdminRoles } from './pages/AdminRoles';
 import { AdminPermissions } from './pages/AdminPermissions';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminAuthProvider } from './context/AdminAuthContext';
-import { AUTH_TOKEN_CLEARED_EVENT } from './services/api';
+import { AUTH_TOKEN_CLEARED_EVENT, holdService } from './services/api';
+import { CROSS_TAB_HOLD_RELEASE_KEY, type CrossTabHoldReleasePayload } from './constants/seatHold';
 
 const theme = createTheme({
     palette: {
@@ -169,6 +170,32 @@ function App() {
         window.addEventListener(AUTH_TOKEN_CLEARED_EVENT, handleTokenCleared);
         return () => {
             window.removeEventListener(AUTH_TOKEN_CLEARED_EVENT, handleTokenCleared);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleCrossTabHoldRelease = (event: StorageEvent) => {
+            if (event.key !== CROSS_TAB_HOLD_RELEASE_KEY || !event.newValue) {
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(event.newValue) as CrossTabHoldReleasePayload;
+                if (!Array.isArray(payload.seatShowTimeIds) || payload.seatShowTimeIds.length === 0) {
+                    return;
+                }
+
+                holdService.releaseHold(payload.seatShowTimeIds).catch((err) => {
+                    console.warn('Cross-tab hold release request failed:', err);
+                });
+            } catch (err) {
+                console.warn('Invalid cross-tab hold release payload:', err);
+            }
+        };
+
+        window.addEventListener('storage', handleCrossTabHoldRelease);
+        return () => {
+            window.removeEventListener('storage', handleCrossTabHoldRelease);
         };
     }, []);
 

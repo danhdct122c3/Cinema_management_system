@@ -13,7 +13,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
     const navigate = useNavigate();
     // Generate random rating for demo (7.0 - 9.5)
     const rating = (Math.random() * 2.5 + 7).toFixed(1);
-    
+
     // Age rating based on genre (demo)
     const getAgeRating = (genreName: string | undefined) => {
         if (!genreName) return 'T13';
@@ -37,10 +37,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                     '& .movie-poster': {
                         transform: 'scale(1.05)',
                     },
-                    '& .book-button-hover': {
-                        opacity: 1,
-                        transform: 'translateY(0)',
-                    },
                 },
                 borderRadius: 3,
                 overflow: 'hidden',
@@ -48,11 +44,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 boxShadow: '0 6px 16px -10px rgba(0, 0, 0, 0.2)',
             }}
         >
-            <Box 
-                sx={{ 
-                    position: 'relative', 
-                    overflow: 'hidden', 
-                    width: '100%', 
+            <Box
+                sx={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    width: '100%',
                     aspectRatio: '280 / 420',
                     cursor: 'pointer',
                 }}
@@ -119,27 +115,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                     }}
                 />
 
-                <Button
-                    variant="contained"
-                    className="book-button-hover"
-                    onClick={() => navigate(`/movie/${movie.id}`)}
-                    sx={{
-                        position: 'absolute',
-                        left: 14,
-                        right: 14,
-                        bottom: 14,
-                        opacity: 0,
-                        transform: 'translateY(8px)',
-                        transition: 'all 0.25s ease',
-                        fontWeight: 700,
-                        backgroundColor: 'primary.main',
-                        '&:hover': {
-                            backgroundColor: 'primary.dark',
-                        },
-                    }}
-                >
-                    Book Now
-                </Button>
             </Box>
             <CardContent sx={{ p: 2.5, pt: 2 }}>
                 <Typography
@@ -161,7 +136,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 >
                     {movie.title}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
                     <Chip
                         label={movie.genreNames?.join(', ') || 'Không rõ'}

@@ -21,6 +21,7 @@ import type { SeatShowTimeResponse, ShowTimeDetail, HoldSeatResponse } from '../
 import { holdService, paymentService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import HoldCountdown from '../components/HoldCountdown';
+import { CROSS_TAB_HOLD_RELEASE_KEY, type CrossTabHoldReleasePayload } from '../constants/seatHold';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -50,6 +51,26 @@ export const BookingConfirmation: React.FC = () => {
     const redirectingToPaymentRef = useRef(false);
     const bookingSuccessRef = useRef(false);
     const paymentInProgressRef = useRef(false);
+
+    const requestCrossTabRelease = useCallback((seatIds?: string[]) => {
+        if (!seatIds || seatIds.length === 0) {
+            return;
+        }
+
+        try {
+            const payload: CrossTabHoldReleasePayload = {
+                seatShowTimeIds: seatIds,
+                requestedAt: Date.now(),
+                source: 'booking-confirmation',
+            };
+
+            localStorage.setItem(CROSS_TAB_HOLD_RELEASE_KEY, JSON.stringify(payload));
+            // Remove key immediately so repeated requests still trigger storage events on other tabs.
+            localStorage.removeItem(CROSS_TAB_HOLD_RELEASE_KEY);
+        } catch (err) {
+            console.warn('Could not publish cross-tab hold release request:', err);
+        }
+    }, []);
 
     useEffect(() => {
         bookingSuccessRef.current = bookingSuccess;
@@ -129,6 +150,7 @@ export const BookingConfirmation: React.FC = () => {
                 await holdService.releaseHold(selectedSeatIds);
             } catch (err) {
                 console.error('Error releasing hold:', err);
+                requestCrossTabRelease(selectedSeatIds);
                 setError('Hết thời gian giữ ghế. Không thể giải phóng ghế ngay lập tức, hệ thống sẽ tự nhả sau tối đa 5 phút.');
             }
         }
@@ -137,7 +159,7 @@ export const BookingConfirmation: React.FC = () => {
         setTimeout(() => {
             navigate(`/`);
         }, 3000);
-    }, [navigate, selectedSeatIds]);
+    }, [navigate, selectedSeatIds, requestCrossTabRelease]);
 
     // Warn if user tries to close tab/refresh while holding seats
     useEffect(() => {
@@ -150,6 +172,13 @@ export const BookingConfirmation: React.FC = () => {
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
+
+        const handlePageHide = () => {
+            if (holdResponse && !bookingSuccess && !paymentInProgress && !redirectingToPaymentRef.current) {
+                requestCrossTabRelease(selectedSeatIds);
+            }
+        };
+        window.addEventListener('pagehide', handlePageHide);
         
         // Handle browser back button
         const handlePopState = (e: PopStateEvent) => {
@@ -165,9 +194,10 @@ export const BookingConfirmation: React.FC = () => {
 
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('pagehide', handlePageHide);
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [holdResponse, bookingSuccess, paymentInProgress]);
+    }, [holdResponse, bookingSuccess, paymentInProgress, selectedSeatIds, requestCrossTabRelease]);
 
     // Handle payment
     const handlePayment = async () => {
@@ -229,11 +259,14 @@ export const BookingConfirmation: React.FC = () => {
             // Only auto-release when page is actually left (unmount), not on every state change.
             if (!bookingSuccessRef.current && !paymentInProgressRef.current && !redirectingToPaymentRef.current && selectedSeatIds && selectedSeatIds.length > 0) {
                 holdService.releaseHold(selectedSeatIds).catch(err => 
-                    console.warn('Release hold on unmount failed, booking timeout task will auto-cancel pending state:', err)
+                    {
+                        console.warn('Release hold on unmount failed, requesting cross-tab fallback:', err);
+                        requestCrossTabRelease(selectedSeatIds);
+                    }
                 );
             }
         };
-    }, [selectedSeatIds]);
+    }, [selectedSeatIds, requestCrossTabRelease]);
 
     // Handle back button - show confirmation dialog
     const handleBackClick = () => {
@@ -250,6 +283,7 @@ export const BookingConfirmation: React.FC = () => {
             navigate(`/`);
         } catch (err) {
             console.error('Error releasing hold:', err);
+            requestCrossTabRelease(selectedSeatIds);
             setError('Không thể giải phóng giữ ghế ngay lúc này. Bạn có thể thử lại, hoặc chờ hệ thống tự nhả sau tối đa 5 phút.');
         }
     };

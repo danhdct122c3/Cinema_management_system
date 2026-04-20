@@ -28,7 +28,7 @@ export const MovieList: React.FC = () => {
             try {
                 setLoading(true);
                 let response;
-                
+
                 if (searchKeyword) {
                     // Search by keyword
                     response = await movieService.searchMovies(searchKeyword);
@@ -45,7 +45,7 @@ export const MovieList: React.FC = () => {
                     // Fetch all movies
                     response = await movieService.getAllMovies();
                 }
-                
+
                 setMovies(response.data.result);
                 setLoading(false);
             } catch (error) {

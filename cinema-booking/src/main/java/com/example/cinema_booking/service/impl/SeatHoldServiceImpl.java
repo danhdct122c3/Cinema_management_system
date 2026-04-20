@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -167,6 +169,10 @@ public class SeatHoldServiceImpl implements SeatHoldService {
             throw new AppException(ErrorCode.INVALID_SEAT_IDS);
         }
 
+        Set<String> showTimeIds = seats.stream()
+                .map(seat -> seat.getShowtime().getId())
+                .collect(Collectors.toSet());
+
         seats.forEach(seat -> {
             if (seat.getStatus().equals(SeatStatus.HOLD)) {
                 if (seat.getHeldByUser() == null || !seat.getHeldByUser().getId().equals(currentUserId)) {
@@ -179,6 +185,13 @@ public class SeatHoldServiceImpl implements SeatHoldService {
             }
         });
         seatShowTimeRepository.saveAll(seats);
+
+        var cache = cacheManager.getCache("seat-availability");
+        if (cache != null) {
+            showTimeIds.forEach(cache::evict);
+            log.info("Cache invalidated for {} showtimes after manual release", showTimeIds.size());
+        }
+
         log.info("Released {} held seats", seats.size());
         }
 
