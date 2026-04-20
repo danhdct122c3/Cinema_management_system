@@ -32,6 +32,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
       SPRING_DATASOURCE_USERNAME: cinema_user
       SPRING_DATASOURCE_PASSWORD: cinema_password
+      TZ: Asia/Ho_Chi_Minh
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Ho_Chi_Minh
     depends_on:
       mysql:
         condition: service_healthy
