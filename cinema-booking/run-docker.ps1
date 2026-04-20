@@ -32,7 +32,6 @@ switch($choice) {
         Write-Host "✅ Hệ thống đã khởi động!" -ForegroundColor Green
         Write-Host "📍 API Server: http://localhost:8080" -ForegroundColor Cyan
         Write-Host "📍 Health Check: http://localhost:8080/actuator/health" -ForegroundColor Cyan
-        Write-Host "📍 Adminer: http://localhost:8081" -ForegroundColor Cyan
     }
 
     "2" {

@@ -10,6 +10,7 @@ import java.util.List;
 public interface ShowTimeService {
     ShowTimeResponse createScreening(ShowTimeCreateRequest request);
     ShowTimeResponse getShowTimeById(String showTimeId);
+    ShowTimeResponse getShowTimeByIdForUser(String showTimeId);
     List<ShowTimeResponse> getAllShowTimes();
     List<ShowTimeResponse> getAllShowTimesForUser();
     void deleteShowTime(String showTimeId);

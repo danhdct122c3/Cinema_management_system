@@ -1,6 +1,8 @@
 # Build stage
 FROM node:18 AS build
 WORKDIR /app
+ARG REACT_APP_API_BASE_URL=/home
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
 COPY package*.json ./
 RUN npm install
 COPY . .

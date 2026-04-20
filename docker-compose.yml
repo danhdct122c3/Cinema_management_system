@@ -1,8 +1,8 @@
-version: '3.9'
 services:
   mysql:
     image: mysql:8.0
     container_name: cinema_mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: cinema_db
@@ -12,11 +12,11 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./cinema-booking/docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - cinema_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
       timeout: 20s
       retries: 10
 
@@ -25,10 +25,11 @@ services:
       context: ./cinema-booking
       dockerfile: docker/Dockerfile
     container_name: cinema_app
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
       SPRING_DATASOURCE_USERNAME: cinema_user
       SPRING_DATASOURCE_PASSWORD: cinema_password
     depends_on:
@@ -41,23 +42,16 @@ services:
     build:
       context: ./cinema-booking-frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: /home
     container_name: cinema_frontend
+    restart: unless-stopped
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       - app
     networks:
       - cinema_network
-
-  adminer:
-    image: adminer
-    container_name: cinema_adminer
-    ports:
-      - "8081:8080"
-    networks:
-      - cinema_network
-    depends_on:
-      - mysql
 
 volumes:
   mysql_data:

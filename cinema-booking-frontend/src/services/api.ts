@@ -192,6 +192,9 @@ export const showtimeService = {
     getShowtimeById: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
         axiosInstance.get<APIResponse<ShowTimeResponse>>(`/showtimes/${id}`),
 
+    getShowtimeByIdForUser: (id: string): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
+        axiosInstance.get<APIResponse<ShowTimeResponse>>(`/showtimes/user/${id}`),
+
     createShowtime: (data: any): Promise<AxiosResponse<APIResponse<ShowTimeResponse>>> =>
         axiosInstance.post<APIResponse<ShowTimeResponse>>('/showtimes', data),
 

@@ -33,6 +33,13 @@ public class ShowTimeController {
                 .build();
     }
 
+    @GetMapping("/user/{id}")
+    public APIResponse<ShowTimeResponse> getShowTimeByIdForUser(@PathVariable String id) {
+        return APIResponse.<ShowTimeResponse>builder()
+                .result(showTimeService.getShowTimeByIdForUser(id))
+                .build();
+    }
+
     @GetMapping()
     public APIResponse<List<ShowTimeResponse>> getAllShowTimesForUser() {
         return APIResponse.<List<ShowTimeResponse>>builder()
