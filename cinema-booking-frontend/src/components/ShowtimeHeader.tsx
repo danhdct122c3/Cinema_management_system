@@ -37,11 +37,11 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
     };
 
     return (
-        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid #E5E7EB', boxShadow: '0 6px 18px -14px rgba(0,0,0,0.25)' }}>
             <Grid container spacing={2} alignItems="center">
                 {/* Movie Title */}
                 <Grid item xs={12}>
-                    <Typography variant="h4" fontWeight="bold">
+                    <Typography variant="h4" fontWeight="bold" color="text.primary">
                         {showtime.movie?.title || 'Phim'}
                     </Typography>
                 </Grid>
@@ -49,8 +49,8 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
                 {/* Info Row */}
                 <Grid item xs={12} sm={6} md={3}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <CalendarTodayIcon color="primary" />
-                        <Typography variant="body2" color="textSecondary">
+                        <CalendarTodayIcon sx={{ color: 'primary.main' }} />
+                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
                             {formatDate(startDateTime)}
                         </Typography>
                     </Box>
@@ -58,8 +58,8 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
 
                 <Grid item xs={12} sm={6} md={3}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <AccessTimeIcon color="primary" />
-                        <Typography variant="body2" color="textSecondary">
+                        <AccessTimeIcon sx={{ color: 'primary.main' }} />
+                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
                             {formatTime(startDateTime)} - {formatTime(endDateTime)}
                         </Typography>
                     </Box>
@@ -67,8 +67,8 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
 
                 <Grid item xs={12} sm={6} md={3}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <MeetingRoomIcon color="primary" />
-                        <Typography variant="body2" color="textSecondary">
+                        <MeetingRoomIcon sx={{ color: 'primary.main' }} />
+                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
                             Phòng {showtime.roomName || 'Không có'}
                         </Typography>
                     </Box>
@@ -76,8 +76,8 @@ export const ShowtimeHeader: React.FC<ShowtimeHeaderProps> = ({
 
                 <Grid item xs={12} sm={6} md={3}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LocalActivityIcon color="primary" />
-                        <Typography variant="body2" color="success.main" fontWeight="500">
+                        <LocalActivityIcon sx={{ color: 'primary.main' }} />
+                        <Typography variant="body2" color="primary.main" fontWeight={700}>
                             {availableSeatsCount} ghế còn trống
                         </Typography>
                     </Box>

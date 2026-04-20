@@ -88,7 +88,7 @@ export const ScreeningList: React.FC = () => {
     }
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
+        <Container maxWidth="md" className="page-shell" sx={{ py: 4 }}>
             <Button
                 startIcon={<ArrowBackIcon />}
                 onClick={() => navigate(-1)}
@@ -97,8 +97,8 @@ export const ScreeningList: React.FC = () => {
                 Quay lại
             </Button>
 
-            <Typography variant="h4" fontWeight="bold" mb={4}>
-                Chọn Suất Chiếu Cho {movie.title}
+            <Typography variant="h4" fontWeight="bold" mb={4} color="text.primary">
+                Chọn Suất Chiếu Cho:  {movie.title}
             </Typography>
 
             {showtimes.length === 0 ? (
@@ -106,19 +106,19 @@ export const ScreeningList: React.FC = () => {
             ) : (
                 <Box sx={{ display: 'grid', gap: 2 }}>
                     {showtimes.map((showtime) => (
-                        <Card key={showtime.id} sx={{ '&:hover': { boxShadow: 4 } }}>
+                        <Card key={showtime.id} elevation={0} sx={{ border: '1px solid #E5E7EB', '&:hover': { boxShadow: '0 14px 24px -16px rgba(0,0,0,0.35)' } }}>
                             <CardContent>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                                     <Box sx={{ flex: 1, minWidth: 200 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                                            <CalendarTodayIcon fontSize="small" />
-                                            <Typography variant="body2" color="textSecondary">
+                                            <CalendarTodayIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                                            <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                                 {new Date(showtime.startTime).toLocaleDateString()}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <AccessTimeIcon fontSize="small" />
-                                            <Typography variant="h6">
+                                            <AccessTimeIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                                            <Typography variant="h6" color="text.primary">
                                                 {new Date(showtime.startTime).toLocaleTimeString([], {
                                                     hour: '2-digit',
                                                     minute: '2-digit',

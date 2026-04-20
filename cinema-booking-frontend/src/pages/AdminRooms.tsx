@@ -133,14 +133,14 @@ export const AdminRooms: React.FC = () => {
         <Box sx={{ py: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Typography variant="h4" fontWeight={700}>
-                    🏢 Quản Lý Phòng Chiếu
+                    Quản Lý Phòng Chiếu
                 </Typography>
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={handleOpenDialog}
                     sx={{
-                        background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                        background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                         borderRadius: 2,
                         textTransform: 'none',
                         px: 3,
@@ -169,7 +169,7 @@ export const AdminRooms: React.FC = () => {
 
             <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 2, border: '1px solid rgba(0,0,0,0.08)' }}>
                 <Typography variant="body2" color="textSecondary">
-                    💡 Tip: Mỗi phòng chiếu sẽ tự động tạo ghế ngồi dựa trên số hàng và số cột bạn nhập.
+                    <b>Tip:</b> Mỗi phòng chiếu sẽ tự động tạo ghế ngồi dựa trên số hàng và số cột bạn nhập.
                     Ví dụ: 15 hàng × 10 cột = 150 ghế (75 NORMAL + 75 VIP)
                 </Typography>
             </Paper>
@@ -216,8 +216,8 @@ export const AdminRooms: React.FC = () => {
                                                 label={`${totalSeats} ghế`}
                                                 size="small"
                                                 sx={{
-                                                    backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                                                    color: '#ff6b00',
+                                                    backgroundColor: 'rgba(229, 9, 20, 0.1)',
+                                                    color: '#E50914',
                                                     fontWeight: 600,
                                                 }}
                                             />
@@ -239,7 +239,7 @@ export const AdminRooms: React.FC = () => {
                                                 size="small"
                                                 sx={{
                                                     backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                                                    color: '#ffc107',
+                                                    color: '#F59E0B',
                                                     fontWeight: 600,
                                                 }}
                                             />
@@ -313,7 +313,7 @@ export const AdminRooms: React.FC = () => {
                         onClick={handleSubmit}
                         disabled={loading}
                         sx={{
-                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                            background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                             textTransform: 'none',
                             px: 3,
                             fontWeight: 600,

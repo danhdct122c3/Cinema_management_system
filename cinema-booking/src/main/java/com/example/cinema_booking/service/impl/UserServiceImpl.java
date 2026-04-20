@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -65,8 +66,8 @@ public class UserServiceImpl  implements UserService {
 
         return userMapper.toUserResponse(user);
     }
-
-    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
+//"returnObject.email == authentication.name or
+    @PostAuthorize("hasRole('ADMIN_Read')")
     @Override
     public UserResponse updateUser(UserUpdateRequest request, String userId) {
         User user = userRepository.findById(userId)
@@ -74,22 +75,28 @@ public class UserServiceImpl  implements UserService {
 
         userMapper.updateUserFromRequest(request, user);
 
+        if (StringUtils.hasText(request.getPassword())) {
+            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
         // vì mapper không thể tự convert string sang object Role nên phải convert thủ công ở đây
         // vì request là dạng set string nên phải convert sang set Role, nếu không sẽ bị lỗi khi save user vì user có field roles là set Role
 
 
         // Đưa dạng string vào dđây để tìm kiếm trong db , rồi return dạng object Role
-        var roles = roleRepository.findAllById(request.getRoles());
+        if (request.getRoles() != null) {
+            var roles = roleRepository.findAllById(request.getRoles());
 
-        // Sau dđó hashset từ list về set(loại bỏ role trùng) cho lại cho user
-        user.setRoles(new HashSet<>(roles));
+            // Sau dđó hashset từ list về set(loại bỏ role trùng) cho lại cho user
+            user.setRoles(new HashSet<>(roles));
+        }
 
         userRepository.save(user);
 
         return userMapper.toUserResponse(user);
 
     }
-
 
     @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
     // Chỉ cho phép người dùng truy cập vào phương thức này nếu email của họ trùng với email của user được trả về hoặc họ có role ADMIN
@@ -101,7 +108,7 @@ public class UserServiceImpl  implements UserService {
         return userMapper.toUserResponse(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')") // Chỉ cho phép người dùng có role ADMIN truy cập vào phương thức này
+    @PreAuthorize("hasRole('ADMIN')")  // Chỉ cho phép người dùng có role ADMIN truy cập vào phương thức này
     @Override
     public List<UserResponse> getUsers() {
         log.info("In method get user");

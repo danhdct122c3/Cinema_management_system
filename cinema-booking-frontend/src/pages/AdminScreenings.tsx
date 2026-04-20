@@ -424,13 +424,13 @@ export const AdminScreenings: React.FC = () => {
         <Box sx={{ py: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Typography variant="h4" fontWeight={700}>
-                    🎬 Quản Lý Suất Chiếu & Giá Ghế
+                    Quản Lý Suất Chiếu & Giá Ghế
                 </Typography>
             </Box>
 
             <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid rgba(0,0,0,0.08)' }}>
                 <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)}>
-                    <Tab label="📽️ Suất Chiếu" />
+                    <Tab label="Suất Chiếu" />
                 </Tabs>
 
                 {/* Tab 1: Showtimes */}
@@ -453,7 +453,7 @@ export const AdminScreenings: React.FC = () => {
                                 startIcon={<AddIcon />}
                                 onClick={handleOpenShowtimeDialog}
                                 sx={{
-                                    background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                                    background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                                     textTransform: 'none',
                                     borderRadius: 2,
                                     px: 3,
@@ -502,7 +502,7 @@ export const AdminScreenings: React.FC = () => {
                                                             size="small"
                                                             onClick={() => handleOpenPriceDialog(showtime)}
                                                             title="Cập nhật giá"
-                                                            sx={{ color: '#ff6b00' }}
+                                                            sx={{ color: '#E50914' }}
                                                         >
                                                             <AttachMoneyIcon fontSize="small" />
                                                         </IconButton>
@@ -623,7 +623,7 @@ export const AdminScreenings: React.FC = () => {
                         variant="contained"
                         disabled={loadingShowtimes}
                         sx={{
-                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                            background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                             textTransform: 'none',
                         }}
                     >
@@ -691,7 +691,7 @@ export const AdminScreenings: React.FC = () => {
                         variant="contained"
                         disabled={loadingPrice}
                         sx={{
-                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                            background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                             textTransform: 'none',
                             px: 3,
                             fontWeight: 600,

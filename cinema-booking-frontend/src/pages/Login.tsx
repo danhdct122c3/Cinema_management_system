@@ -61,9 +61,10 @@ export const Login: React.FC = () => {
 
     return (
         <Box
+            className="page-shell"
             sx={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c3a 50%, #ffc107 100%)',
+                background: 'linear-gradient(135deg, #F3F4F6 0%, #FFFFFF 50%, #FEE2E2 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 py: 8,
@@ -74,14 +75,15 @@ export const Login: React.FC = () => {
                     elevation={8}
                     sx={{
                         p: 5,
-                        borderRadius: 3,
+                        borderRadius: 4,
                         backgroundColor: 'rgba(255, 255, 255, 0.98)',
                         backdropFilter: 'blur(10px)',
+                        border: '1px solid #E5E7EB',
                     }}
                 >
                     <Box sx={{ textAlign: 'center', mb: 4 }}>
-                        <MovieIcon sx={{ fontSize: 60, color: '#ff6b00', mb: 2 }} />
-                        <Typography variant="h4" component="h1" fontWeight={700} color="#ff6b00" gutterBottom>
+                        <MovieIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+                        <Typography variant="h4" component="h1" fontWeight={700} color="text.primary" gutterBottom>
                             Đăng Nhập
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -147,7 +149,7 @@ export const Login: React.FC = () => {
                                 href="#"
                                 variant="body2"
                                 sx={{
-                                    color: '#ff6b00',
+                                    color: 'primary.main',
                                     textDecoration: 'none',
                                     '&:hover': {
                                         textDecoration: 'underline',
@@ -168,10 +170,10 @@ export const Login: React.FC = () => {
                                 py: 1.5,
                                 fontSize: '1.1rem',
                                 fontWeight: 600,
-                                backgroundColor: '#ff6b00',
+                                backgroundColor: 'primary.main',
                                 mb: 2,
                                 '&:hover': {
-                                    backgroundColor: '#d95a00',
+                                    backgroundColor: 'primary.dark',
                                     transform: 'translateY(-2px)',
                                 },
                                 transition: 'all 0.3s',
@@ -186,7 +188,7 @@ export const Login: React.FC = () => {
                                 <Link
                                     onClick={() => navigate('/register')}
                                     sx={{
-                                        color: '#ff6b00',
+                                        color: 'primary.main',
                                         fontWeight: 600,
                                         cursor: 'pointer',
                                         textDecoration: 'none',

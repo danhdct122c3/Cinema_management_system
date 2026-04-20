@@ -77,7 +77,7 @@ export const MovieList: React.FC = () => {
                     backgroundColor: 'background.default'
                 }}
             >
-                <CircularProgress size={60} sx={{ color: '#ff6b00' }} />
+                <CircularProgress size={60} sx={{ color: 'primary.main' }} />
             </Box>
         );
     }
@@ -93,12 +93,12 @@ export const MovieList: React.FC = () => {
     }
 
     return (
-        <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <Box className="page-shell" sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
             {/* Hero Section */}
             <Box
                 sx={{
-                    background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c3a 100%)',
-                    borderBottom: '2px solid rgba(255, 107, 0, 0.2)',
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 55%, #FEE2E2 100%)',
+                    borderBottom: '1px solid #E5E7EB',
                     position: 'relative',
                     overflow: 'hidden',
                 }}
@@ -106,7 +106,7 @@ export const MovieList: React.FC = () => {
                 <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 }, position: 'relative', zIndex: 1 }}>
                     <Box sx={{ textAlign: 'center', maxWidth: 900, mx: 'auto' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                            <LocalMoviesIcon sx={{ fontSize: 80, color: '#ff6b00', filter: 'drop-shadow(0 0 20px rgba(255, 107, 0, 0.5))' }} />
+                            <LocalMoviesIcon sx={{ fontSize: 80, color: 'primary.main', filter: 'drop-shadow(0 8px 20px rgba(229, 9, 20, 0.2))' }} />
                         </Box>
                         <Typography
                             variant="h2"
@@ -115,7 +115,7 @@ export const MovieList: React.FC = () => {
                                 fontWeight: 800,
                                 mb: 2,
                                 fontSize: { xs: '2.5rem', md: '3.5rem' },
-                                color: '#ffffff',
+                                color: 'text.primary',
                                 letterSpacing: '1px',
                             }}
                         >
@@ -125,7 +125,7 @@ export const MovieList: React.FC = () => {
                             variant="h6"
                             sx={{
                                 mb: 4,
-                                color: 'rgba(255, 255, 255, 0.9)',
+                                color: 'text.secondary',
                                 fontSize: { xs: '1rem', md: '1.25rem' },
                                 fontWeight: 400,
                             }}
@@ -140,11 +140,11 @@ export const MovieList: React.FC = () => {
                                 py: 1.5,
                                 px: 4,
                                 fontSize: '1rem',
-                                backgroundColor: '#ffffff',
-                                color: '#ff6b00',
+                                backgroundColor: 'primary.main',
+                                color: '#ffffff',
                                 fontWeight: 600,
                                 '&:hover': {
-                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    backgroundColor: 'primary.dark',
                                     transform: 'translateY(-2px)',
                                 },
                                 transition: 'all 0.3s',
@@ -158,7 +158,7 @@ export const MovieList: React.FC = () => {
 
             <Container maxWidth="lg" sx={{ py: 6 }}>
                 {/* Tabs Section */}
-                <Box sx={{ borderBottom: 2, borderColor: 'rgba(255, 107, 0, 0.2)', mb: 5 }}>
+                <Box sx={{ borderBottom: 1, borderColor: '#E5E7EB', mb: 5 }}>
                     <Tabs
                         value={tabValue}
                         onChange={handleTabChange}
@@ -172,11 +172,11 @@ export const MovieList: React.FC = () => {
                                 minWidth: 200,
                                 py: 2,
                                 '&.Mui-selected': {
-                                    color: '#ff6b00',
+                                    color: 'primary.main',
                                 },
                             },
                             '& .MuiTabs-indicator': {
-                                backgroundColor: '#ff6b00',
+                                backgroundColor: 'primary.main',
                                 height: 3,
                             },
                         }}
@@ -194,7 +194,8 @@ export const MovieList: React.FC = () => {
                             paddingBottom: '20px',
                         },
                         '& .swiper-button-next, & .swiper-button-prev': {
-                            backgroundColor: 'rgba(255, 107, 0, 0.9)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                            border: '1px solid #E5E7EB',
                             borderRadius: '50%',
                             width: 50,
                             height: 50,
@@ -202,12 +203,12 @@ export const MovieList: React.FC = () => {
                             transform: 'translateY(-50%)',
                             transition: 'all 0.3s',
                             '&:hover': {
-                                backgroundColor: 'rgba(255, 107, 0, 1)',
+                                backgroundColor: '#FFFFFF',
                                 transform: 'translateY(-50%) scale(1.1)',
                             },
                             '&::after': {
                                 fontSize: '20px',
-                                color: '#ffffff',
+                                color: '#111827',
                                 fontWeight: 'bold',
                             },
                         },
@@ -218,12 +219,12 @@ export const MovieList: React.FC = () => {
                             left: -10,
                         },
                         '& .swiper-pagination-bullet': {
-                            backgroundColor: 'rgba(255, 107, 0, 0.5)',
+                            backgroundColor: '#CBD5E1',
                             width: 10,
                             height: 10,
                         },
                         '& .swiper-pagination-bullet-active': {
-                            backgroundColor: '#ff6b00',
+                            backgroundColor: '#E50914',
                         },
                     }}
                 >

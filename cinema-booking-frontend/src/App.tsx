@@ -31,50 +31,76 @@ const theme = createTheme({
     palette: {
         mode: 'light',
         primary: {
-            main: '#ff6b00', // Galaxy Cinema orange
-            light: '#ff8c3a',
-            dark: '#d95a00',
+            main: '#E50914',
+            light: '#F43F5E',
+            dark: '#B91C1C',
             contrastText: '#fff',
         },
         secondary: {
-            main: '#ffc107', // Gold accent
-            light: '#ffd54f',
-            dark: '#ffa000',
+            main: '#111827',
+            light: '#1F2937',
+            dark: '#030712',
         },
         background: {
-            default: '#f5f5f5', // Light gray
-            paper: '#ffffff', // White for cards
+            default: '#F3F4F6',
+            paper: '#FFFFFF',
         },
         text: {
-            primary: 'rgba(0, 0, 0, 0.87)',
-            secondary: 'rgba(0, 0, 0, 0.6)',
+            primary: '#111827',
+            secondary: '#6B7280',
         },
     },
     typography: {
-        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        fontFamily: '"Inter", "Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
         h1: {
-            fontWeight: 700,
+            fontWeight: 800,
         },
         h2: {
-            fontWeight: 700,
+            fontWeight: 800,
         },
         h3: {
-            fontWeight: 600,
+            fontWeight: 700,
+        },
+        h4: {
+            fontWeight: 700,
         },
         button: {
-            fontWeight: 600,
+            fontWeight: 700,
             textTransform: 'none',
         },
     },
     shape: {
-        borderRadius: 8,
+        borderRadius: 14,
     },
     components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    backgroundColor: '#F3F4F6',
+                    color: '#111827',
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: 8,
-                    padding: '10px 24px',
+                    borderRadius: 12,
+                    padding: '10px 20px',
+                    transition: 'all 0.25s ease',
+                    '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 10px 20px -12px rgba(0, 0, 0, 0.35)',
+                    },
+                    '&:active': {
+                        transform: 'scale(0.95)',
+                    },
+                },
+            },
+        },
+        MuiAppBar: {
+            styleOverrides: {
+                root: {
+                    backdropFilter: 'blur(12px)',
                 },
             },
         },
@@ -82,6 +108,28 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     backgroundImage: 'none',
+                    borderRadius: 16,
+                    border: '1px solid #E5E7EB',
+                    boxShadow: '0 4px 12px -6px rgba(0, 0, 0, 0.18)',
+                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                    '&:hover': {
+                        transform: 'scale(1.02)',
+                        boxShadow: '0 14px 30px -14px rgba(0, 0, 0, 0.26)',
+                    },
+                },
+            },
+        },
+        MuiPaper: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 14,
+                },
+            },
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 12,
                 },
             },
         },

@@ -10,6 +10,7 @@ import {
     ButtonGroup,
     Stack,
     Chip,
+    Divider,
 } from '@mui/material';
 import MovieIcon from '@mui/icons-material/Movie';
 import EventIcon from '@mui/icons-material/Event';
@@ -252,8 +253,8 @@ export const AdminDashboard: React.FC = () => {
             title: 'Tổng Số Phim',
             value: movies.length,
             icon: <MovieIcon sx={{ fontSize: 40 }} />,
-            color: '#ff6b00',
-            bgColor: 'rgba(255, 107, 0, 0.1)',
+            color: '#E50914',
+            bgColor: 'rgba(229, 9, 20, 0.1)',
         },
         {
             title: 'Suất Chiếu Hôm Nay',
@@ -273,7 +274,7 @@ export const AdminDashboard: React.FC = () => {
             title: 'Tổng doanh thu',
             value: formatCurrency(totalRevenue),
             icon: <TrendingUpIcon sx={{ fontSize: 40 }} />,
-            color: '#ffc107',
+            color: '#F59E0B',
             bgColor: 'rgba(255, 193, 7, 0.1)',
         },
     ];
@@ -287,12 +288,7 @@ export const AdminDashboard: React.FC = () => {
     };
 
     return (
-        <Box sx={{ pb: 2 }}>
-            <Box sx={{ mb: 3 }}>
-                <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: 0.2 }}>
-                    Bảng Điều Khiển
-                </Typography>
-            </Box>
+        <Box sx={{ pb: 2 }} className="page-shell">
 
             <Grid container spacing={3}>
                 {stats.map((stat, index) => (
@@ -300,23 +296,23 @@ export const AdminDashboard: React.FC = () => {
                         <Card
                             elevation={0}
                             sx={{
-                                borderRadius: 4,
-                                border: '1px solid rgba(0, 0, 0, 0.08)',
-                                background: 'linear-gradient(180deg, #fff 0%, #fff8f2 100%)',
-                                transition: 'all 0.25s ease',
+                                borderRadius: '8px',
+                                border: '1px solid #E5E7EB',
+                                background: '#FFFFFF',
+                                transition: 'all 0.15s ease',
                                 '&:hover': {
-                                    transform: 'translateY(-3px)',
-                                    boxShadow: '0 10px 26px rgba(0,0,0,0.10)',
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 16px -14px rgba(15,23,42,0.32)',
                                 },
                             }}
                         >
-                            <CardContent sx={{ p: 3 }}>
+                            <CardContent sx={{ p: 2.5 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <Box>
-                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        <Typography variant="body2" sx={{ color: '#4B5563' }} gutterBottom>
                                             {stat.title}
                                         </Typography>
-                                        <Typography variant="h4" fontWeight={800} sx={{ mt: 1, fontSize: { xs: '1.7rem', md: '2rem' } }}>
+                                        <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, fontSize: { xs: '1.55rem', md: '1.85rem' }, color: '#111827' }}>
                                             {stat.value}
                                         </Typography>
                                     </Box>
@@ -324,8 +320,8 @@ export const AdminDashboard: React.FC = () => {
                                         sx={{
                                             backgroundColor: stat.bgColor,
                                             color: stat.color,
-                                            borderRadius: 3,
-                                            p: 1.5,
+                                            borderRadius: '8px',
+                                            p: 1.1,
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -346,9 +342,10 @@ export const AdminDashboard: React.FC = () => {
                         elevation={0}
                         sx={{
                             p: 3,
-                            borderRadius: 4,
-                            border: '1px solid rgba(0, 0, 0, 0.08)',
+                            borderRadius: '8px',
+                            border: '1px solid #E5E7EB',
                             background: '#fff',
+                            boxShadow: '0 1px 2px rgba(15, 23, 42, 0.06)',
                         }}
                     >
                         <Stack
@@ -359,19 +356,25 @@ export const AdminDashboard: React.FC = () => {
                             sx={{ mb: 2 }}
                         >
                             <Box>
-                                <Typography variant="h6" fontWeight={700}>
+                                <Typography variant="h6" fontWeight={700} sx={{ color: '#111827' }}>
                                     Thống kê doanh thu
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#4B5563', mt: 0.25 }}>
+                                    Biểu đồ doanh thu theo {revenueDimensionLabel[revenueFilter].toLowerCase()}.
                                 </Typography>
                             </Box>
                             <Chip
                                 label={`Bộ lọc hiện tại: ${revenueDimensionLabel[revenueFilter]}`}
                                 sx={{
                                     fontWeight: 600,
-                                    backgroundColor: 'rgba(255, 107, 0, 0.12)',
-                                    color: '#ff6b00',
+                                    backgroundColor: 'rgba(229, 9, 20, 0.10)',
+                                    color: '#E50914',
+                                    borderRadius: '999px',
                                 }}
                             />
                         </Stack>
+
+                        <Divider sx={{ my: 2, borderColor: '#E5E7EB' }} />
 
                         <Box sx={{ mb: 2 }}>
                             <ButtonGroup
@@ -385,14 +388,15 @@ export const AdminDashboard: React.FC = () => {
                                         fontWeight: 700,
                                         fontSize: '0.9rem',
                                         textTransform: 'none',
-                                        borderColor: 'rgba(255, 107, 0, 0.4)',
-                                        color: '#ff6b00',
+                                        borderColor: '#E5E7EB',
+                                        color: '#E50914',
+                                        borderRadius: '8px',
                                     },
                                     '& .MuiButton-contained': {
-                                        background: 'linear-gradient(90deg, #ff6b00 0%, #ff8c3a 100%)',
+                                        background: 'linear-gradient(90deg, #E50914 0%, #B91C1C 100%)',
                                         color: '#fff',
                                         borderColor: 'transparent',
-                                        boxShadow: '0 4px 14px rgba(255, 107, 0, 0.35)',
+                                        boxShadow: '0 8px 16px -12px rgba(229, 9, 20, 0.55)',
                                     },
                                 }}
                             >
@@ -417,10 +421,10 @@ export const AdminDashboard: React.FC = () => {
                             </ButtonGroup>
                         </Box>
 
-                        <Box sx={{ height: 360, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 3, p: { xs: 1, md: 2 } }}>
+                        <Box sx={{ height: 360, border: '1px solid #E5E7EB', borderRadius: '8px', p: { xs: 1, md: 2 }, backgroundColor: '#FFFFFF' }}>
                             {revenueChartData.length === 0 ? (
                                 <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2" sx={{ color: '#4B5563' }}>
                                         Chưa có dữ liệu doanh thu để hiển thị biểu đồ
                                     </Typography>
                                 </Box>
@@ -444,10 +448,10 @@ export const AdminDashboard: React.FC = () => {
                                             tickFormatter={(value: number | string) => currencyFormatter.format(Number(value)).replace(' ₫', '')}
                                             width={92}
                                         />
-                                        <Tooltip content={<RevenueTooltip />} cursor={{ fill: 'rgba(255, 107, 0, 0.08)' }} />
+                                        <Tooltip content={<RevenueTooltip />} cursor={{ fill: 'rgba(229, 9, 20, 0.08)' }} />
                                         <Bar
                                             dataKey="revenue"
-                                            fill="#ff6b00"
+                                            fill="#E50914"
                                             radius={[6, 6, 0, 0]}
                                             maxBarSize={56}
                                         />

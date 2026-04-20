@@ -67,7 +67,7 @@ export const MovieDetail: React.FC = () => {
     };
 
     return (
-        <Box sx={{ backgroundColor: '#f5f5f5', minHeight: '100vh', py: 4 }}>
+        <Box className="page-shell" sx={{ backgroundColor: '#F3F4F6', minHeight: '100vh', py: 4 }}>
             <Container maxWidth="lg">
                 {/* Main Content */}
                 <Grid container spacing={4}>
@@ -76,12 +76,13 @@ export const MovieDetail: React.FC = () => {
                         <Box>
                             {/* Poster Card */}
                             <Paper
-                                elevation={3}
+                                elevation={0}
                                 sx={{
-                                    borderRadius: 2,
+                                    borderRadius: 3,
                                     overflow: 'hidden',
                                     position: 'relative',
                                     mb: 2,
+                                    border: '1px solid #E5E7EB',
                                 }}
                             >
                                 <Box sx={{ position: 'relative' }}>
@@ -110,7 +111,7 @@ export const MovieDetail: React.FC = () => {
                                             gap: 0.5,
                                         }}
                                     >
-                                        <Typography sx={{ color: '#ffc107', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                        <Typography sx={{ color: '#FACC15', fontWeight: 'bold', fontSize: '0.9rem' }}>
                                             ⭐ {rating}
                                         </Typography>
                                     </Box>
@@ -120,7 +121,7 @@ export const MovieDetail: React.FC = () => {
                                             position: 'absolute',
                                             top: 12,
                                             right: 12,
-                                            backgroundColor: '#ff9800',
+                                            backgroundColor: '#E50914',
                                             color: 'white',
                                             px: 1.5,
                                             py: 0.5,
@@ -138,7 +139,7 @@ export const MovieDetail: React.FC = () => {
 
                     {/* Right: Information */}
                     <Grid item xs={12} sm={8} md={9}>
-                        <Box component={Paper} elevation={0} sx={{ p: { xs: 2, md: 4 }, backgroundColor: 'white', borderRadius: 2 }}>
+                        <Box component={Paper} elevation={0} sx={{ p: { xs: 2, md: 4 }, backgroundColor: 'white', borderRadius: 3, border: '1px solid #E5E7EB' }}>
                             {/* Title */}
                             <Typography 
                                 variant="h4" 
@@ -157,8 +158,8 @@ export const MovieDetail: React.FC = () => {
                                     <Chip
                                         label={movie.genreNames?.join(', ')}
                                         sx={{
-                                            backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                                            color: '#ff6b00',
+                                            backgroundColor: 'rgba(229, 9, 20, 0.08)',
+                                            color: 'primary.main',
                                             fontWeight: 600,
                                         }}
                                     />
@@ -166,8 +167,8 @@ export const MovieDetail: React.FC = () => {
                                         icon={<LocalFireDepartmentIcon />}
                                         label={movie.status === 'NOW_SHOWING' ? 'Đang Chiếu' : 'Sắp Chiếu'}
                                         sx={{
-                                            backgroundColor: movie.status === 'NOW_SHOWING' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 107, 0, 0.1)',
-                                            color: movie.status === 'NOW_SHOWING' ? '#4CAF50' : '#ff6b00',
+                                            backgroundColor: movie.status === 'NOW_SHOWING' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(229, 9, 20, 0.08)',
+                                            color: movie.status === 'NOW_SHOWING' ? '#16A34A' : '#E50914',
                                             fontWeight: 600,
                                         }}
                                     />
@@ -180,7 +181,7 @@ export const MovieDetail: React.FC = () => {
                                             Khởi chiếu:
                                         </Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <CalendarTodayIcon sx={{ color: '#ff6b00' }} />
+                                            <CalendarTodayIcon sx={{ color: 'primary.main' }} />
                                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                                 {new Date(movie.releaseDate).toLocaleDateString('vi-VN')}
                                             </Typography>
@@ -191,7 +192,7 @@ export const MovieDetail: React.FC = () => {
                                             Thời lượng:
                                         </Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <AccessTimeIcon sx={{ color: '#ff6b00' }} />
+                                            <AccessTimeIcon sx={{ color: 'primary.main' }} />
                                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                                 {movie.duration} phút
                                             </Typography>
@@ -240,7 +241,7 @@ export const MovieDetail: React.FC = () => {
                                     size="large"
                                     startIcon={<PlayArrowIcon />}
                                     sx={{
-                                        background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                                        background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                                         textTransform: 'none',
                                         fontWeight: 600,
                                         px: { xs: 3, sm: 4 },
@@ -256,14 +257,14 @@ export const MovieDetail: React.FC = () => {
                                         size="large"
                                         startIcon={<PlayArrowIcon />}
                                         sx={{
-                                            borderColor: '#ff6b00',
-                                            color: '#ff6b00',
+                                            borderColor: 'primary.main',
+                                            color: 'primary.main',
                                             textTransform: 'none',
                                             fontWeight: 600,
                                             px: { xs: 3, sm: 4 },
                                             flex: { xs: '1 1 100%', sm: 'auto' },
                                             '&:hover': {
-                                                backgroundColor: 'rgba(255, 107, 0, 0.1)',
+                                                backgroundColor: 'rgba(229, 9, 20, 0.08)',
                                             },
                                         }}
                                         onClick={() => window.open(movie.trailerUrl, '_blank')}
@@ -285,7 +286,7 @@ export const MovieDetail: React.FC = () => {
                 </Grid>
 
                 {/* Synopsis */}
-                <Paper elevation={0} sx={{ mt: 4, p: 4, backgroundColor: 'white', borderRadius: 2 }}>
+                <Paper elevation={0} sx={{ mt: 4, p: 4, backgroundColor: 'white', borderRadius: 3, border: '1px solid #E5E7EB' }}>
                     <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                         Nội Dung Phim
                     </Typography>

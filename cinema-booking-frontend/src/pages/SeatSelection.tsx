@@ -129,7 +129,7 @@ export const SeatSelection: React.FC = () => {
     }
 
     return (
-        <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', pb: 4 }}>
+        <Box className="page-shell" sx={{ bgcolor: '#F3F4F6', minHeight: '100vh', pb: 4 }}>
             <Container maxWidth="lg" sx={{ py: 4 }}>
                 {/* Back Button */}
                 <Button
@@ -144,8 +144,8 @@ export const SeatSelection: React.FC = () => {
                 <ShowtimeHeader showtime={showtime} availableSeatsCount={availableSeatsCount} />
 
                 {/* Seat Selection Section */}
-                <Paper elevation={2} sx={{ p: 4, mt: 4, borderRadius: 2 }}>
-                    <Typography variant="h5" fontWeight="bold" mb={3}>
+                <Paper elevation={0} sx={{ p: 4, mt: 4, borderRadius: 3, border: '1px solid #E5E7EB' }}>
+                    <Typography variant="h5" fontWeight="bold" mb={3} color="text.primary">
                         Chọn Ghế Của Bạn
                     </Typography>
 
@@ -163,13 +163,14 @@ export const SeatSelection: React.FC = () => {
                 {/* Seat Summary & Checkout */}
                 {selectedSeats.length > 0 && (
                     <Paper
-                        elevation={3}
+                        elevation={0}
                         sx={{
                             mt: 4,
                             p: 3,
-                            borderRadius: 2,
-                            backgroundColor: '#ff6b00',
-                            color: 'white',
+                            borderRadius: 3,
+                            border: '1px solid #FECACA',
+                            background: 'linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 100%)',
+                            color: 'text.primary',
                         }}
                     >
                         <Grid container spacing={2} alignItems="center" justifyContent="space-between">
@@ -177,7 +178,7 @@ export const SeatSelection: React.FC = () => {
                                 <Typography variant="h6" fontWeight="bold" gutterBottom>
                                     Ghế Đã Chọn ({selectedSeats.length})
                                 </Typography>
-                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                     {selectedSeats.map(s => s.seatCode).join(', ')}
                                 </Typography>
                             </Grid>
@@ -188,11 +189,11 @@ export const SeatSelection: React.FC = () => {
                                     startIcon={<ConfirmationNumberIcon />}
                                     onClick={handleConfirmBooking}
                                     sx={{
-                                        backgroundColor: 'white',
-                                        color: '#ff6b00',
+                                        backgroundColor: 'primary.main',
+                                        color: '#fff',
                                         fontWeight: 'bold',
                                         '&:hover': {
-                                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                            backgroundColor: 'primary.dark',
                                         },
                                     }}
                                 >
@@ -205,13 +206,14 @@ export const SeatSelection: React.FC = () => {
 
                 {selectedSeats.length === 0 && (
                     <Paper
-                        elevation={1}
+                        elevation={0}
                         sx={{
                             mt: 4,
                             p: 3,
                             textAlign: 'center',
-                            borderRadius: 2,
-                            backgroundColor: '#fff3cd',
+                            borderRadius: 3,
+                            backgroundColor: '#FFFFFF',
+                            border: '1px dashed #D1D5DB',
                         }}
                     >
                         <Typography variant="body1" color="text.secondary">

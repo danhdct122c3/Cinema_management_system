@@ -381,7 +381,7 @@ export const BookingConfirmation: React.FC = () => {
     }
 
     return (
-        <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', pb: 4 }}>
+        <Box className="page-shell" sx={{ bgcolor: '#F3F4F6', minHeight: '100vh', pb: 4 }}>
             <Container maxWidth="md" sx={{ py: 4 }}>
                 {/* Back Button */}
                 <Button
@@ -408,7 +408,7 @@ export const BookingConfirmation: React.FC = () => {
                         icon={<CheckCircleIcon />}
                         sx={{ mb: 3 }}
                     >
-                        ✅ Ghế đã được giữ thành công! Vui lòng hoàn tất thanh toán trong thời gian giữ.
+                        Ghế đã được giữ thành công! Vui lòng hoàn tất thanh toán trong thời gian giữ.
                     </Alert>
                 )}
 
@@ -461,7 +461,7 @@ export const BookingConfirmation: React.FC = () => {
                                         {seat.seatCode}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
-                                        ${seat.price.toFixed(2)} ({seat.seatType === 'VIP' ? 'VIP' : 'Thường'})
+                                        {seat.price.toLocaleString('vi-VN')} đ ({seat.seatType === 'VIP' ? 'VIP' : 'Thường'})
                                     </Typography>
                                 </Box>
                             ))}
@@ -470,19 +470,19 @@ export const BookingConfirmation: React.FC = () => {
                 </Card>
 
                 {/* Price Summary */}
-                <Paper sx={{ p: 3, mb: 3, bgcolor: '#fff8f0', border: '2px solid #ff6b00' }}>
+                <Paper sx={{ p: 3, mb: 3, bgcolor: '#FFFFFF', border: '1px solid #FECACA', borderRadius: 3 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
                             <Typography color="text.secondary">Tạm tính ({selectedSeats.length} ghế)</Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
-                            <Typography>${totalPrice.toFixed(2)}</Typography>
+                            <Typography>{totalPrice.toLocaleString('vi-VN')} đ</Typography>
                         </Grid>
                         <Grid item xs={6}>
                             <Typography color="text.secondary">Phí dịch vụ</Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
-                            <Typography>$0.00</Typography>
+                            <Typography>{(0).toLocaleString('vi-VN')} đ</Typography>
                         </Grid>
                         <Grid item xs={12}>
                             <Divider />
@@ -494,7 +494,7 @@ export const BookingConfirmation: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
                             <Typography variant="h6" fontWeight="bold" color="error">
-                                ${totalPrice.toFixed(2)}
+                                {totalPrice.toLocaleString('vi-VN')} đ
                             </Typography>
                         </Grid>
                     </Grid>
@@ -509,8 +509,8 @@ export const BookingConfirmation: React.FC = () => {
                         onClick={handlePayment}
                         disabled={paymentInProgress || holdExpired}
                         sx={{
-                            bgcolor: '#ff6b00',
-                            '&:hover': { bgcolor: '#e55a00' },
+                            bgcolor: 'primary.main',
+                            '&:hover': { bgcolor: 'primary.dark' },
                         }}
                     >
                         {paymentInProgress ? <CircularProgress size={24} /> : 'Tiến Hành Thanh Toán'}
@@ -527,9 +527,9 @@ export const BookingConfirmation: React.FC = () => {
                 </Box>
 
                 {/* Info Box */}
-                <Paper sx={{ mt: 3, p: 2, bgcolor: '#e8f5e9', border: '1px solid #81c784' }}>
+                <Paper sx={{ mt: 3, p: 2, bgcolor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
                     <Typography variant="caption" color="text.secondary">
-                        💡 <strong>Lưu ý:</strong> Ghế của bạn sẽ được giữ trong 5 phút. Sau đó ghế sẽ được mở lại để người khác có thể đặt.
+                        <strong>Lưu ý:</strong> Ghế của bạn sẽ được giữ trong 5 phút. Sau đó ghế sẽ được mở lại để người khác có thể đặt.
                     </Typography>
                 </Paper>
 

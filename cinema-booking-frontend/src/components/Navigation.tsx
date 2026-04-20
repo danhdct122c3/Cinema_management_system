@@ -16,8 +16,9 @@ import {
     Drawer,
     useMediaQuery,
     useTheme,
+    alpha,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MovieIcon from '@mui/icons-material/Movie';
 import HistoryIcon from '@mui/icons-material/History';
 import HomeIcon from '@mui/icons-material/Home';
@@ -35,6 +36,7 @@ import { Genre } from '../types';
 
 export const Navigation: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -113,11 +115,32 @@ export const Navigation: React.FC = () => {
         return email.charAt(0).toUpperCase();
     };
 
+    const isActivePath = (path: string) => {
+        if (path === '/') return location.pathname === '/';
+        return location.pathname.startsWith(path);
+    };
+
+    const navButtonSx = (active: boolean) => ({
+        color: active ? 'primary.main' : 'text.primary',
+        whiteSpace: 'nowrap',
+        borderRadius: 999,
+        px: 2,
+        fontWeight: active ? 700 : 600,
+        backgroundColor: active ? alpha('#E50914', 0.1) : 'transparent',
+        transition: 'all 0.25s ease',
+        '&:hover': {
+            color: 'primary.main',
+            backgroundColor: alpha('#E50914', 0.12),
+            transform: 'translateY(-1px)',
+        },
+    });
+
     return (
         <>
             <AppBar position="sticky" elevation={0} sx={{ 
-                backgroundColor: '#ffffff',
-                borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid #E5E7EB',
             }}>
                 <Container maxWidth="lg">
                     <Toolbar sx={{ 
@@ -128,12 +151,12 @@ export const Navigation: React.FC = () => {
                     }}>
                         {/* Logo */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }} onClick={handleLogoClick}>
-                            <MovieIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: '#ff6b00' }} />
+                            <MovieIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: 'primary.main' }} />
                             <Typography
                                 variant="h5"
                                 sx={{
                                     fontWeight: 700,
-                                    color: '#ff6b00',
+                                    color: 'primary.main',
                                     letterSpacing: '0.5px',
                                     display: { xs: 'none', sm: 'block' },
                                 }}
@@ -151,28 +174,14 @@ export const Navigation: React.FC = () => {
                             justifyContent: 'center',
                         }}>
                             <Button
-                                sx={{
-                                    color: 'text.primary',
-                                    whiteSpace: 'nowrap',
-                                    '&:hover': {
-                                        color: '#ff6b00',
-                                        backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                                    },
-                                }}
+                                sx={navButtonSx(isActivePath('/'))}
                                 startIcon={<HomeIcon />}
                                 onClick={() => navigate('/')}
                             >
                                 Trang Chủ
                             </Button>
                             <Button
-                                sx={{
-                                    color: 'text.primary',
-                                    whiteSpace: 'nowrap',
-                                    '&:hover': {
-                                        color: '#ff6b00',
-                                        backgroundColor: 'rgba(255, 107, 0, 0.08)',
-                                    },
-                                }}
+                                sx={navButtonSx(isActivePath('/booking-history'))}
                                 startIcon={<HistoryIcon />}
                                 onClick={() => navigate('/booking-history')}
                             >
@@ -188,13 +197,13 @@ export const Navigation: React.FC = () => {
                                     sx={{
                                         '& .MuiOutlinedInput-root': {
                                             '& fieldset': {
-                                                borderColor: 'rgba(0, 0, 0, 0.23)',
+                                                borderColor: '#D1D5DB',
                                             },
                                             '&:hover fieldset': {
-                                                borderColor: '#ff6b00',
+                                                borderColor: 'primary.main',
                                             },
                                             '&.Mui-focused fieldset': {
-                                                borderColor: '#ff6b00',
+                                                borderColor: 'primary.main',
                                             },
                                         },
                                     }}
@@ -215,18 +224,18 @@ export const Navigation: React.FC = () => {
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                                    borderRadius: 1,
-                                    border: '1px solid rgba(0, 0, 0, 0.12)',
+                                    backgroundColor: '#F9FAFB',
+                                    borderRadius: 99,
+                                    border: '1px solid #E5E7EB',
                                     px: 1.5,
                                     py: 0.5,
                                     '&:hover': {
-                                        borderColor: '#ff6b00',
-                                        backgroundColor: 'rgba(255, 107, 0, 0.05)',
+                                        borderColor: 'primary.main',
+                                        backgroundColor: alpha('#E50914', 0.04),
                                     },
                                     '&:focus-within': {
-                                        borderColor: '#ff6b00',
-                                        backgroundColor: 'rgba(255, 107, 0, 0.02)',
+                                        borderColor: 'primary.main',
+                                        backgroundColor: alpha('#E50914', 0.03),
                                     },
                                     width: 200,
                                 }}
@@ -250,10 +259,10 @@ export const Navigation: React.FC = () => {
                                     type="submit"
                                     size="small"
                                     sx={{
-                                        color: '#ff6b00',
+                                        color: 'primary.main',
                                         p: 0.5,
                                         '&:hover': {
-                                            backgroundColor: 'rgba(255, 107, 0, 0.1)',
+                                            backgroundColor: alpha('#E50914', 0.1),
                                         },
                                     }}
                                 >
@@ -271,7 +280,7 @@ export const Navigation: React.FC = () => {
                             {authLoggedIn ? (
                                 <>
                                     <IconButton onClick={handleMenuOpen}>
-                                        <Avatar sx={{ width: 36, height: 36, bgcolor: '#ff6b00' }}>
+                                        <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
                                             {getUserInitial()}
                                         </Avatar>
                                     </IconButton>
@@ -303,7 +312,7 @@ export const Navigation: React.FC = () => {
 
                         {/* Mobile Menu Button */}
                         <Box sx={{ display: { xs: 'flex', md: 'none' }, ml: 'auto' }}>
-                            <IconButton onClick={() => setMobileDrawerOpen(true)} sx={{ color: '#ff6b00' }}>
+                            <IconButton onClick={() => setMobileDrawerOpen(true)} sx={{ color: 'primary.main' }}>
                                 <MenuIcon />
                             </IconButton>
                         </Box>
@@ -311,9 +320,9 @@ export const Navigation: React.FC = () => {
 
                     {/* Mobile Search Bar */}
                     <Box sx={{ display: { xs: 'flex', md: 'none' }, pb: 1 }}>
-                        <Box component="form" onSubmit={handleSearchSubmit} sx={{ width: '100%', display: 'flex', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.05)', borderRadius: 1, px: 1.5, py: 0.5 }}>
+                        <Box component="form" onSubmit={handleSearchSubmit} sx={{ width: '100%', display: 'flex', alignItems: 'center', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 99, px: 1.5, py: 0.5 }}>
                             <InputBase placeholder="Tìm phim..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} sx={{ flex: 1 }} />
-                            <IconButton type="submit" size="small" sx={{ color: '#ff6b00' }}>
+                            <IconButton type="submit" size="small" sx={{ color: 'primary.main' }}>
                                 <SearchIcon fontSize="small" />
                             </IconButton>
                         </Box>
@@ -323,9 +332,9 @@ export const Navigation: React.FC = () => {
 
             {/* Mobile Drawer */}
             <Drawer anchor="right" open={mobileDrawerOpen} onClose={() => setMobileDrawerOpen(false)}>
-                <Box sx={{ width: 280, p: 2 }}>
+                <Box sx={{ width: 280, p: 2, backgroundColor: '#FFFFFF', height: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                        <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: '#ff6b00' }}>
+                        <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: 'primary.main' }}>
                             <CloseIcon />
                         </IconButton>
                     </Box>
@@ -341,11 +350,11 @@ export const Navigation: React.FC = () => {
 
                     {/* Navigation Items */}
                     <MenuItem onClick={() => { navigate('/'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
-                        <HomeIcon sx={{ mr: 2, color: '#ff6b00' }} />
+                        <HomeIcon sx={{ mr: 2, color: 'primary.main' }} />
                         <Typography>Trang Chủ</Typography>
                     </MenuItem>
                     <MenuItem onClick={() => { navigate('/booking-history'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
-                        <HistoryIcon sx={{ mr: 2, color: '#ff6b00' }} />
+                        <HistoryIcon sx={{ mr: 2, color: 'primary.main' }} />
                         <Typography>Lịch Sử Đặt Vé</Typography>
                     </MenuItem>
 
@@ -355,15 +364,15 @@ export const Navigation: React.FC = () => {
                     {authLoggedIn ? (
                         <>
                             <MenuItem disabled sx={{ mb: 1 }}>
-                                <Avatar sx={{ mr: 2, width: 32, height: 32, bgcolor: '#ff6b00' }}>{getUserInitial()}</Avatar>
+                                <Avatar sx={{ mr: 2, width: 32, height: 32, bgcolor: 'primary.main' }}>{getUserInitial()}</Avatar>
                                 <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
                             </MenuItem>
                             <MenuItem onClick={() => { navigate('/booking-history'); setMobileDrawerOpen(false); }} sx={{ mb: 1, borderRadius: 1 }}>
-                                <HistoryIcon sx={{ mr: 2, color: '#ff6b00' }} />
+                                <HistoryIcon sx={{ mr: 2, color: 'primary.main' }} />
                                 <Typography>Lịch sử đặt vé</Typography>
                             </MenuItem>
                             <MenuItem onClick={handleLogout} sx={{ borderRadius: 1 }}>
-                                <LogoutIcon sx={{ mr: 2, color: '#ff6b00' }} />
+                                <LogoutIcon sx={{ mr: 2, color: 'primary.main' }} />
                                 <Typography>Đăng xuất</Typography>
                             </MenuItem>
                         </>

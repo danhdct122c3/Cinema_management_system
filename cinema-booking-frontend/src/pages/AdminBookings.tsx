@@ -26,12 +26,13 @@ import {
 } from '@mui/material';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import { Html5Qrcode } from 'html5-qrcode';
-import { adminBookingService, adminShowtimeService, adminUserService } from '../services/adminApi';
+import { adminBookingService, adminMovieService, adminShowtimeService, adminUserService } from '../services/adminApi';
 import { Booking, ShowTimeResponse } from '../types';
 
 export const AdminBookings: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [showtimeMap, setShowtimeMap] = useState<Record<string, ShowTimeResponse>>({});
+    const [movieTitleMap, setMovieTitleMap] = useState<Record<string, string>>({});
     const [userEmailMap, setUserEmailMap] = useState<Record<string, string>>({});
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -60,8 +61,9 @@ export const AdminBookings: React.FC = () => {
     const fetchBookings = async () => {
         try {
             setLoading(true);
-            const [bookingResponse, showtimeResponse, usersResponse] = await Promise.all([
+            const [bookingResponse, movieResponse, showtimeResponse, usersResponse] = await Promise.all([
                 adminBookingService.getAllBooking(),
+                adminMovieService.getAllMovies(),
                 adminShowtimeService.getAllShowtimes(),
                 adminUserService.getAllUsers(),
             ]);
@@ -76,17 +78,25 @@ export const AdminBookings: React.FC = () => {
                 {}
             );
 
+            // Build movieId -> movieTitle map for UI display
+            const movieMap = movieResponse.data.result.reduce<Record<string, string>>((acc, movie) => {
+                acc[movie.id] = movie.title;
+                return acc;
+            }, {});
+
             const nextUserEmailMap = usersResponse.data.result.reduce<Record<string, string>>((acc, user) => {
                 acc[user.id] = user.email;
                 return acc;
             }, {});
 
             setShowtimeMap(nextShowtimeMap);
+            setMovieTitleMap(movieMap);
             setUserEmailMap(nextUserEmailMap);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             setBookings([]);
             setShowtimeMap({});
+            setMovieTitleMap({});
             setUserEmailMap({});
         } finally {
             setLoading(false);
@@ -249,12 +259,18 @@ export const AdminBookings: React.FC = () => {
         return showtimeMap[showTimeId]?.roomName || 'N/A';
     };
 
+    const getMovieLabel = (showTimeId: string) => {
+        const movieId = showtimeMap[showTimeId]?.movieId;
+        if (!movieId) return 'N/A';
+        return movieTitleMap[movieId] || movieId;
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'CONFIRMED':
                 return { bg: 'rgba(76, 175, 80, 0.1)', color: '#4caf50' };
             case 'PENDING':
-                return { bg: 'rgba(255, 193, 7, 0.1)', color: '#ffc107' };
+                return { bg: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B' };
             case 'CANCELLED':
                 return { bg: 'rgba(244, 67, 54, 0.1)', color: '#f44336' };
             default:
@@ -410,6 +426,7 @@ export const AdminBookings: React.FC = () => {
                                             {getShowtimeLabel(booking.showTimeId)}
                                     </TableCell>
                                     <TableCell>{getRoomLabel(booking.showTimeId)}</TableCell>
+                                    <TableCell>{getMovieLabel(booking.showTimeId)}</TableCell>
                                     <TableCell>{booking.seatCodes?.join(', ') || 'N/A'}</TableCell>
                                     <TableCell>
                                         {new Date(booking.bookingTime).toLocaleString('vi-VN', {

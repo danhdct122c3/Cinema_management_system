@@ -96,8 +96,8 @@ export const SeatMap: React.FC<SeatMapProps> = ({
             <SeatLegend />
 
             {/* Screen */}
-            <Paper elevation={2} sx={{ p: 2, mb: 3, textAlign: 'center' }}>
-                <Typography variant="body2" color="textSecondary">
+            <Paper elevation={0} sx={{ p: 2, mb: 3, textAlign: 'center', borderRadius: 2.5, border: '1px solid #E5E7EB', background: 'linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%)' }}>
+                <Typography variant="body2" color="text.secondary" fontWeight={700}>
                     🎬 MÀN HÌNH
                 </Typography>
             </Paper>
@@ -111,14 +111,14 @@ export const SeatMap: React.FC<SeatMapProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             gap: 1,
-                            mb: 2,
+                            mb: 1.5,
                             justifyContent: 'center',
                         }}
                     >
-                        <Typography sx={{ minWidth: 20, fontWeight: 'bold' }}>
+                        <Typography sx={{ minWidth: 22, fontWeight: 'bold', color: 'text.secondary' }}>
                             {row}
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1, p: 0.75, borderRadius: 2, backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                             {seatsByRow[row]
                                 .sort((a, b) => {
                                     const numA = parseInt(a.seatCode.substring(1));
@@ -147,11 +147,11 @@ export const SeatMap: React.FC<SeatMapProps> = ({
 
             {/* Summary */}
             {selectedSeats.length > 0 && (
-                <Paper elevation={2} sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
-                    <Typography variant="body2">
+                <Paper elevation={0} sx={{ p: 2.5, backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: 2.5 }}>
+                    <Typography variant="body2" color="text.secondary">
                         Ghế đã chọn: {selectedSeats.map(s => s.seatCode).join(', ')}
                     </Typography>
-                    <Typography variant="h6" fontWeight="bold" sx={{ mt: 1, color: 'success.main' }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mt: 1, color: 'primary.main' }}>
                         Tổng tiền: ₫{selectedSeats.reduce((sum, s) => sum + s.price, 0).toLocaleString('vi-VN')}
                     </Typography>
                 </Paper>

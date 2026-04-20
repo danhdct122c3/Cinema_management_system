@@ -195,7 +195,7 @@ export const BookingHistory: React.FC = () => {
     }, [bookings.length]);
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" className="page-shell" sx={{ py: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 800, mb: 3 }}>
                 Lịch Sử Đặt Vé
             </Typography>
@@ -207,9 +207,10 @@ export const BookingHistory: React.FC = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     p: 2,
-                    borderRadius: 3,
-                    border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: 3.5,
+                    border: '1px solid #E5E7EB',
                     backgroundColor: 'background.paper',
+                    boxShadow: '0 8px 18px -18px rgba(0,0,0,0.3)',
                 }}
             >
 
@@ -252,10 +253,10 @@ export const BookingHistory: React.FC = () => {
                             elevation={0}
                             sx={{
                                 borderRadius: 3,
-                                border: '1px solid rgba(0,0,0,0.08)',
+                                border: '1px solid #E5E7EB',
                                 transition: 'all 0.2s ease',
                                 '&:hover': {
-                                    boxShadow: '0 10px 24px rgba(0,0,0,0.08)',
+                                    boxShadow: '0 14px 24px -16px rgba(0,0,0,0.35)',
                                     transform: 'translateY(-2px)',
                                 },
                             }}
@@ -269,7 +270,7 @@ export const BookingHistory: React.FC = () => {
                                     <Chip
                                         label={booking.status}
                                         color={getStatusColor(booking.status) as any}
-                                        sx={{ fontWeight: 700 }}
+                                        sx={{ fontWeight: 700, borderRadius: 2 }}
                                     />
                                 </Box>
                                 <Grid container spacing={2}>

@@ -30,21 +30,22 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                 minWidth: 280,
                 maxWidth: 280,
                 backgroundColor: 'background.paper',
-                transition: 'all 0.3s ease-in-out',
+                transition: 'all 0.28s ease-in-out',
                 '&:hover': {
-                    transform: 'translateY(-12px)',
-                    boxShadow: '0 16px 40px -12px rgba(255, 107, 0, 0.4)',
+                    transform: 'translateY(-6px) scale(1.02)',
+                    boxShadow: '0 20px 36px -20px rgba(0, 0, 0, 0.45)',
                     '& .movie-poster': {
                         transform: 'scale(1.05)',
                     },
-                    '& .book-button': {
-                        backgroundColor: '#ff6b00',
+                    '& .book-button-hover': {
+                        opacity: 1,
+                        transform: 'translateY(0)',
                     },
                 },
-                borderRadius: 2,
+                borderRadius: 3,
                 overflow: 'hidden',
-                border: '1px solid rgba(0, 0, 0, 0.12)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                border: '1px solid #E5E7EB',
+                boxShadow: '0 6px 16px -10px rgba(0, 0, 0, 0.2)',
             }}
         >
             <Box 
@@ -61,6 +62,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                     component="img"
                     image={movie.imageUrl || 'https://via.placeholder.com/280x420?text=No+Image'}
                     alt={movie.title}
+                    loading="lazy"
                     className="movie-poster"
                     sx={{
                         width: '100%',
@@ -69,6 +71,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                         objectPosition: 'center',
                         display: 'block',
                         transition: 'transform 0.3s ease-in-out',
+                    }}
+                />
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(180deg, rgba(17, 24, 39, 0.02) 45%, rgba(17, 24, 39, 0.65) 100%)',
                     }}
                 />
                 {/* Rating Badge */}
@@ -80,16 +89,16 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 0.5,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        backgroundColor: 'rgba(17, 24, 39, 0.75)',
                         backdropFilter: 'blur(10px)',
                         px: 1.5,
                         py: 0.5,
                         borderRadius: 2,
-                        border: '1px solid rgba(255, 193, 7, 0.3)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
                     }}
                 >
-                    <StarIcon sx={{ fontSize: 18, color: '#ffc107' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#ffc107', fontSize: '0.95rem' }}>
+                    <StarIcon sx={{ fontSize: 18, color: '#FACC15' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#FACC15', fontSize: '0.95rem' }}>
                         {rating}
                     </Typography>
                 </Box>
@@ -101,7 +110,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                         position: 'absolute',
                         top: 12,
                         right: 12,
-                        backgroundColor: 'rgba(255, 107, 0, 0.9)',
+                        backgroundColor: 'rgba(229, 9, 20, 0.9)',
                         color: 'white',
                         fontWeight: 'bold',
                         fontSize: '0.75rem',
@@ -109,6 +118,28 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                         border: '1px solid rgba(255, 255, 255, 0.2)',
                     }}
                 />
+
+                <Button
+                    variant="contained"
+                    className="book-button-hover"
+                    onClick={() => navigate(`/movie/${movie.id}`)}
+                    sx={{
+                        position: 'absolute',
+                        left: 14,
+                        right: 14,
+                        bottom: 14,
+                        opacity: 0,
+                        transform: 'translateY(8px)',
+                        transition: 'all 0.25s ease',
+                        fontWeight: 700,
+                        backgroundColor: 'primary.main',
+                        '&:hover': {
+                            backgroundColor: 'primary.dark',
+                        },
+                    }}
+                >
+                    Book Now
+                </Button>
             </Box>
             <CardContent sx={{ p: 2.5, pt: 2 }}>
                 <Typography
@@ -137,9 +168,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                         size="small"
                         sx={{
                             width: 'fit-content',
-                            backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                            color: '#ff6b00',
-                            border: '1px solid rgba(255, 107, 0, 0.3)',
+                            backgroundColor: 'rgba(229, 9, 20, 0.08)',
+                            color: 'primary.main',
+                            border: '1px solid rgba(229, 9, 20, 0.2)',
                             fontSize: '0.75rem',
                             fontWeight: 600,
                             height: 24,
@@ -151,17 +182,15 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                     variant="contained"
                     fullWidth
                     onClick={() => navigate(`/movie/${movie.id}`)}
-                    className="book-button"
                     sx={{
                         py: 1.2,
                         fontWeight: 700,
                         fontSize: '0.95rem',
-                        backgroundColor: 'rgba(255, 107, 0, 0.9)',
+                        backgroundColor: 'primary.main',
                         color: 'white',
-                        border: '1px solid rgba(255, 107, 0, 0.3)',
                         '&:hover': {
-                            backgroundColor: '#ff6b00',
-                            boxShadow: '0 4px 20px rgba(255, 107, 0, 0.4)',
+                            backgroundColor: 'primary.dark',
+                            boxShadow: '0 8px 20px -12px rgba(229, 9, 20, 0.8)',
                         },
                         transition: 'all 0.3s',
                     }}

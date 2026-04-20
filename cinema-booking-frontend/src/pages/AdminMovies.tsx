@@ -323,7 +323,7 @@ export const AdminMovies: React.FC = () => {
                     startIcon={<AddIcon />}
                     onClick={() => handleOpenDialog()}
                     sx={{
-                        background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                        background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                         borderRadius: 2,
                         textTransform: 'none',
                         px: 3,
@@ -392,8 +392,8 @@ export const AdminMovies: React.FC = () => {
                                         label={movie.genreNames?.join(', ')}
                                         size="small"
                                         sx={{
-                                            backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                                            color: '#ff6b00',
+                                            backgroundColor: 'rgba(229, 9, 20, 0.1)',
+                                            color: '#E50914',
                                             fontWeight: 600,
                                         }}
                                     />
@@ -404,8 +404,8 @@ export const AdminMovies: React.FC = () => {
                                         label={movie.status}
                                         size="small"
                                         sx={{
-                                            backgroundColor: movie.status === 'NOW_SHOWING' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 107, 0, 0.1)',
-                                            color: movie.status === 'NOW_SHOWING' ? '#4CAF50' : '#ff6b00',
+                                            backgroundColor: movie.status === 'NOW_SHOWING' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(229, 9, 20, 0.1)',
+                                            color: movie.status === 'NOW_SHOWING' ? '#4CAF50' : '#E50914',
                                             fontWeight: 600,
                                         }}
                                     />
@@ -529,8 +529,8 @@ export const AdminMovies: React.FC = () => {
                                 variant="outlined"
                                 onClick={handleOpenGenreDialog}
                                 sx={{
-                                    borderColor: '#ff6b00',
-                                    color: '#ff6b00',
+                                    borderColor: '#E50914',
+                                    color: '#E50914',
                                     fontWeight: 600,
                                     whiteSpace: 'nowrap',
                                 }}
@@ -584,16 +584,16 @@ export const AdminMovies: React.FC = () => {
                                 sx={{
                                     flex: 1,
                                     border: '2px dashed',
-                                    borderColor: isDraggingImage ? '#ff6b00' : '#ccc',
+                                    borderColor: isDraggingImage ? '#E50914' : '#ccc',
                                     borderRadius: 2,
                                     p: 3,
                                     textAlign: 'center',
-                                    backgroundColor: isDraggingImage ? 'rgba(255, 107, 0, 0.05)' : 'transparent',
+                                    backgroundColor: isDraggingImage ? 'rgba(229, 9, 20, 0.05)' : 'transparent',
                                     transition: 'all 0.3s ease',
                                     cursor: 'pointer',
                                     '&:hover': {
-                                        borderColor: '#ff6b00',
-                                        backgroundColor: 'rgba(255, 107, 0, 0.03)',
+                                        borderColor: '#E50914',
+                                        backgroundColor: 'rgba(229, 9, 20, 0.03)',
                                     }
                                 }}
                                 onClick={() => fileInputRef.current?.click()}
@@ -602,7 +602,7 @@ export const AdminMovies: React.FC = () => {
                                     variant="body2"
                                     sx={{ 
                                         fontWeight: 600,
-                                        color: isDraggingImage ? '#ff6b00' : '#666',
+                                        color: isDraggingImage ? '#E50914' : '#666',
                                     }}
                                 >
                                     {uploadingImage ? '⏳ Đang tải lên...' : '📸 Kéo thả hình ảnh hoặc click để chọn'}
@@ -634,7 +634,7 @@ export const AdminMovies: React.FC = () => {
                         variant="contained"
                         onClick={handleSubmit}
                         sx={{
-                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                            background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                             textTransform: 'none',
                             px: 3,
                             fontWeight: 600,
@@ -673,7 +673,7 @@ export const AdminMovies: React.FC = () => {
                         variant="contained"
                         disabled={creatingGenre}
                         sx={{
-                            background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%)',
+                            background: 'linear-gradient(135deg, #E50914 0%, #B91C1C 100%)',
                             textTransform: 'none',
                             px: 3,
                             fontWeight: 600,

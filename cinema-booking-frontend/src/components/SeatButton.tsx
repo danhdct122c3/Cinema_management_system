@@ -16,14 +16,11 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
     onClick,
 }) => {
     const getBackgroundColor = () => {
-        if (isSelected) return '#ff6b00';      // Selected: Orange
-        if (seat.status === 'AVAILABLE') {
-            // Distinguish VIP and NORMAL seats by color
-            return seat.seatType === 'VIP' ? '#9c27b0' : '#4caf50';  // VIP: Purple, NORMAL: Green
-        }
-        if (seat.status === 'HOLD') return '#ffc107';       // Hold: Yellow
-        if (seat.status === 'BOOKED') return '#e0e0e0';     // Booked: Grey
-        return '#e0e0e0';
+        if (isSelected) return '#E50914';
+        if (seat.status === 'AVAILABLE') return '#E2E8F0';
+        if (seat.status === 'HOLD') return '#F59E0B';
+        if (seat.status === 'BOOKED') return '#9CA3AF';
+        return '#E2E8F0';
     };
 
     // Format hold expiration time for tooltip
@@ -53,28 +50,32 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: getBackgroundColor(),
-                border: isSelected ? '2px solid #ff6b00' : '1px solid rgba(0,0,0,0.1)',
-                borderRadius: 1,
+                border: isSelected ? '2px solid #BE123C' : '1px solid #CBD5E1',
+                borderRadius: 1.5,
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled && !isSelected ? 0.6 : 1,
-                transition: 'all 0.2s ease',
+                transition: 'all 0.24s ease',
                 userSelect: 'none',
                 '&:hover': !isDisabled ? {
                     transform: 'scale(1.05)',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    boxShadow: isSelected ? '0 0 0 4px rgba(229, 9, 20, 0.15)' : '0 8px 16px -10px rgba(15, 23, 42, 0.6)',
+                    filter: 'brightness(1.02)',
+                } : {},
+                '&:active': !isDisabled ? {
+                    transform: 'scale(0.95)',
                 } : {},
             }}
         >
             <Typography 
                 variant="caption" 
                 fontWeight="bold"
-                sx={{ color: isSelected || seat.status === 'AVAILABLE' ? '#fff' : '#666' }}
+                sx={{ color: isSelected ? '#fff' : '#1F2937' }}
             >
                 {seat.seatCode}
             </Typography>
             <Typography
                 variant="caption"
-                sx={{ color: isSelected || seat.status === 'AVAILABLE' ? '#fff' : '#999', fontSize: '10px' }}
+                sx={{ color: isSelected ? '#fff' : '#475569', fontSize: '10px' }}
             >
                 {(seat.price / 1000).toFixed(0)}k
             </Typography>

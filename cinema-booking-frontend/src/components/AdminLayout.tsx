@@ -6,7 +6,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import MovieIcon from '@mui/icons-material/Movie';
 import EventIcon from '@mui/icons-material/Event';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useAdminAuth } from '../context/AdminAuthContext';
@@ -82,18 +81,19 @@ export const AdminLayout: React.FC = () => {
     };
 
     const drawer = (
-        <Box>
+        <Box sx={{ height: '100%', backgroundColor: '#FFFFFF', borderRight: '1px solid #E5E7EB' }}>
             <Box
                 sx={{
                     p: 3,
-                    background: 'linear-gradient(135deg, #ff6b00 0%, #ff8c3a 100%)',
-                    color: 'white',
+                    backgroundColor: '#FFFFFF',
+                    borderBottom: '1px solid #E5E7EB',
+                    color: '#111827',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1.5,
                 }}
             >
-                <AdminPanelSettingsIcon sx={{ fontSize: 40 }} />
+                <AdminPanelSettingsIcon sx={{ fontSize: 34, color: '#E50914' }} />
                 <Box>
                     <Typography variant="h6" fontWeight={700}>
                         Khu Vực Quản Trị
@@ -114,14 +114,17 @@ export const AdminLayout: React.FC = () => {
                             sx={{
                                 borderRadius: 2,
                                 mb: 1,
-                                backgroundColor: isActive ? 'rgba(255, 107, 0, 0.1)' : 'transparent',
-                                color: isActive ? '#ff6b00' : 'text.primary',
+                                borderLeft: '3px solid',
+                                borderLeftColor: isActive ? '#E50914' : 'transparent',
+                                backgroundColor: isActive ? 'rgba(229, 9, 20, 0.1)' : 'transparent',
+                                color: isActive ? '#E50914' : 'text.primary',
+                                transition: 'all 0.15s ease',
                                 '&:hover': {
-                                    backgroundColor: isActive ? 'rgba(255, 107, 0, 0.15)' : 'rgba(0, 0, 0, 0.04)',
+                                    backgroundColor: isActive ? 'rgba(229, 9, 20, 0.14)' : 'rgba(0, 0, 0, 0.04)',
                                 },
                             }}
                         >
-                            <ListItemIcon sx={{ color: isActive ? '#ff6b00' : 'inherit', minWidth: 40 }}>
+                            <ListItemIcon sx={{ color: isActive ? '#E50914' : 'inherit', minWidth: 40 }}>
                                 {item.icon}
                             </ListItemIcon>
                             <ListItemText 
@@ -139,14 +142,17 @@ export const AdminLayout: React.FC = () => {
                     sx={{
                         borderRadius: 2,
                         mb: 1,
-                        backgroundColor: isSystemActive ? 'rgba(255, 107, 0, 0.1)' : 'transparent',
-                        color: isSystemActive ? '#ff6b00' : 'text.primary',
+                        borderLeft: '3px solid',
+                        borderLeftColor: isSystemActive ? '#E50914' : 'transparent',
+                        backgroundColor: isSystemActive ? 'rgba(229, 9, 20, 0.1)' : 'transparent',
+                        color: isSystemActive ? '#E50914' : 'text.primary',
+                        transition: 'all 0.15s ease',
                         '&:hover': {
-                            backgroundColor: isSystemActive ? 'rgba(255, 107, 0, 0.15)' : 'rgba(0, 0, 0, 0.04)',
+                            backgroundColor: isSystemActive ? 'rgba(229, 9, 20, 0.14)' : 'rgba(0, 0, 0, 0.04)',
                         },
                     }}
                 >
-                    <ListItemIcon sx={{ color: isSystemActive ? '#ff6b00' : 'inherit', minWidth: 40 }}>
+                    <ListItemIcon sx={{ color: isSystemActive ? '#E50914' : 'inherit', minWidth: 40 }}>
                         <SettingsSuggestIcon />
                     </ListItemIcon>
                     <ListItemText
@@ -170,14 +176,17 @@ export const AdminLayout: React.FC = () => {
                                         borderRadius: 2,
                                         mb: 0.75,
                                         ml: 2,
-                                        backgroundColor: isActive ? 'rgba(255, 107, 0, 0.1)' : 'transparent',
-                                        color: isActive ? '#ff6b00' : 'text.secondary',
+                                        borderLeft: '3px solid',
+                                        borderLeftColor: isActive ? '#E50914' : 'transparent',
+                                        backgroundColor: isActive ? 'rgba(229, 9, 20, 0.1)' : 'transparent',
+                                        color: isActive ? '#E50914' : 'text.secondary',
+                                        transition: 'all 0.15s ease',
                                         '&:hover': {
-                                            backgroundColor: isActive ? 'rgba(255, 107, 0, 0.15)' : 'rgba(0, 0, 0, 0.04)',
+                                            backgroundColor: isActive ? 'rgba(229, 9, 20, 0.14)' : 'rgba(0, 0, 0, 0.04)',
                                         },
                                     }}
                                 >
-                                    <ListItemIcon sx={{ color: isActive ? '#ff6b00' : 'inherit', minWidth: 36 }}>
+                                    <ListItemIcon sx={{ color: isActive ? '#E50914' : 'inherit', minWidth: 36 }}>
                                         {item.icon}
                                     </ListItemIcon>
                                     <ListItemText
@@ -205,7 +214,8 @@ export const AdminLayout: React.FC = () => {
                 sx={{
                     width: { sm: `calc(100% - ${drawerWidth}px)` },
                     ml: { sm: `${drawerWidth}px` },
-                    backgroundColor: 'white',
+                    backgroundColor: 'rgba(255,255,255,0.85)',
+                    backdropFilter: 'blur(12px)',
                     color: 'text.primary',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                 }}
@@ -224,7 +234,7 @@ export const AdminLayout: React.FC = () => {
                         Quản Trị Hệ Thống
                     </Typography>
                     <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-                        <Avatar sx={{ bgcolor: '#ff6b00' }}>A</Avatar>
+                        <Avatar sx={{ bgcolor: '#E50914' }}>A</Avatar>
                     </IconButton>
                     <Menu
                         anchorEl={anchorEl}
@@ -286,7 +296,7 @@ export const AdminLayout: React.FC = () => {
                     flexGrow: 1,
                     p: 3,
                     width: { sm: `calc(100% - ${drawerWidth}px)` },
-                    backgroundColor: '#f5f5f5',
+                    backgroundColor: '#F3F4F6',
                     minHeight: '100vh',
                 }}
             >
