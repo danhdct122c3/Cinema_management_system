@@ -474,7 +474,7 @@ export const AdminScreenings: React.FC = () => {
                                             <TableCell sx={{ fontWeight: 700 }}>Phim</TableCell>
                                             <TableCell sx={{ fontWeight: 700 }}>Phòng</TableCell>
                                             <TableCell sx={{ fontWeight: 700 }}>Thời Gian</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
+                                            {/* <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell> */}
                                             <TableCell align="center" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -486,14 +486,14 @@ export const AdminScreenings: React.FC = () => {
                                                 <TableCell>
                                                     {formatDateTime(showtime.startTime)}
                                                 </TableCell>
-                                                <TableCell>
+                                                {/* <TableCell>
                                                     <Chip
                                                         label={showtime.status === 'ACTIVE' ? 'Hoạt Động' : 'Đã Hủy'}
                                                         size="small"
                                                         color={showtime.status === 'ACTIVE' ? 'success' : 'error'}
                                                         variant="outlined"
                                                     />
-                                                </TableCell>
+                                                </TableCell> */}
                                                 <TableCell align="center">
                                                     <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                                                         <IconButton
