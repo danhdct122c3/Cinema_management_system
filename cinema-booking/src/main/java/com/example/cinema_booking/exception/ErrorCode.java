@@ -48,6 +48,7 @@ public enum ErrorCode {
     SHOWTIME_OVERLAP(1406, "Suất chiếu bị trùng với suất chiếu hiện có", HttpStatus.BAD_REQUEST),
     SHOWTIME_HAS_BOOKINGS(1407, "Không thể xóa hoặc cập nhật suất chiếu đã có đặt vé", HttpStatus.BAD_REQUEST),
     MOVIE_ENDED(1408,"Phim đã  ngừng chiếu" ,  HttpStatus.BAD_REQUEST),
+    ROOM_SEAT_LIMIT_EXCEEDED(1409, "Mỗi phòng chiếu chỉ được tối đa 300 ghế", HttpStatus.BAD_REQUEST),
 
     // 15xx - Seat and hold
     SEAT_ALREADY_EXIST(1501, "Ghế đã tồn tại", HttpStatus.BAD_REQUEST),
