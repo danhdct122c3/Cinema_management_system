@@ -517,36 +517,14 @@ export const AdminBookings: React.FC = () => {
                             {scanError}
                         </Alert>
                     )}
-
-                    <Divider sx={{ my: 2 }} />
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        Hoặc dán token QR thủ công:
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        multiline
-                        minRows={2}
-                        placeholder="Dán token hoặc nội dung QR..."
-                        value={manualToken}
-                        onChange={(e) => setManualToken(e.target.value)}
-                        disabled={scanRequestLoading}
-                    />
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2 }}>
+                <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'center' }}>
                     <Button
                         onClick={() => setScanDialogOpen(false)}
                         disabled={scanRequestLoading}
+                        color="error"
                     >
                         Đóng
-                    </Button>
-                    <Button
-                        variant="contained"
-                        disabled={scanRequestLoading || !manualToken.trim()}
-                        onClick={() => executeScanConfirm(manualToken)}
-                        startIcon={scanRequestLoading ? <CircularProgress size={16} /> : undefined}
-                    >
-                        Xác nhận token
                     </Button>
                 </DialogActions>
             </Dialog>

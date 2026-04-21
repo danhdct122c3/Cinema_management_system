@@ -27,7 +27,6 @@ export const MovieDetail: React.FC = () => {
     const navigate = useNavigate();
     const [movie, setMovie] = useState<Movie | null>(null);
     const [loading, setLoading] = useState(true);
-    const [rating] = useState((Math.random() * 2.5 + 7).toFixed(1));
     const [trailerOpen, setTrailerOpen] = useState(false);
 
     useEffect(() => {
@@ -132,26 +131,6 @@ export const MovieDetail: React.FC = () => {
                                             display: 'block',
                                         }}
                                     />
-                                    {/* Rating Badge */}
-                                    <Box
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 12,
-                                            left: 12,
-                                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                            backdropFilter: 'blur(10px)',
-                                            px: 1.5,
-                                            py: 0.5,
-                                            borderRadius: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 0.5,
-                                        }}
-                                    >
-                                        <Typography sx={{ color: '#FACC15', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                            ⭐ {rating}
-                                        </Typography>
-                                    </Box>
                                     {/* Age Rating */}
                                     <Box
                                         sx={{

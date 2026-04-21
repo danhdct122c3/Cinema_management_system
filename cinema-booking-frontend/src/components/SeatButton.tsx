@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Tooltip } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { SeatShowTimeResponse } from '../types';
 
 interface SeatButtonProps {
@@ -44,22 +44,6 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
     const getMetaTextColor = () => {
         if (isSelected || isHoldSeat || isBookedSeat || !isVipSeat) return '#E2E8F0';
         return '#111827';
-    };
-
-    // Format hold expiration time for tooltip
-    const getHoldTooltip = () => {
-        if (seat.status === 'HOLD') {
-            const heldInfo = seat.heldByUserEmail ? `Đang giữ bởi: ${seat.heldByUserEmail}` : 'Ghế đang được giữ';
-            if (seat.holdExpireTime) {
-                const expireDate = new Date(seat.holdExpireTime);
-                const timeRemaining = Math.max(0, (expireDate.getTime() - Date.now()) / 1000);
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = Math.floor(timeRemaining % 60);
-                return `${heldInfo}\nHết hạn sau: ${minutes}p ${seconds}g`;
-            }
-            return heldInfo;
-        }
-        return seat.status === 'BOOKED' ? 'Ghế này đã được đặt' : '';
     };
 
     const seatButton = (
@@ -110,14 +94,6 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
             </Typography>
         </Box>
     );
-
-    if (seat.status === 'HOLD' || seat.status === 'BOOKED') {
-        return (
-            <Tooltip title={getHoldTooltip()} arrow>
-                {seatButton}
-            </Tooltip>
-        );
-    }
 
     return seatButton;
 };

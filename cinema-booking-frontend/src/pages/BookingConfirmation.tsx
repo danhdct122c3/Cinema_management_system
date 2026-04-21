@@ -353,7 +353,7 @@ export const BookingConfirmation: React.FC = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={handleBackClick}
+                            onClick={() => navigate(-1)}
                         >
                             Quay Lại Chọn Ghế
                         </Button>
@@ -404,7 +404,7 @@ export const BookingConfirmation: React.FC = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={handleBackClick}
+                            onClick={() => navigate(-1)}
                         >
                             Quay Lại Chọn Ghế
                         </Button>
