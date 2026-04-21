@@ -353,9 +353,9 @@ export const BookingConfirmation: React.FC = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate('/')}
                         >
-                            Quay Lại Chọn Ghế
+                            Về Trang Chủ
                         </Button>
                     </Box>
                 </Paper>
@@ -404,9 +404,9 @@ export const BookingConfirmation: React.FC = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate('/')}
                         >
-                            Quay Lại Chọn Ghế
+                            Về Trang Chủ
                         </Button>
                     </Box>
                 </Paper>
