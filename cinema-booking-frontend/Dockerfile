@@ -10,7 +10,7 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
-ENV BACKEND_UPSTREAM_URL=http://app:8080
+ENV BACKEND_UPSTREAM_URL=https://backend-deployment-production-42ef.up.railway.app
 COPY --from=build /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 80
