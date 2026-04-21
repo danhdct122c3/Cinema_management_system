@@ -25,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
         String[] origins = resolveAllowedOrigins();
 
         registry.addMapping("/**")
-                .allowedOriginPatterns(origins.length > 0 ? origins : new String[]{"http://localhost:3000"})
+                .allowedOriginPatterns(origins.length > 0 ? origins : new String[]{"https://cinemamanagementsystem-production.up.railway.app"})
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
