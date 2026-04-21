@@ -35,8 +35,6 @@ interface RoomRequest {
     totalColumns: number;
 }
 
-const API_BASE_URL = 'http://localhost:8080/home';
-
 export const AdminRooms: React.FC = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loadingRooms, setLoadingRooms] = useState(true);

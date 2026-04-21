@@ -35,8 +35,6 @@ interface Room {
     roomName: string;
 }
 
-const API_BASE_URL = 'http://localhost:8080/home';
-
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
