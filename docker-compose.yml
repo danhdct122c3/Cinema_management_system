@@ -32,6 +32,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
       SPRING_DATASOURCE_USERNAME: cinema_user
       SPRING_DATASOURCE_PASSWORD: cinema_password
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
       TZ: Asia/Ho_Chi_Minh
       JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Ho_Chi_Minh
     depends_on:
@@ -48,6 +49,8 @@ services:
         REACT_APP_API_BASE_URL: /home
     container_name: cinema_frontend
     restart: unless-stopped
+    environment:
+      BACKEND_UPSTREAM_URL: http://app:8080
     ports:
       - "3000:80"
     depends_on:
