@@ -10,7 +10,8 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
+ENV BACKEND_UPSTREAM_URL=http://app:8080
 COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"] 
