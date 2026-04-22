@@ -191,35 +191,45 @@ export const MovieList: React.FC = () => {
                     sx={{
                         position: 'relative',
                         '& .swiper': {
-                            paddingBottom: '20px',
-                            overflow: 'visible',
+                            padding: { xs: '0 24px 20px', sm: '0 40px 20px', md: '0 54px 20px' },
+                            overflow: 'hidden',
                         },
                         '& .swiper-button-next, & .swiper-button-prev': {
                             backgroundColor: 'transparent',
                             border: 'none',
                             borderRadius: 0,
-                            width: 'auto',
-                            height: 'auto',
+                            width: { xs: 28, sm: 34, md: 40 },
+                            height: { xs: 28, sm: 34, md: 40 },
                             top: '48%',
                             transform: 'translateY(-50%)',
+                            marginTop: 0,
                             color: '#E50914',
+                            zIndex: 3,
                             transition: 'transform 0.2s ease, opacity 0.2s ease',
                             '&:hover': {
                                 transform: 'translateY(-52%) scale(1.08)',
                                 opacity: 0.92,
                             },
                             '&::after': {
-                                fontSize: '44px',
-                                color: '#E50914',
-                                fontWeight: 900,
-                                textShadow: '0 0 1px #E50914',
+                                content: '""',
+                                display: 'block',
+                                width: { xs: 10, sm: 12, md: 14 },
+                                height: { xs: 10, sm: 12, md: 14 },
+                                borderTop: { xs: '3px solid #E50914', md: '4px solid #E50914' },
+                                borderRight: { xs: '3px solid #E50914', md: '4px solid #E50914' },
                             },
                         },
+                        '& .swiper-button-next::after': {
+                            transform: 'rotate(45deg)',
+                        },
+                        '& .swiper-button-prev::after': {
+                            transform: 'rotate(-135deg)',
+                        },
                         '& .swiper-button-next': {
-                            right: { xs: -6, sm: -18, md: -34 },
+                            right: { xs: 2, sm: 6, md: 8 },
                         },
                         '& .swiper-button-prev': {
-                            left: { xs: -6, sm: -18, md: -34 },
+                            left: { xs: 2, sm: 6, md: 8 },
                         },
                         '& .swiper-button-disabled': {
                             opacity: 0.28,
