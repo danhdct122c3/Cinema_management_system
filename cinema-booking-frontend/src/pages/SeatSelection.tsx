@@ -130,12 +130,12 @@ export const SeatSelection: React.FC = () => {
 
     return (
         <Box className="page-shell" sx={{ bgcolor: '#F3F4F6', minHeight: '100vh', pb: 4 }}>
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
                 {/* Back Button */}
                 <Button
                     startIcon={<ArrowBackIcon />}
                     onClick={() => navigate(-1)}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: { xs: 2, sm: 3 } }}
                 >
                     Quay lại
                 </Button>
@@ -144,8 +144,8 @@ export const SeatSelection: React.FC = () => {
                 <ShowtimeHeader showtime={showtime} availableSeatsCount={availableSeatsCount} />
 
                 {/* Seat Selection Section */}
-                <Paper elevation={0} sx={{ p: 4, mt: 4, borderRadius: 3, border: '1px solid #E5E7EB' }}>
-                    <Typography variant="h5" fontWeight="bold" mb={3} color="text.primary">
+                <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 4 }, mt: { xs: 2.5, sm: 4 }, borderRadius: { xs: 2, sm: 3 }, border: '1px solid #E5E7EB' }}>
+                    <Typography variant="h5" fontWeight="bold" mb={{ xs: 2, sm: 3 }} color="text.primary" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Chọn Ghế Của Bạn
                     </Typography>
 
@@ -166,8 +166,8 @@ export const SeatSelection: React.FC = () => {
                         elevation={0}
                         sx={{
                             mt: 4,
-                            p: 3,
-                            borderRadius: 3,
+                            p: { xs: 2, sm: 3 },
+                            borderRadius: { xs: 2, sm: 3 },
                             border: '1px solid #FECACA',
                             background: 'linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 100%)',
                             color: 'text.primary',

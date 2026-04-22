@@ -50,15 +50,15 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
         <Box
             onClick={!isDisabled ? onClick : undefined}
             sx={{
-                width: 54,
-                height: 54,
+                width: { xs: 40, sm: 54 },
+                height: { xs: 40, sm: 54 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: getBackgroundColor(),
                 border: `2px solid ${getBorderColor()}`,
-                borderRadius: 1.5,
+                borderRadius: { xs: 1.2, sm: 1.5 },
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled && !isSelected ? 0.6 : 1,
                 transition: 'all 0.24s ease',
@@ -76,13 +76,13 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
             <Typography
                 variant="caption"
                 fontWeight="bold"
-                sx={{ color: getPrimaryTextColor() }}
+                sx={{ color: getPrimaryTextColor(), fontSize: { xs: '0.68rem', sm: '0.74rem' }, lineHeight: 1.05 }}
             >
                 {seat.seatCode}
             </Typography>
             <Typography
                 variant="caption"
-                sx={{ color: getMetaTextColor(), fontSize: '9px', fontWeight: 700, lineHeight: 1.1 }}
+                sx={{ color: getMetaTextColor(), fontSize: { xs: '7px', sm: '9px' }, fontWeight: 700, lineHeight: 1.05 }}
             >
                 {isVipSeat ? 'VIP' : 'THUONG'}
             </Typography>
