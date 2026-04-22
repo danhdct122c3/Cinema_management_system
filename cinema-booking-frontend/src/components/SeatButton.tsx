@@ -86,12 +86,6 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
             >
                 {isVipSeat ? 'VIP' : 'THUONG'}
             </Typography>
-            <Typography
-                variant="caption"
-                sx={{ color: getMetaTextColor(), fontSize: '9px', lineHeight: 1.1 }}
-            >
-                {(seat.price / 1000).toFixed(0)}k
-            </Typography>
         </Box>
     );
 
