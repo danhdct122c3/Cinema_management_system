@@ -92,7 +92,9 @@ public class SeatShowTimeServiceImpl  implements SeatShowTimeService {
 
 
         for(SeatShowTime sst : seatShowTimes){
-            if(sst.getSeat().getType() == type){
+            // Keep historical and in-progress booking prices stable.
+            // Only update seats that are still available for new bookings.
+            if(sst.getSeat().getType() == type && sst.getStatus() == SeatStatus.AVAILABLE){
                 sst.setPrice(price);
             }
         }
