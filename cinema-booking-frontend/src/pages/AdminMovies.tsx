@@ -301,7 +301,7 @@ export const AdminMovies: React.FC = () => {
             console.error('Error deleting movie:', error);
             alert('Phim đã có xuất chiếu / vé đã được đặt. Không thể xóa!!');
         }
-0    };
+    };
 
     const paginatedMovies = movies.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
