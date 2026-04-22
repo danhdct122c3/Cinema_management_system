@@ -299,9 +299,9 @@ export const AdminMovies: React.FC = () => {
             fetchMovies(); // Refresh list after delete
         } catch (error) {
             console.error('Error deleting movie:', error);
-            alert('Lỗi xóa phim. Vui lòng thử lại.');
+            alert('Phim đã có xuất chiếu / vé đã được đặt. Không thể xóa!!');
         }
-    };
+0    };
 
     const paginatedMovies = movies.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
