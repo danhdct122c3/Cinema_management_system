@@ -191,32 +191,49 @@ export const MovieList: React.FC = () => {
                     sx={{
                         position: 'relative',
                         '& .swiper': {
-                            paddingBottom: '20px',
+                            padding: { xs: '0 34px 20px', sm: '0 46px 20px' },
                         },
                         '& .swiper-button-next, & .swiper-button-prev': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
-                            border: '1px solid #E5E7EB',
+                            backgroundColor: '#E50914',
+                            border: 'none',
                             borderRadius: '50%',
-                            width: 50,
-                            height: 50,
+                            width: { xs: 44, sm: 52 },
+                            height: { xs: 44, sm: 52 },
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            transition: 'all 0.3s',
+                            boxShadow: '0 12px 20px -12px rgba(229, 9, 20, 0.7)',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease',
+                            marginTop: 0,
+                            zIndex: 3,
                             '&:hover': {
-                                backgroundColor: '#FFFFFF',
+                                backgroundColor: '#C90711',
                                 transform: 'translateY(-50%) scale(1.1)',
+                                boxShadow: '0 14px 26px -12px rgba(201, 7, 17, 0.8)',
                             },
                             '&::after': {
-                                fontSize: '20px',
-                                color: '#111827',
-                                fontWeight: 'bold',
+                                content: '""',
+                                width: { xs: 12, sm: 14 },
+                                height: { xs: 12, sm: 14 },
+                                borderTop: { xs: '3px solid #FFFFFF', sm: '4px solid #FFFFFF' },
+                                borderRight: { xs: '3px solid #FFFFFF', sm: '4px solid #FFFFFF' },
                             },
                         },
+                        '& .swiper-button-next::after': {
+                            transform: 'rotate(45deg)',
+                            marginLeft: { xs: -2, sm: -1 },
+                        },
+                        '& .swiper-button-prev::after': {
+                            transform: 'rotate(-135deg)',
+                            marginRight: { xs: -2, sm: -1 },
+                        },
                         '& .swiper-button-next': {
-                            right: -10,
+                            right: { xs: 4, sm: 6 },
                         },
                         '& .swiper-button-prev': {
-                            left: -10,
+                            left: { xs: 4, sm: 6 },
+                        },
+                        '& .swiper-button-disabled': {
+                            opacity: 0.45,
                         },
                         '& .swiper-pagination-bullet': {
                             backgroundColor: '#CBD5E1',
