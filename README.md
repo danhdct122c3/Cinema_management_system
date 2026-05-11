@@ -1,48 +1,93 @@
 # Cinema Booking System
 
-Cinema Booking System là một ứng dụng đặt vé xem phim trực tuyến được xây dựng theo mô hình full-stack với Spring Boot ở backend và React ở frontend. Dự án được đóng gói bằng Docker để có thể chạy đồng bộ toàn bộ hệ thống chỉ bằng một lệnh.
+Cinema Booking System là một ứng dụng đặt vé xem phim trực tuyến theo mô hình full-stack
 
 ## Tổng quan dự án
 
-Mục tiêu của dự án là mô phỏng một hệ thống đặt vé phim thực tế, trong đó người dùng có thể xem phim, chọn suất chiếu, chọn ghế và tạo booking. Ở phía quản trị, admin có thể đăng nhập vào khu vực riêng `/admin` để quản lý dữ liệu vận hành của hệ thống.
+Dự án mô phỏng một quy trình đặt vé phim thực tế: người dùng xem phim, chọn suất chiếu, chọn ghế, thanh toán và theo dõi lịch sử đặt vé. Bên cạnh đó, hệ thống có khu vực quản trị riêng tại `/admin` để quản lý dữ liệu vận hành.
 
-Đây là một project phù hợp để demo cho nhà tuyển dụng vì có đủ các lớp chức năng chính của một web application hiện đại: giao diện người dùng, API backend, cơ sở dữ liệu, phân quyền và triển khai bằng Docker.
+
+
+## Điểm nổi bật
+
+- Luồng đặt vé hoàn chỉnh từ xem phim đến thanh toán
+- Tách biệt rõ trải nghiệm của người dùng và quản trị viên
+- Tích hợp VNPay sandbox cho thanh toán online
+- Chọn ghế theo sơ đồ phòng chiếu và giữ ghế tạm thời
+- Chạy đồng bộ toàn hệ thống qua Docker Compose
 
 ## Tính năng chính
 
-### Dành cho người dùng
+### Người dùng
 
 - Xem danh sách phim và chi tiết phim
-- Tìm kiếm và khám phá các bộ phim đang chiếu
+- Tìm kiếm, khám phá và chọn phim đang chiếu
 - Chọn suất chiếu, chọn ghế và đặt vé
-- Theo dõi lịch sử đặt vé
-- Trải nghiệm quy trình đặt vé nhanh và trực quan
+- Thanh toán qua VNPay sandbox
+- Xem lịch sử đặt vé
 
-### Dành cho quản trị viên
+### Quản trị viên
 
-- Truy cập khu vực quản trị tại `/admin`
-- Quản lý phim, suất chiếu, phòng chiếu và các dữ liệu vận hành khác
-- Theo dõi thông tin booking và người dùng
-- Có luồng đăng nhập riêng cho admin
+- Đăng nhập tại khu vực `/admin`
+- Quản lý phim, suất chiếu, phòng chiếu và booking
+- Theo dõi thông tin người dùng và trạng thái vận hành
+- Phân tách luồng quản trị với luồng người dùng
+
+## Luồng hoạt động
+
+### Luồng đặt vé
+
+1. Người dùng đăng nhập vào hệ thống.
+2. Người dùng chọn phim, xem chi tiết và chọn suất chiếu.
+3. Hệ thống hiển thị sơ đồ ghế theo phòng chiếu.
+4. Ghế được giữ tạm trong một khoảng thời gian để tránh đặt trùng.
+5. Người dùng xác nhận booking và chuyển sang thanh toán.
+
+### Luồng thanh toán VNPay
+
+1. Người dùng chọn thanh toán qua VNPay.
+2. Backend tạo request và điều hướng sang cổng thanh toán sandbox.
+3. Người dùng nhập thông tin thẻ demo và OTP để hoàn tất giao dịch.
+4. VNPay trả kết quả về backend để cập nhật trạng thái thanh toán.
+5. Booking được ghi nhận và hiển thị trong lịch sử đặt vé.
+
+### Luồng quản trị
+
+1. Admin truy cập trang `/admin`.
+2. Admin đăng nhập bằng tài khoản quản trị riêng.
+3. Admin quản lý phim, phòng chiếu, suất chiếu và booking.
+4. Phân quyền được tách biệt để đảm bảo kiểm soát hệ thống.
 
 ## Công nghệ sử dụng
 
 - **Backend**: Spring Boot, Maven, MySQL
 - **Frontend**: React, TypeScript
 - **Triển khai**: Docker, Docker Compose, Nginx
-- **Giao tiếp hệ thống**: REST API
+- **Kiến trúc giao tiếp**: REST API
 
 ## Tài khoản demo
 
-Bạn có thể dùng các tài khoản sau để test nhanh hệ thống:
+### Tài khoản người dùng
 
-- **Tài khoản user**
-  - Email: `test@gmail.com`
-  - Mật khẩu: `test`
-- **Tài khoản admin**
-  - Truy cập: `/admin`
-  - Email: `admin@gmail.com`
-  - Mật khẩu: `admin`
+- Email: test@gmail.com
+- Mật khẩu: test
+
+### Tài khoản quản trị
+
+- Truy cập: `/admin`
+- Email: admin@gmail.com
+- Mật khẩu: admin
+
+### VNPay sandbox
+
+Thông tin mặc định để test thanh toán:
+
+- Ngân hàng: NCB
+- Số thẻ: 9704198526191432198
+- Tên chủ thẻ: NGUYEN VAN A
+- Ngày phát hành: 07/15
+- Mật khẩu OTP: 123456
+- Kết quả giao dịch: Thành công
 
 ## Cách chạy dự án
 
@@ -74,7 +119,7 @@ Lệnh này sẽ:
 
 ### 4. Truy cập ứng dụng
 
-Sau khi hệ thống chạy xong, mở:
+Sau khi hệ thống khởi động xong, truy cập:
 
 - **Frontend**: http://localhost
 - **Backend API**: http://localhost:8080/home
@@ -84,15 +129,15 @@ Sau khi hệ thống chạy xong, mở:
 ```text
 Cinema-Booking/
 ├── cinema-booking/           # Backend Spring Boot
-│   ├── src/                   # Source code Java
-│   ├── docker/                # Docker config cho backend
-│   └── pom.xml                # Maven dependencies
-├── cinema-booking-frontend/   # Frontend React
-│   ├── src/                   # Source code React/TypeScript
-│   ├── public/                # Static assets
-│   └── package.json           # NPM dependencies
-├── docker-compose.yml         # Cấu hình chạy toàn hệ thống
-└── README.md                  # Tài liệu dự án
+│   ├── src/                  # Source code Java
+│   ├── docker/               # Docker config cho backend
+│   └── pom.xml               # Maven dependencies
+├── cinema-booking-frontend/  # Frontend React
+│   ├── src/                  # Source code React/TypeScript
+│   ├── public/               # Static assets
+│   └── package.json          # NPM dependencies
+├── docker-compose.yml        # Cấu hình chạy toàn hệ thống
+└── README.md                 # Tài liệu dự án
 ```
 
 ## Lệnh hữu ích
@@ -126,7 +171,7 @@ docker-compose up --build --no-cache
 ## Xử lý sự cố
 
 1. **Lỗi port đã được sử dụng**
-   - Kiểm tra và dừng các services đang sử dụng port 80, 8080 hoặc 3307
+   - Kiểm tra và dừng các services đang dùng port 80, 8080 hoặc 3307
    - Hoặc chỉnh lại ports trong `docker-compose.yml`
 
 2. **Frontend không kết nối được với Backend**
