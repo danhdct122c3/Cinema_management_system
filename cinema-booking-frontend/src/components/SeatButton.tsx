@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Tooltip } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { SeatShowTimeResponse } from '../types';
 
 interface SeatButtonProps {
@@ -46,35 +46,19 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
         return '#111827';
     };
 
-    // Format hold expiration time for tooltip
-    const getHoldTooltip = () => {
-        if (seat.status === 'HOLD') {
-            const heldInfo = seat.heldByUserEmail ? `Đang giữ bởi: ${seat.heldByUserEmail}` : 'Ghế đang được giữ';
-            if (seat.holdExpireTime) {
-                const expireDate = new Date(seat.holdExpireTime);
-                const timeRemaining = Math.max(0, (expireDate.getTime() - Date.now()) / 1000);
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = Math.floor(timeRemaining % 60);
-                return `${heldInfo}\nHết hạn sau: ${minutes}p ${seconds}g`;
-            }
-            return heldInfo;
-        }
-        return seat.status === 'BOOKED' ? 'Ghế này đã được đặt' : '';
-    };
-
     const seatButton = (
         <Box
             onClick={!isDisabled ? onClick : undefined}
             sx={{
-                width: 54,
-                height: 54,
+                width: { xs: 40, sm: 54 },
+                height: { xs: 40, sm: 54 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: getBackgroundColor(),
                 border: `2px solid ${getBorderColor()}`,
-                borderRadius: 1.5,
+                borderRadius: { xs: 1.2, sm: 1.5 },
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled && !isSelected ? 0.6 : 1,
                 transition: 'all 0.24s ease',
@@ -92,32 +76,18 @@ export const SeatButton: React.FC<SeatButtonProps> = ({
             <Typography
                 variant="caption"
                 fontWeight="bold"
-                sx={{ color: getPrimaryTextColor() }}
+                sx={{ color: getPrimaryTextColor(), fontSize: { xs: '0.68rem', sm: '0.74rem' }, lineHeight: 1.05 }}
             >
                 {seat.seatCode}
             </Typography>
             <Typography
                 variant="caption"
-                sx={{ color: getMetaTextColor(), fontSize: '9px', fontWeight: 700, lineHeight: 1.1 }}
+                sx={{ color: getMetaTextColor(), fontSize: { xs: '7px', sm: '9px' }, fontWeight: 700, lineHeight: 1.05 }}
             >
                 {isVipSeat ? 'VIP' : 'THUONG'}
             </Typography>
-            <Typography
-                variant="caption"
-                sx={{ color: getMetaTextColor(), fontSize: '9px', lineHeight: 1.1 }}
-            >
-                {(seat.price / 1000).toFixed(0)}k
-            </Typography>
         </Box>
     );
-
-    if (seat.status === 'HOLD' || seat.status === 'BOOKED') {
-        return (
-            <Tooltip title={getHoldTooltip()} arrow>
-                {seatButton}
-            </Tooltip>
-        );
-    }
 
     return seatButton;
 };

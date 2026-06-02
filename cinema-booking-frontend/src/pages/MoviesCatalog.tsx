@@ -19,7 +19,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import LocalMoviesIcon from '@mui/icons-material/LocalMovies';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { genreService, movieService } from '../services/api';
+import { genreService, movieService, showtimeService } from '../services/api';
 import { Genre, Movie } from '../types';
 import { useGenre } from '../context/GenreContext';
 import { useSearch } from '../context/SearchContext';
@@ -126,8 +126,16 @@ export const MoviesCatalog: React.FC = () => {
                 }
 
                 const sourceMovies = response.data.result || [];
+                const showtimesResponse = await showtimeService.getAllShowtimes();
+                const activeShowtimeMovieIds = new Set(
+                    (showtimesResponse.data.result || [])
+                        .filter((showtime) => showtime.status === 'ACTIVE')
+                        .map((showtime) => showtime.movieId)
+                );
+
                 const filtered = sourceMovies
                     .filter((movie) => ALLOWED_STATUSES.includes(movie.status))
+                    .filter((movie) => activeShowtimeMovieIds.has(movie.id))
                     .filter((movie) => statusFilter === 'ALL' || movie.status === statusFilter)
                     .filter((movie) => {
                         if (!selectedGenreId) return true;

@@ -5,7 +5,7 @@ import {
     ShowTimeResponse, SeatShowTimeResponse, HoldSeatRequest, HoldSeatResponse
 } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/home';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
 export const AUTH_TOKEN_CLEARED_EVENT = 'app:auth-token-cleared';
 
 // ========== Token Storage ==========

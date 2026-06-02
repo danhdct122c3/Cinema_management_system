@@ -5,6 +5,7 @@ import com.example.cinema_booking.dto.request.APIResponse;
 import com.example.cinema_booking.dto.request.RoomRequest;
 import com.example.cinema_booking.dto.response.RoomResponse;
 import com.example.cinema_booking.service.RoomService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class RoomController {
     }
 
     @PostMapping
-    public APIResponse<RoomResponse> createRoom(@RequestBody RoomRequest request){
+    public APIResponse<RoomResponse> createRoom(@Valid @RequestBody RoomRequest request){
         return APIResponse.<RoomResponse>builder()
                 .result(roomService.createRoom(request))
                 .build();

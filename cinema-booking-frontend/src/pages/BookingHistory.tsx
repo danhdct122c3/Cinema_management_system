@@ -20,13 +20,14 @@ import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Booking } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { bookingService, showtimeService } from '../services/api';
+import { bookingService, movieService, showtimeService } from '../services/api';
 
 interface BookingView extends Booking {
     room_name?: string;
 }
 
 interface ShowtimeDisplayInfo {
+    movieTitle: string;
     roomName: string;
     displayTime: string;
 }
@@ -58,10 +59,17 @@ export const BookingHistory: React.FC = () => {
         );
 
         const mapping: Record<string, ShowtimeDisplayInfo> = {};
+        const showtimeMovieIds: Record<string, string> = {};
+        const uniqueMovieIds = new Set<string>();
+
         responses.forEach((result, index) => {
             const showtimeId = uniqueShowtimeIds[index];
             if (result.status === 'fulfilled') {
                 const detail = result.value.data?.result;
+                if (detail?.movieId) {
+                    showtimeMovieIds[showtimeId] = detail.movieId;
+                    uniqueMovieIds.add(detail.movieId);
+                }
                 const startTime = detail?.startTime ? new Date(detail.startTime) : null;
                 const endTime = detail?.endTime ? new Date(detail.endTime) : null;
                 const displayTime = startTime && !Number.isNaN(startTime.getTime())
@@ -74,16 +82,39 @@ export const BookingHistory: React.FC = () => {
                     : 'N/A';
 
                 mapping[showtimeId] = {
+                    movieTitle: 'Không có',
                     roomName: detail?.roomName || 'Không có',
                     displayTime,
                 };
             } else {
                 mapping[showtimeId] = {
+                    movieTitle: 'Không có',
                     roomName: 'Không có',
                     displayTime: 'Không có',
                 };
             }
         });
+
+        if (uniqueMovieIds.size > 0) {
+            const movieIds = Array.from(uniqueMovieIds);
+            const movieResponses = await Promise.allSettled(
+                movieIds.map((id) => movieService.getMovieById(id))
+            );
+
+            const movieTitleById: Record<string, string> = {};
+            movieResponses.forEach((result, index) => {
+                const movieId = movieIds[index];
+                if (result.status === 'fulfilled') {
+                    movieTitleById[movieId] = result.value.data?.result?.title || 'Không có';
+                }
+            });
+
+            Object.entries(showtimeMovieIds).forEach(([showtimeId, movieId]) => {
+                if (mapping[showtimeId]) {
+                    mapping[showtimeId].movieTitle = movieTitleById[movieId] || 'Không có';
+                }
+            });
+        }
 
         setShowtimeInfoById(mapping);
     };
@@ -275,6 +306,9 @@ export const BookingHistory: React.FC = () => {
                                 </Box>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={6}>
+                                        <Typography>
+                                            <strong>Tên phim:</strong> {showtimeInfoById[booking.showTimeId]?.movieTitle || 'Không có'}
+                                        </Typography>
                                         <Typography>
                                             <strong>Suất chiếu:</strong> {showtimeInfoById[booking.showTimeId]?.displayTime || 'Không có'}
                                         </Typography>

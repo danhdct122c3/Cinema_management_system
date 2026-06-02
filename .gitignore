@@ -1,0 +1,5 @@
+# Secrets - không bao giờ commit
+.env
+
+# Docker build cache
+.dist/

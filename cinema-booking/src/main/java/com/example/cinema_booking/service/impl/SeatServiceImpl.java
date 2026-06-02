@@ -4,6 +4,8 @@ import com.example.cinema_booking.dto.response.SeatResponse;
 import com.example.cinema_booking.entity.Room;
 import com.example.cinema_booking.entity.Seat;
 import com.example.cinema_booking.enums.SeatType;
+import com.example.cinema_booking.exception.AppException;
+import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.repository.SeatRepository;
 import com.example.cinema_booking.service.SeatService;
 import lombok.AccessLevel;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SeatServiceImpl  implements SeatService {
+    private static final int MAX_SEATS_PER_ROOM = 300;
 
     SeatRepository seatRepository;
 
@@ -29,6 +32,11 @@ public class SeatServiceImpl  implements SeatService {
 
         if (seatRepository.existsByRoomId(room.getId())) {
             throw new RuntimeException("Seats already exist for this room");
+        }
+
+        long totalSeats = (long) room.getTotalRows() * room.getTotalColumns();
+        if (totalSeats > MAX_SEATS_PER_ROOM) {
+            throw new AppException(ErrorCode.ROOM_SEAT_LIMIT_EXCEEDED);
         }
 
         List<Seat> seats = new ArrayList<>();
