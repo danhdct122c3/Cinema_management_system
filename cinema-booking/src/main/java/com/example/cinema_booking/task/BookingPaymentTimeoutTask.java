@@ -32,7 +32,7 @@ public class BookingPaymentTimeoutTask {
     PaymentRepository paymentRepository;
     BookingService bookingService;
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 30000) // 30 seconds for testing
     @Transactional
     public void cancelExpiredPendingBookings() {
         LocalDateTime now = LocalDateTime.now();

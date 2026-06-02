@@ -103,22 +103,23 @@ export const SeatMap: React.FC<SeatMapProps> = ({
             </Paper>
 
             {/* Seat Grid */}
-            <Box sx={{ overflowX: 'auto', mb: 3 }}>
+            <Box sx={{ overflowX: 'auto', mb: 3, px: { xs: 0.5, sm: 0 } }}>
                 {rows.map((row) => (
                     <Box
                         key={row}
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1,
-                            mb: 1.5,
-                            justifyContent: 'center',
+                            gap: { xs: 0.5, sm: 1 },
+                            mb: { xs: 1, sm: 1.5 },
+                            justifyContent: { xs: 'flex-start', md: 'center' },
+                            minWidth: 'max-content',
                         }}
                     >
-                        <Typography sx={{ minWidth: 22, fontWeight: 'bold', color: 'text.secondary' }}>
+                        <Typography sx={{ minWidth: { xs: 16, sm: 22 }, fontWeight: 'bold', color: 'text.secondary', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                             {row}
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, p: 0.75, borderRadius: 2, backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                        <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, p: { xs: 0.5, sm: 0.75 }, borderRadius: 2, backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                             {seatsByRow[row]
                                 .sort((a, b) => {
                                     const numA = parseInt(a.seatCode.substring(1));

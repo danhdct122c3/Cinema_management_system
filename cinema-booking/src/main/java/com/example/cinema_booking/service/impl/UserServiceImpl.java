@@ -67,7 +67,7 @@ public class UserServiceImpl  implements UserService {
         return userMapper.toUserResponse(user);
     }
 //"returnObject.email == authentication.name or
-    @PostAuthorize("hasRole('ADMIN_Read')")
+    @PostAuthorize("hasRole('ADMIN')")
     @Override
     public UserResponse updateUser(UserUpdateRequest request, String userId) {
         User user = userRepository.findById(userId)

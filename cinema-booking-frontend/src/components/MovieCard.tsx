@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import { Movie } from '../types';
-import StarIcon from '@mui/icons-material/Star';
 
 interface MovieCardProps {
     movie: Movie;
@@ -11,8 +10,6 @@ interface MovieCardProps {
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
     const navigate = useNavigate();
-    // Generate random rating for demo (7.0 - 9.5)
-    const rating = (Math.random() * 2.5 + 7).toFixed(1);
 
     // Age rating based on genre (demo)
     const getAgeRating = (genreName: string | undefined) => {
@@ -76,28 +73,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onSelect }) => {
                         background: 'linear-gradient(180deg, rgba(17, 24, 39, 0.02) 45%, rgba(17, 24, 39, 0.65) 100%)',
                     }}
                 />
-                {/* Rating Badge */}
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 12,
-                        left: 12,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        backgroundColor: 'rgba(17, 24, 39, 0.75)',
-                        backdropFilter: 'blur(10px)',
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: 2,
-                        border: '1px solid rgba(255, 255, 255, 0.18)',
-                    }}
-                >
-                    <StarIcon sx={{ fontSize: 18, color: '#FACC15' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#FACC15', fontSize: '0.95rem' }}>
-                        {rating}
-                    </Typography>
-                </Box>
                 {/* Age Rating Badge */}
                 <Chip
                     label={getAgeRating(movie.genreNames?.[0])}

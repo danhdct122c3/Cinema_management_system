@@ -21,7 +21,7 @@ import {
 } from '../types';
 import { createApiClient, createTokenStorage } from './api';
 
-const API_BASE_URL = 'http://localhost:8080/home';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/home';
 
 // Token admin tách biệt user
 const ADMIN_TOKEN_KEY = 'adminAccessToken';

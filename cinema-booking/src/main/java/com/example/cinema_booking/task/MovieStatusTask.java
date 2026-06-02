@@ -22,7 +22,7 @@ public class MovieStatusTask {
 
     MovieRepository movieRepository;
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000) //60 seconds
     @Transactional
     public void updateMovieStatus() {
         LocalDate today = LocalDate.now();

@@ -4,18 +4,16 @@ services:
     container_name: cinema_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: cinema_db
-      MYSQL_USER: cinema_user
-      MYSQL_PASSWORD: cinema_password
-    ports:
-      - "3307:3306"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQLDATABASE}
+      MYSQL_USER: ${MYSQLUSER}
+      MYSQL_PASSWORD: ${MYSQLPASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - cinema_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 20s
       retries: 10
@@ -26,13 +24,19 @@ services:
       dockerfile: docker/Dockerfile
     container_name: cinema_app
     restart: unless-stopped
-    ports:
-      - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cinema_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
-      SPRING_DATASOURCE_USERNAME: cinema_user
-      SPRING_DATASOURCE_PASSWORD: cinema_password
-      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      # MySQL - khớp với application.yml
+      MYSQLHOST: mysql
+      MYSQLPORT: 3306
+      MYSQLDATABASE: ${MYSQLDATABASE}
+      MYSQLUSER: ${MYSQLUSER}
+      MYSQLPASSWORD: ${MYSQLPASSWORD}
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      # VNPay
+      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL}
+      VNPAY_FRONTEND_RETURN_URL: ${VNPAY_FRONTEND_RETURN_URL}
+      # Timezone
       TZ: Asia/Ho_Chi_Minh
       JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Ho_Chi_Minh
     depends_on:
@@ -51,8 +55,9 @@ services:
     restart: unless-stopped
     environment:
       BACKEND_UPSTREAM_URL: http://app:8080
+      PORT: 80
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - app
     networks:
@@ -63,4 +68,4 @@ volumes:
 
 networks:
   cinema_network:
-    driver: bridge 
+    driver: bridge

@@ -3,6 +3,8 @@ package com.example.cinema_booking.service.impl;
 import com.example.cinema_booking.dto.request.RoomRequest;
 import com.example.cinema_booking.dto.response.RoomResponse;
 import com.example.cinema_booking.entity.Room;
+import com.example.cinema_booking.exception.AppException;
+import com.example.cinema_booking.exception.ErrorCode;
 import com.example.cinema_booking.mapper.RoomMapper;
 import com.example.cinema_booking.repository.RoomRepository;
 import com.example.cinema_booking.service.RoomService;
@@ -19,6 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoomServiceImpl implements RoomService {
+    private static final int MAX_SEATS_PER_ROOM = 300;
+
     RoomRepository roomRepository;
     RoomMapper roomMapper;
     SeatService seatService;
@@ -29,6 +33,12 @@ public class RoomServiceImpl implements RoomService {
         if (roomRepository.existsByRoomName(request.getRoomName())) {
             throw new RuntimeException("Room name already exists!");
         }
+
+        long totalSeats = (long) request.getTotalRows() * request.getTotalColumns();
+        if (totalSeats > MAX_SEATS_PER_ROOM) {
+            throw new AppException(ErrorCode.ROOM_SEAT_LIMIT_EXCEEDED);
+        }
+
         Room  room =roomMapper.toRoom(request);
 
 
