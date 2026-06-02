@@ -53,7 +53,7 @@ docker-compose down
 - Host: mysql (trong Docker) hoặc localhost:3306 (ngoài Docker)
 - Username: cinema_user
 - Password: cinema_password
-- Database: cinema_db
+- Database: cinema_db  
 
 ### Logs
 Xem log real-time:
