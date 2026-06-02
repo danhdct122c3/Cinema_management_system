@@ -105,7 +105,8 @@ export const AdminPermissions: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         loadPermissions();
-    }, [loadPermissions]);
+         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const filteredPermissions = useMemo(() => {
         const keyword = searchKeyword.trim().toLowerCase();
