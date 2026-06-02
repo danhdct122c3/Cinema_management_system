@@ -8,7 +8,6 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     Snackbar,
     Typography,
     Table,
@@ -39,7 +38,6 @@ export const AdminBookings: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [scanDialogOpen, setScanDialogOpen] = useState(false);
     const [scanError, setScanError] = useState('');
-    const [manualToken, setManualToken] = useState('');
     const [scanRequestLoading, setScanRequestLoading] = useState(false);
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
         open: false,
@@ -158,7 +156,6 @@ export const AdminBookings: React.FC = () => {
                 message: 'Quét QR thành công. Vé đã được xác nhận sử dụng.',
             });
             setScanDialogOpen(false);
-            setManualToken('');
             await fetchBookings();
         } catch (error: any) {
             setSnackbar({

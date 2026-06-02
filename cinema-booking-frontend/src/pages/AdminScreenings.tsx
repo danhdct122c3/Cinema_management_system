@@ -17,7 +17,6 @@ import {
     DialogActions,
     TextField,
     MenuItem,
-    Chip,
     Alert,
     CircularProgress,
     Tabs,
@@ -27,7 +26,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { adminMovieService, adminShowtimeService, adminRoomService, adminAxios } from '../services/adminApi';
+import { adminMovieService, adminShowtimeService, adminRoomService } from '../services/adminApi';
 import { Movie, ShowTimeResponse } from '../types';
 
 interface Room {
@@ -65,7 +64,7 @@ export const AdminScreenings: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loadingShowtimes, setLoadingShowtimes] = useState(true);
-    const [loadingRooms, setLoadingRooms] = useState(true);
+
     const [openShowtimeDialog, setOpenShowtimeDialog] = useState(false);
     const [editingShowtimeId, setEditingShowtimeId] = useState<string | null>(null);
     const [errorShowtime, setErrorShowtime] = useState('');
@@ -147,7 +146,7 @@ export const AdminScreenings: React.FC = () => {
 
     const fetchRooms = async () => {
         try {
-            setLoadingRooms(true);
+      
             const response = await adminRoomService.getAllRooms();
             setRooms(response.data.result || []);
             setErrorShowtime('');
@@ -155,7 +154,7 @@ export const AdminScreenings: React.FC = () => {
             console.error('Error fetching rooms:', error);
             setErrorShowtime('Không thể tải danh sách phòng chiếu');
         } finally {
-            setLoadingRooms(false);
+  
         }
     };
 
