@@ -14,7 +14,6 @@ import com.example.cinema_booking.repository.BookingRepository;
 import com.example.cinema_booking.repository.PaymentRepository;
 import com.example.cinema_booking.service.BookingService;
 import com.example.cinema_booking.service.PaymentService;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -41,13 +40,6 @@ public class PaymentServiceImpl implements PaymentService {
     PaymentRepository paymentRepository;
     BookingService bookingService;
 
-    @PostConstruct
-    public void init() {
-        log.info("VNPay TMN Code = [{}]", vnPayConfig.getTmnCode());
-        log.info("VNPay Return URL = [{}]", vnPayConfig.getReturnUrl());
-        log.info("VNPay Pay URL = [{}]", vnPayConfig.getPayUrl());
-    }
-
     @Override
     @Transactional(rollbackOn = Exception.class)
     public PaymentResponse createCheckoutPayment(BookingRequest request, String ipAddress) {
@@ -56,10 +48,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private PaymentResponse createPaymentByBookingId(String bookingId, String ipAddress) {
-        log.info("VNPay TMN Code = [{}]", vnPayConfig.getTmnCode());
-        log.info("VNPay Return URL = [{}]", vnPayConfig.getReturnUrl());
-        log.info("VNPay Pay URL = [{}]", vnPayConfig.getPayUrl());
-
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
 
@@ -132,6 +120,16 @@ public class PaymentServiceImpl implements PaymentService {
                 }
             }
         }
+        log.info("========== VNPAY REQUEST ==========");
+        log.info("TMN_CODE = [{}]", vnPayConfig.getTmnCode());
+        log.info("PAY_URL = [{}]", vnPayConfig.getPayUrl());
+        log.info("RETURN_URL = [{}]", vnPayConfig.getReturnUrl());
+        log.info("AMOUNT = [{}]", vnp_Amount);
+        log.info("TXN_REF = [{}]", vnp_TxnRef);
+        log.info("ORDER_INFO = [{}]", vnp_OrderInfo);
+        log.info("HASH_DATA = [{}]", hashData);
+        log.info("===================================");
+
         String queryUrl = query.toString();
         String vnp_SecureHash = VNPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
