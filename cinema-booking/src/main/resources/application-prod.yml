@@ -8,7 +8,7 @@ spring:
     driverClassName: "com.mysql.cj.jdbc.Driver"
     username: ${MYSQLUSER:root}
     password: ${MYSQLPASSWORD:root}
-  #    driver-class-name: "com.mysql.cj.jdbc.Driver"
+  #    driver-class-name: "com.mysql.cj.jdbc.Drive"
   jpa:
     hibernate:
       ddl-auto: update
