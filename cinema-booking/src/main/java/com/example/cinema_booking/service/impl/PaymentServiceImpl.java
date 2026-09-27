@@ -191,8 +191,12 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private PaymentProcessResult processPaymentResult(Map<String, String> vnpParams) {
+        log.info("========== VNPAY PROCESS PAYMENT RESULT ==========");
+        log.info("vnpParams = {}", vnpParams);
+
         String vnpSecureHash = vnpParams.get("vnp_SecureHash");
         if (vnpSecureHash == null || vnpSecureHash.isBlank()) {
+            log.warn("Missing vnp_SecureHash in VNPay params");
             return PaymentProcessResult.invalid("Missing signature");
         }
 
@@ -202,11 +206,21 @@ public class PaymentServiceImpl implements PaymentService {
 
         String calculatedHash = VNPayConfig.hashAllFields(fieldsForHash, vnPayConfig.getSecretKey());
         if (!calculatedHash.equalsIgnoreCase(vnpSecureHash)) {
-            return PaymentProcessResult.invalid("Invalid VNPay signature");
+            String calculatedHashEncoded = VNPayConfig.hashAllFieldsEncoded(fieldsForHash, vnPayConfig.getSecretKey());
+            if (calculatedHashEncoded.equalsIgnoreCase(vnpSecureHash)) {
+                log.info("VNPay signature matched using URL-encoded format.");
+            } else {
+                log.error("Invalid VNPay signature. Received: [{}], CalculatedRaw: [{}], CalculatedEncoded: [{}]",
+                        vnpSecureHash, calculatedHash, calculatedHashEncoded);
+                return PaymentProcessResult.invalid("Invalid VNPay signature");
+            }
+        } else {
+            log.info("VNPay signature matched using raw format.");
         }
 
         String txnRef = vnpParams.get("vnp_TxnRef");
         if (txnRef == null || txnRef.isBlank()) {
+            log.warn("Missing vnp_TxnRef in VNPay params");
             return PaymentProcessResult.fail("Missing transaction reference", null);
         }
 
@@ -257,21 +271,28 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setGatewayTxnNo(vnpParams.get("vnp_TransactionNo"));
 
         if (!paymentSuccess) {
+            log.warn("Payment failed for booking {}: responseCode={}, transactionStatus={}",
+                    booking.getId(), responseCode, transactionStatus);
             markPaymentFailed(payment, responseCode, now);
             cancelPendingBookingQuietly(booking);
             return PaymentProcessResult.fail("Payment failed.", booking.getId());
         }
 
+        log.info("Payment SUCCESS for booking {}. Updating payment status and confirming booking...", booking.getId());
         payment.setStatus(PaymentStatus.SUCCESS);
         payment.setPaymentTime(now);
         paymentRepository.save(payment);
 
         try {
             bookingService.confirmBooking(booking.getId());
+            log.info("Booking {} CONFIRMED successfully!", booking.getId());
         } catch (AppException ex) {
             if (ex.getErrorCode() != ErrorCode.BOOKING_ALREADY_CONFIRMED) {
+                log.error("Failed to confirm booking {}: code={}, message={}",
+                        booking.getId(), ex.getErrorCode(), ex.getMessage());
                 throw ex;
             }
+            log.info("Booking {} was already confirmed.", booking.getId());
         }
 
         return PaymentProcessResult.success("Payment success. Booking confirmed.", booking.getId());

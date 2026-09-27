@@ -114,8 +114,9 @@ public class BookingServiceImpl implements BookingService {
                     .build();
 
             // Keep hold metadata intact until payment callback confirms the booking.
-            // Clearing holdExpireTime/heldByUser here causes payment confirmation to fail.
+            // Extend holdExpireTime by 5 minutes to cover VNPay payment duration.
             seatShowTime.setStatus(SeatStatus.HOLD);
+            seatShowTime.setHoldExpireTime(now.plusMinutes(5));
             seatShowTimeRepository.save(seatShowTime);
             bookingSeatRepository.save(bookingSeat);
             savedBooking.getBookingSeats().add(bookingSeat);
@@ -203,7 +204,7 @@ public class BookingServiceImpl implements BookingService {
             if (seatShowTime.getStatus() != SeatStatus.HOLD) {
                 throw new AppException(ErrorCode.SEAT_NOT_AVAILABLE);
             }
-            if (seatShowTime.getHoldExpireTime() == null || seatShowTime.getHoldExpireTime().isBefore(now)) {
+            if (seatShowTime.getHoldExpireTime() == null || seatShowTime.getHoldExpireTime().plusMinutes(1).isBefore(now)) {
                 throw new AppException(ErrorCode.HOLD_EXPIRED);
             }
             if (seatShowTime.getHeldByUser() == null || !seatShowTime.getHeldByUser().getId().equals(booking.getUser().getId())) {
