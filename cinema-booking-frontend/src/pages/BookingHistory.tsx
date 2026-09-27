@@ -43,6 +43,29 @@ export const BookingHistory: React.FC = () => {
     const [page, setPage] = useState(1);
     const pageSize = 5;
     const [selectedQrBooking, setSelectedQrBooking] = useState<BookingView | null>(null);
+    const [paymentNotice, setPaymentNotice] = useState<{ severity: 'success' | 'error'; message: string } | null>(null);
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const paymentStatus = queryParams.get('paymentStatus');
+        const vnpResponseCode = queryParams.get('vnp_ResponseCode');
+        const msg = queryParams.get('message');
+        const bookingId = queryParams.get('bookingId');
+
+        if (paymentStatus === 'SUCCESS' || vnpResponseCode === '00') {
+            setPaymentNotice({
+                severity: 'success',
+                message: bookingId
+                    ? `Thanh toán thành công cho đơn #${bookingId}! Vé của bạn đã được xác nhận.`
+                    : 'Thanh toán thành công! Vé của bạn đã được xác nhận.',
+            });
+        } else if (paymentStatus === 'FAILED' || (vnpResponseCode && vnpResponseCode !== '00')) {
+            setPaymentNotice({
+                severity: 'error',
+                message: msg ? decodeURIComponent(msg) : 'Thanh toán không thành công hoặc đã bị hủy.',
+            });
+        }
+    }, []);
 
     const enrichRoomsFromShowtimes = async (bookingList: BookingView[]) => {
         const uniqueShowtimeIds = Array.from(
@@ -379,6 +402,23 @@ export const BookingHistory: React.FC = () => {
                 <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
                     {error}
                 </Alert>
+            </Snackbar>
+
+            <Snackbar
+                open={!!paymentNotice}
+                autoHideDuration={8000}
+                onClose={() => setPaymentNotice(null)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                {paymentNotice ? (
+                    <Alert
+                        onClose={() => setPaymentNotice(null)}
+                        severity={paymentNotice.severity}
+                        sx={{ width: '100%', fontWeight: 700, boxShadow: 3 }}
+                    >
+                        {paymentNotice.message}
+                    </Alert>
+                ) : undefined}
             </Snackbar>
 
             <Dialog

@@ -9,6 +9,7 @@ import { ScreeningList } from './pages/ScreeningList';
 import { SeatSelection } from './pages/SeatSelection';
 import { BookingConfirmation } from './pages/BookingConfirmation';
 import { BookingHistory } from './pages/BookingHistory';
+import { PaymentReturnHandler } from './pages/PaymentReturnHandler';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Navigation } from './components/Navigation';
@@ -240,6 +241,8 @@ function App() {
                                                 <Route path="/movie/:movieId/showtime/:showtimeId/seats" element={<SeatSelection />} />
                                                 <Route path="/booking-confirmation" element={<BookingConfirmation />} />
                                                 <Route path="/booking-history" element={<BookingHistory />} />
+                                                <Route path="/home/api/v1/payment/vnpay-return" element={<PaymentReturnHandler />} />
+                                                <Route path="/api/v1/payment/vnpay-return" element={<PaymentReturnHandler />} />
                                             </Routes>
                                         </Box>
                                     } />

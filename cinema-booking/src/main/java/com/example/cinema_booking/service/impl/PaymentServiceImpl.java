@@ -149,15 +149,23 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public String buildVnpayReturnRedirectUrl(Map<String, String> vnpParams) {
-        PaymentProcessResult result = processPaymentResult(vnpParams);
-        String status = result.success ? "SUCCESS" : "FAILED";
-
         String frontendReturnUrl = vnPayConfig.getFrontendReturnUrl();
         if (frontendReturnUrl == null || frontendReturnUrl.isBlank()) {
-            frontendReturnUrl = "http://localhost:3000/booking-history";
+            frontendReturnUrl = "/booking-history";
         }
 
-        return buildRedirectUrl(frontendReturnUrl, status, result.message, result.bookingId);
+        try {
+            PaymentProcessResult result = processPaymentResult(vnpParams);
+            String status = result.success ? "SUCCESS" : "FAILED";
+            return buildRedirectUrl(frontendReturnUrl, status, result.message, result.bookingId);
+        } catch (Exception ex) {
+            log.error("Error processing VNPay return", ex);
+            String message = ex.getMessage();
+            if (message == null || message.isBlank()) {
+                message = "Payment processing error";
+            }
+            return buildRedirectUrl(frontendReturnUrl, "FAILED", message, null);
+        }
     }
 
     @Override
