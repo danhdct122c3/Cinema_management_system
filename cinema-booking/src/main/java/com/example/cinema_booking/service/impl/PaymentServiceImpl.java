@@ -128,6 +128,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("TXN_REF = [{}]", vnp_TxnRef);
         log.info("ORDER_INFO = [{}]", vnp_OrderInfo);
         log.info("HASH_DATA = [{}]", hashData);
+        log.info("{}", vnPayConfig.getPayUrl());
         log.info("===================================");
 
         String queryUrl = query.toString();
