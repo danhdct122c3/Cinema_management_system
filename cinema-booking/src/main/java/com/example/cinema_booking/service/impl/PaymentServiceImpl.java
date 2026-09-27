@@ -136,7 +136,8 @@ public class PaymentServiceImpl implements PaymentService {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = vnPayConfig.getPayUrl() + "?" + queryUrl;
 
-
+        log.info("VNP_SECURE_HASH = [{}]", vnp_SecureHash);
+        log.info("PAYMENT_URL = [{}]", paymentUrl);
 
 
         return PaymentResponse.builder()
