@@ -21,6 +21,7 @@ import {
     CircularProgress,
     Tabs,
     Tab,
+    TablePagination,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -64,6 +65,16 @@ export const AdminScreenings: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loadingShowtimes, setLoadingShowtimes] = useState(true);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const paginatedShowtimes = showtimes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+    useEffect(() => {
+        if (page > 0 && page * rowsPerPage >= showtimes.length) {
+            setPage(Math.max(0, Math.ceil(showtimes.length / rowsPerPage) - 1));
+        }
+    }, [showtimes.length, page, rowsPerPage]);
 
     const [openShowtimeDialog, setOpenShowtimeDialog] = useState(false);
     const [editingShowtimeId, setEditingShowtimeId] = useState<string | null>(null);
@@ -466,66 +477,94 @@ export const AdminScreenings: React.FC = () => {
                                 <CircularProgress />
                             </Box>
                         ) : (
-                            <TableContainer>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
-                                            <TableCell sx={{ fontWeight: 700 }}>Phim</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Phòng</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Thời Gian</TableCell>
-                                            {/* <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell> */}
-                                            <TableCell align="center" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {showtimes.map((showtime) => (
-                                            <TableRow key={showtime.id}>
-                                                <TableCell>{getMovieTitle(showtime.movieId)}</TableCell>
-                                                <TableCell>{getRoomName(showtime.roomId)}</TableCell>
-                                                <TableCell>
-                                                    {formatDateTime(showtime.startTime)}
-                                                </TableCell>
-                                                {/* <TableCell>
-                                                    <Chip
-                                                        label={showtime.status === 'ACTIVE' ? 'Hoạt Động' : 'Đã Hủy'}
-                                                        size="small"
-                                                        color={showtime.status === 'ACTIVE' ? 'success' : 'error'}
-                                                        variant="outlined"
-                                                    />
-                                                </TableCell> */}
-                                                <TableCell align="center">
-                                                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleOpenPriceDialog(showtime)}
-                                                            title="Cập nhật giá"
-                                                            sx={{ color: '#E50914' }}
-                                                        >
-                                                            <AttachMoneyIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleOpenEditDialog(showtime)}
-                                                            title="Chỉnh sửa thông tin"
-                                                            sx={{ color: '#2196f3' }}
-                                                        >
-                                                            <EditIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleOpenDeleteDialog(showtime)}
-                                                            title="Xóa suất chiếu"
-                                                            sx={{ color: '#f44336' }}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                </TableCell>
+                            <>
+                                <TableContainer>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow sx={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
+                                                <TableCell sx={{ fontWeight: 700 }}>Phim</TableCell>
+                                                <TableCell sx={{ fontWeight: 700 }}>Phòng</TableCell>
+                                                <TableCell sx={{ fontWeight: 700 }}>Thời Gian</TableCell>
+                                                {/* <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell> */}
+                                                <TableCell align="center" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
+                                        </TableHead>
+                                        <TableBody>
+                                            {paginatedShowtimes.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                                                        Chưa có suất chiếu nào
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                paginatedShowtimes.map((showtime) => (
+                                                    <TableRow key={showtime.id}>
+                                                        <TableCell>{getMovieTitle(showtime.movieId)}</TableCell>
+                                                        <TableCell>{getRoomName(showtime.roomId)}</TableCell>
+                                                        <TableCell>
+                                                            {formatDateTime(showtime.startTime)}
+                                                        </TableCell>
+                                                        {/* <TableCell>
+                                                            <Chip
+                                                                label={showtime.status === 'ACTIVE' ? 'Hoạt Động' : 'Đã Hủy'}
+                                                                size="small"
+                                                                color={showtime.status === 'ACTIVE' ? 'success' : 'error'}
+                                                                variant="outlined"
+                                                            />
+                                                        </TableCell> */}
+                                                        <TableCell align="center">
+                                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleOpenPriceDialog(showtime)}
+                                                                    title="Cập nhật giá"
+                                                                    sx={{ color: '#E50914' }}
+                                                                >
+                                                                    <AttachMoneyIcon fontSize="small" />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleOpenEditDialog(showtime)}
+                                                                    title="Chỉnh sửa thông tin"
+                                                                    sx={{ color: '#2196f3' }}
+                                                                >
+                                                                    <EditIcon fontSize="small" />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleOpenDeleteDialog(showtime)}
+                                                                    title="Xóa suất chiếu"
+                                                                    sx={{ color: '#f44336' }}
+                                                                >
+                                                                    <DeleteIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </Box>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                                {showtimes.length > 0 && (
+                                    <TablePagination
+                                        component="div"
+                                        count={showtimes.length}
+                                        page={page}
+                                        onPageChange={(_, newPage) => setPage(newPage)}
+                                        rowsPerPage={rowsPerPage}
+                                        onRowsPerPageChange={(event) => {
+                                            setRowsPerPage(parseInt(event.target.value, 10));
+                                            setPage(0);
+                                        }}
+                                        rowsPerPageOptions={[5, 10, 20, 50]}
+                                        labelRowsPerPage="Số suất chiếu mỗi trang"
+                                        labelDisplayedRows={({ from, to, count }) =>
+                                            `${from}–${to} trong tổng số ${count !== -1 ? count : `hơn ${to}`}`
+                                        }
+                                    />
+                                )}
+                            </>
                         )}
                     </Box>
                 </TabPanel>
